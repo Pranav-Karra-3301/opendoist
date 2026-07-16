@@ -1,0 +1,356 @@
+/* app/tokens.css — OpenDoist design tokens (default: Kale) */
+@import "tailwindcss";
+
+/* dark utilities follow the resolved theme attribute OR OS when unset */
+@custom-variant dark (
+  &:where([data-theme="dark"], [data-theme="dark"] *, .system-dark, .system-dark *)
+);
+
+/* ---------- static scales (generate utilities) ---------- */
+@theme {
+  /* type */
+  --font-sans:
+    -apple-system, system-ui, "Segoe UI", Roboto, Noto, Oxygen-Sans,
+    Ubuntu, Cantrell, "Helvetica Neue", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, "Cascadia Mono", Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+  --text-copy: 13px;
+  --text-copy--line-height: 17px;
+  --text-body: 14px;
+  --text-body--line-height: 20px; /* task name uses 17px in dense rows */
+  --text-subtitle: 16px;
+  --text-subtitle--line-height: 22px;
+  --text-header: 20px;
+  --text-header--line-height: 25px;
+  --text-header-lg: 24px;
+  --text-header-lg--line-height: 30px;
+  --text-header-xl: 32px;
+  --text-header-xl--line-height: 41px;
+  --font-weight-regular: 400;
+  --font-weight-medium: 600; /* Todoist: medium IS 600 */
+  --font-weight-strong: 700;
+
+  /* spacing: keep Tailwind's 4px base (--spacing: .25rem default) */
+
+  /* radii (Todoist: 5 & 10 only) */
+  --radius-xs: 3px; /* badges, tiny chips */
+  --radius-sm: 5px; /* buttons, inputs, rows, menu items */
+  --radius-lg: 10px; /* cards, dialogs, dropdowns, quick-add */
+  --radius-full: 9999px;
+
+  /* elevation */
+  --shadow-menu: 0 2px 4px rgb(0 0 0 / 0.08);
+  --shadow-popover: 0 1px 8px rgb(0 0 0 / 0.08), 0 0 1px rgb(0 0 0 / 0.3);
+  --shadow-dialog: 0 15px 50px rgb(0 0 0 / 0.35);
+  --shadow-drag: 0 5px 8px rgb(0 0 0 / 0.16);
+  --shadow-toast: 0 10px 20px rgb(0 0 0 / 0.19), 0 6px 6px rgb(0 0 0 / 0.23);
+
+  /* motion */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --animate-check: od-check 250ms linear forwards;
+  @keyframes od-check {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(0.9);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+}
+
+/* ---------- semantic runtime tokens ---------- */
+/* LIGHT defaults (OpenDoist = Kale accent) */
+:root {
+  color-scheme: light;
+  /* canvas & surfaces */
+  --od-bg: #ffffff; /* app canvas */
+  --od-surface: #fcfcf8; /* sidebar / aside (kale-tinted) */
+  --od-surface-raised: #ffffff; /* cards, dropdowns, dialogs */
+  --od-surface-overlay: #282828; /* tooltips/toasts (inverted) */
+  --od-hover: #f3f3f3; /* generic option hover */
+  --od-selected: #f0f6df; /* selected row bg (kale) */
+  --od-selected-text: #3e6737;
+  --od-sidebar-hover: #f2f2e9;
+  /* borders */
+  --od-border: #eeeeee; /* divider primary */
+  --od-border-subtle: #f5f5f5; /* row dividers */
+  --od-input-border: #e6e6e6;
+  --od-input-border-focus: #b8b8b8;
+  /* text */
+  --od-text-primary: #202020;
+  --od-text-secondary: #666666;
+  --od-text-tertiary: #999999;
+  /* accent (Kale) */
+  --od-accent: #4c7a45;
+  --od-accent-hover: #3e6737;
+  --od-accent-disabled: #a5bca2;
+  --od-on-accent: #ffffff;
+  --od-accent-soft: #e8f1d0; /* soft chip/selection tint */
+  /* status */
+  --od-danger: #d1453b; /* == P1 */
+  --od-danger-hover: #b03d32;
+  --od-success: #058527;
+  --od-warning: #eb8909;
+  --od-info: #246fe0;
+  /* priorities */
+  --od-p1: #d1453b;
+  --od-p1-disabled: #edb5b1;
+  --od-p2: #eb8909;
+  --od-p2-disabled: #f7d09d;
+  --od-p3: #246fe0;
+  --od-p3-disabled: #a7c5f3;
+  --od-p4: #999999;
+  --od-p4-disabled: #d6d6d6;
+  /* dates */
+  --od-date-today: #058527;
+  --od-date-tomorrow: #ad6200;
+  --od-date-weekend: #246fe0;
+  --od-date-next-week: #692ec2;
+  --od-date-overdue: #d1453b;
+  /* focus (always blue, never accent) */
+  --od-focus-ring: #1f60c2;
+  --od-focus-ring-outer: #dceaff;
+  --od-row-focus-ring: rgb(31 96 194 / 0.4);
+  /* scrollbar */
+  --od-scrollbar-thumb: #c1c1c1;
+  /* project palette (light display values) */
+  --od-palette-berry-red: #b8255f;
+  --od-palette-red: #cf473a;
+  --od-palette-orange: #c77100;
+  --od-palette-yellow: #b29104;
+  --od-palette-olive-green: #949c31;
+  --od-palette-lime-green: #65a33a;
+  --od-palette-green: #369307;
+  --od-palette-mint-green: #42a393;
+  --od-palette-teal: #148fad;
+  --od-palette-sky-blue: #319dc0;
+  --od-palette-light-blue: #6988a4;
+  --od-palette-blue: #2a67e2;
+  --od-palette-grape: #692ec2;
+  --od-palette-violet: #ac30cc;
+  --od-palette-lavender: #a4698c;
+  --od-palette-magenta: #e05095;
+  --od-palette-salmon: #b2635c;
+  --od-palette-charcoal: #808080;
+  --od-palette-grey: #999999;
+  --od-palette-taupe: #8f7a69;
+}
+
+/* DARK (one block, reused for explicit dark + OS auto) */
+[data-theme="dark"],
+.system-dark {
+  color-scheme: dark;
+  --od-bg: #1e1e1e;
+  --od-surface: #262626;
+  --od-surface-raised: #282828;
+  --od-surface-overlay: #404040;
+  --od-hover: #363636;
+  --od-selected: #2c3a28; /* (derived: kale-tinted; Todoist-red dark uses #472525) */
+  --od-selected-text: #a5cf99; /* (derived) */
+  --od-sidebar-hover: #2b302a; /* (derived; Todoist dark: #322f2a) */
+  --od-border: #3d3d3d;
+  --od-border-subtle: #282828;
+  --od-input-border: #3d3d3d;
+  --od-input-border-focus: #707070;
+  --od-text-primary: #ffffff; /* rgba(255,255,255,.87) also used */
+  --od-text-secondary: #cccccc;
+  --od-text-tertiary: #808080;
+  --od-accent: #7ca86f; /* (derived: kale brightened; 5.9:1 on #1e1e1e) */
+  --od-accent-hover: #8fb883; /* (derived) */
+  --od-accent-disabled: #3c4d38; /* (derived) */
+  --od-on-accent: #ffffff; /* pair with fill #5d8a54 for buttons (derived) */
+  --od-accent-soft: #26331f; /* (derived; Todoist dark red soft: #6f2625) */
+  --od-danger: #ff7066;
+  --od-danger-hover: #e36564;
+  --od-success: #25b84c;
+  --od-warning: #ff9a14;
+  --od-info: #5297ff;
+  --od-p1: #ff7066;
+  --od-p1-disabled: #79403c;
+  --od-p2: #ff9a13;
+  --od-p2-disabled: #79511b;
+  --od-p3: #5297ff;
+  --od-p3-disabled: #345079;
+  --od-p4: #a9a9a9;
+  --od-p4-disabled: #575757;
+  --od-date-today: #25b84c;
+  --od-date-tomorrow: #ff9a14;
+  --od-date-weekend: #5297ff;
+  --od-date-next-week: #a970ff;
+  --od-date-overdue: #ff7066;
+  --od-focus-ring: #1f60c2;
+  --od-focus-ring-outer: #2a4c80;
+  --od-row-focus-ring: #175bc2;
+  --od-scrollbar-thumb: #6b6b6b;
+  --shadow-menu: 0 10px 20px rgb(0 0 0 / 0.19), 0 6px 6px rgb(0 0 0 / 0.23);
+  --shadow-dialog: 0 1px 4px rgb(0 0 0 / 0.08), 0 15px 50px rgb(0 0 0 / 0.6);
+  --shadow-drag: 0 5px 8px rgb(0 0 0 / 0.5);
+  /* palette dark overrides (Todoist-verified) */
+  --od-palette-berry-red: #d62b6f;
+  --od-palette-orange: #f48318;
+  --od-palette-olive-green: #aeb83a;
+  --od-palette-lime-green: #7ecc48;
+  --od-palette-mint-green: #52ccb8;
+  --od-palette-sky-blue: #3ab9e2;
+  --od-palette-light-blue: #96c3eb;
+  --od-palette-grape: #8758ce;
+  --od-palette-lavender: #eb96c8;
+  --od-palette-salmon: #ff8e84;
+  --od-palette-taupe: #ccae96;
+}
+
+/* SYSTEM AUTO-DARK: no @media block needed — index.html's head script toggles
+   `.system-dark` on <html> when no explicit theme is stored, and the combined
+   `[data-theme="dark"], .system-dark` block above covers both. Explicit
+   data-theme wins over the OS preference, both ways. */
+
+/* ---------- accent themes as [data-theme=X] (Todoist parity) ---------- */
+/* light schemes: todoist, moonstone, tangerine, kale(default), blueberry, lavender, raspberry */
+[data-theme="todoist"] {
+  --od-accent: #dc4c3e;
+  --od-accent-hover: #c3392c;
+  --od-accent-disabled: #eda59e;
+  --od-accent-soft: #fde7d8;
+  --od-surface: #fcfaf8;
+  --od-sidebar-hover: #f2efed;
+  --od-selected: #ffefe5;
+  --od-selected-text: #a81f00;
+}
+[data-theme="moonstone"] {
+  --od-accent: #39485e;
+  --od-accent-hover: #323f51;
+  --od-accent-disabled: #a4a9b0;
+  --od-accent-soft: #e0e2e5;
+  --od-surface: #fafafa;
+  --od-sidebar-hover: #efeff1;
+  --od-selected: #e0e2e5;
+  --od-selected-text: #39485e;
+}
+[data-theme="tangerine"] {
+  --od-accent: #d68400;
+  --od-accent-hover: #995e00;
+  --od-accent-disabled: #ebc180;
+  --od-accent-soft: #fdecdc;
+  --od-surface: #fcfcf8;
+  --od-sidebar-hover: #f4f1eb;
+  --od-selected: #fff3d6;
+  --od-selected-text: #995e00;
+}
+[data-theme="blueberry"] {
+  --od-accent: #297abc;
+  --od-accent-hover: #246498;
+  --od-accent-disabled: #9ab4dd;
+  --od-accent-soft: #d6e5f3;
+  --od-surface: #f8fafb;
+  --od-sidebar-hover: #eef2f6;
+  --od-selected: #dfedfb;
+  --od-selected-text: #1e5480;
+}
+[data-theme="lavender"] {
+  --od-accent: #766bbd;
+  --od-accent-hover: #51459f;
+  --od-accent-disabled: #bab5de;
+  --od-accent-soft: #e8e3f4;
+  --od-surface: #f9f9fa;
+  --od-sidebar-hover: #ededf2;
+  --od-selected: #e9e5f5;
+  --od-selected-text: #4d447e;
+}
+[data-theme="raspberry"] {
+  --od-accent: #c5496c;
+  --od-accent-hover: #8c213f;
+  --od-accent-disabled: #f4a0b7;
+  --od-accent-soft: #f8e2e7;
+  --od-surface: #fbf8f8;
+  --od-sidebar-hover: #f2ecf0;
+  --od-selected: #f8e2e7;
+  --od-selected-text: #8c213f;
+}
+/* "kale" needs no block — it IS :root. Keep [data-theme="light"] as alias of :root. */
+/* alias: explicit light choice (beats OS dark) — inherits every :root (Kale) default */
+/* biome-ignore lint/suspicious/noEmptyBlock: intentionally empty alias of :root */
+[data-theme="light"] {
+}
+
+/* ---------- bridge semantic vars into Tailwind utilities ---------- */
+@theme inline {
+  --color-bg: var(--od-bg);
+  --color-surface: var(--od-surface);
+  --color-surface-raised: var(--od-surface-raised);
+  --color-surface-overlay: var(--od-surface-overlay);
+  --color-hover: var(--od-hover);
+  --color-selected: var(--od-selected);
+  --color-selected-text: var(--od-selected-text);
+  --color-sidebar-hover: var(--od-sidebar-hover);
+  --color-border: var(--od-border);
+  --color-border-subtle: var(--od-border-subtle);
+  --color-input-border: var(--od-input-border);
+  --color-input-border-focus: var(--od-input-border-focus);
+  --color-text-primary: var(--od-text-primary);
+  --color-text-secondary: var(--od-text-secondary);
+  --color-text-tertiary: var(--od-text-tertiary);
+  --color-accent: var(--od-accent);
+  --color-accent-hover: var(--od-accent-hover);
+  --color-accent-disabled: var(--od-accent-disabled);
+  --color-on-accent: var(--od-on-accent);
+  --color-accent-soft: var(--od-accent-soft);
+  --color-danger: var(--od-danger);
+  --color-danger-hover: var(--od-danger-hover);
+  --color-success: var(--od-success);
+  --color-warning: var(--od-warning);
+  --color-info: var(--od-info);
+  --color-p1: var(--od-p1);
+  --color-p2: var(--od-p2);
+  --color-p3: var(--od-p3);
+  --color-p4: var(--od-p4);
+  --color-focus-ring: var(--od-focus-ring);
+  --color-focus-ring-outer: var(--od-focus-ring-outer);
+  --color-palette-berry-red: var(--od-palette-berry-red);
+  --color-palette-red: var(--od-palette-red);
+  --color-palette-orange: var(--od-palette-orange);
+  --color-palette-yellow: var(--od-palette-yellow);
+  --color-palette-olive-green: var(--od-palette-olive-green);
+  --color-palette-lime-green: var(--od-palette-lime-green);
+  --color-palette-green: var(--od-palette-green);
+  --color-palette-mint-green: var(--od-palette-mint-green);
+  --color-palette-teal: var(--od-palette-teal);
+  --color-palette-sky-blue: var(--od-palette-sky-blue);
+  --color-palette-light-blue: var(--od-palette-light-blue);
+  --color-palette-blue: var(--od-palette-blue);
+  --color-palette-grape: var(--od-palette-grape);
+  --color-palette-violet: var(--od-palette-violet);
+  --color-palette-lavender: var(--od-palette-lavender);
+  --color-palette-magenta: var(--od-palette-magenta);
+  --color-palette-salmon: var(--od-palette-salmon);
+  --color-palette-charcoal: var(--od-palette-charcoal);
+  --color-palette-grey: var(--od-palette-grey);
+  --color-palette-taupe: var(--od-palette-taupe);
+}
+
+/* ---------- z-index (no @theme namespace in v4; plain vars + z-[var(--z-*)]) ---------- */
+:root {
+  --z-sticky: 20;
+  --z-sidebar: 30;
+  --z-dropdown: 50;
+  --z-overlay: 80;
+  --z-modal: 90;
+  --z-popover: 100;
+  --z-toast: 400;
+  --z-tooltip: 1000; /* toast/tooltip values are Todoist's */
+}
+
+/* ---------- layout constants ---------- */
+:root {
+  --sidebar-width: 280px;
+  --sidebar-min: 210px;
+  --sidebar-max: 420px;
+  --content-max: 800px;
+  --detail-panel: 260px;
+}
