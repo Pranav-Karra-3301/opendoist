@@ -5,7 +5,10 @@ import { QuickAddDialog } from '@/components/quick-add/quick-add-dialog'
 import { MultiSelectToolbar } from '@/components/task/multi-select-toolbar'
 import { TaskDetailDialog } from '@/components/task-detail/task-detail-dialog'
 import { Toaster } from '@/components/toast/toaster'
+import DialogHost from '@/features/dialogs/DialogHost'
+import UndoHost from '@/features/undo/UndoHost'
 import { GlobalHotkeys } from '@/keyboard'
+import { useThemeSync } from '@/lib/theme'
 import { Sidebar } from './sidebar'
 import { Topbar } from './topbar'
 
@@ -17,6 +20,7 @@ import { Topbar } from './topbar'
  */
 export function AppLayout() {
   useSseInvalidation()
+  useThemeSync()
 
   return (
     <div className="relative h-screen overflow-hidden bg-bg font-sans text-body text-text-primary antialiased">
@@ -35,6 +39,9 @@ export function AppLayout() {
       <Toaster />
       <GlobalHotkeys />
       <MultiSelectToolbar />
+      {/* phase-5 hosts (Task A): dialogs (Tasks E/F) + single-slot undo toast (Task W) */}
+      <DialogHost />
+      <UndoHost />
     </div>
   )
 }

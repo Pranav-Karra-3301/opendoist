@@ -18,6 +18,7 @@ import { searchRoutes } from './api/routes/search'
 import { sectionsRoutes } from './api/routes/sections'
 import { taskActionsRoutes } from './api/routes/task-actions'
 import { tasksRoutes } from './api/routes/tasks'
+import { tokensRoutes } from './api/routes/tokens'
 import { userRoutes } from './api/routes/user'
 import type { Auth } from './auth'
 import type { Config } from './config'
@@ -166,6 +167,7 @@ export function createApp(deps: AppDeps): OpenAPIHono<AppEnv> {
   app.route('/api/v1', commentsRoutes())
   app.route('/api/v1', attachmentsRoutes())
   app.route('/api/v1', userRoutes())
+  app.route('/api/v1', tokensRoutes())
   app.route('/api/v1', activitiesRoutes())
   app.route('/api/v1', searchRoutes())
   app.route('/api/v1', eventsRoutes())

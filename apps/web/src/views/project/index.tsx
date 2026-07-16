@@ -4,8 +4,9 @@
  * the single `useActiveTasks()` cache, sliced client-side; drag-and-drop reorders within a
  * container and moves across sections (see `use-project-dnd`).
  */
-import { useNavigate, useParams } from '@tanstack/react-router'
-import { Ellipsis, Pencil, Plus, Trash2 } from 'lucide-react'
+import { viewKey } from '@opendoist/core'
+import { useParams } from '@tanstack/react-router'
+import { Archive, Ellipsis, Pencil, Plus, Settings2, Trash2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { useProjectMutations, useProjects } from '@/api/hooks/projects'
@@ -23,6 +24,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useDialogStore } from '@/features/dialogs/store'
+import { CompletedSection } from '@/features/display/CompletedSection'
+import DisplayMenu, { GroupedTaskList, useFilterContext } from '@/features/display/DisplayMenu'
+import { pipelineDeviates, pipelineGroups } from '@/features/display/pipeline'
+import { useViewPrefs } from '@/features/display/useViewPrefs'
 import { activeTasks, subtreeOf, tasksInProject } from '@/lib/derive'
 import { closestCenter, DndContext, useDroppable } from '@/lib/dnd'
 import { cn } from '@/lib/utils'
@@ -86,14 +92,18 @@ function ProjectLoading() {
 
 export function ProjectView() {
   const { projectId } = useParams({ strict: false })
-  const navigate = useNavigate()
   const projectsQ = useProjects()
   const sectionsQ = useSections()
   const tasksQ = useActiveTasks()
-  const { update: updateProject, remove: removeProject } = useProjectMutations()
+  const { update: updateProject } = useProjectMutations()
+  const openDialog = useDialogStore((s) => s.openDialog)
   const startAddSection = useProjectViewStore((s) => s.startAddSection)
   const [titleEditing, setTitleEditing] = useState(false)
   const dnd = useProjectDnd(projectId ?? '')
+  // Display prefs are keyed by project id; hooks must run before the early returns below.
+  const displayKey = viewKey('project', projectId ?? '')
+  const { prefs } = useViewPrefs(displayKey)
+  const filterCtx = useFilterContext()
 
   if (projectId === undefined) return <ProjectShell>Project not found</ProjectShell>
   const allProjects = projectsQ.data
@@ -111,10 +121,6 @@ export function ProjectView() {
   const active = activeTasks(tasksInProject(allTasks, projectId))
   const rootTasks = containerTasks(active, (t) => t.parent_id === null && t.section_id === null)
 
-  const handleDelete = (): void => {
-    removeProject.mutate({ id: projectId }, { onSuccess: () => navigate({ to: '/today' }) })
-  }
-
   return (
     <div className={CONTENT}>
       <header className="flex items-start justify-between gap-4 pt-8 pb-4">
@@ -131,6 +137,7 @@ export function ProjectView() {
           />
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          <DisplayMenu viewKey={displayKey} />
           <button
             type="button"
             className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}
@@ -138,58 +145,90 @@ export function ProjectView() {
           >
             <Plus size={16} aria-hidden /> Add section
           </button>
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
-              aria-label="Project actions"
-            >
-              <Ellipsis size={20} strokeWidth={1.75} aria-hidden />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setTitleEditing(true)}>
-                <Pencil size={16} aria-hidden /> Rename
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" onClick={handleDelete}>
-                <Trash2 size={16} aria-hidden /> Delete project
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Task X gate wiring: edit/archive/delete route through the Task F dialogs
+              (ProjectDialog + ProjectConfirms) so confirms + undo toasts apply. The Inbox
+              allows nothing but view prefs (plan Task F), so it gets no actions menu. */}
+          {!project.is_inbox && (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
+                aria-label="Project actions"
+              >
+                <Ellipsis size={20} strokeWidth={1.75} aria-hidden />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setTitleEditing(true)}>
+                  <Pencil size={16} aria-hidden /> Rename
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => openDialog({ kind: 'project', mode: 'edit', projectId })}
+                >
+                  <Settings2 size={16} aria-hidden /> Edit project
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => openDialog({ kind: 'project-archive', projectId })}
+                >
+                  <Archive size={16} aria-hidden /> Archive project
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => openDialog({ kind: 'project-delete', projectId })}
+                >
+                  <Trash2 size={16} aria-hidden /> Delete project
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </header>
 
-      <DndContext
-        sensors={dnd.sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={dnd.onDragEnd}
-      >
-        <DroppableRegion id={ROOT_DROP_ID}>
-          {rootTasks.length > 0 && (
-            <TaskList tasks={rootTasks} groupId={ROOT_DROP_ID} tree sortable />
-          )}
+      {pipelineDeviates(prefs) ? (
+        // Group/sort/filter replace the section + subtree + dnd rendering (sorting disables
+        // manual ordering, matching Todoist); the flat pipeline runs over ALL active project
+        // tasks. The bottom quick-add stays; sections/undo-drag return when prefs reset.
+        <>
+          <GroupedTaskList
+            groups={pipelineGroups(active, prefs, filterCtx, filterCtx.projects)}
+            emptyText="No tasks"
+          />
           <InlineAdd defaults={{ project_id: projectId }} placement="bottom" />
-        </DroppableRegion>
+        </>
+      ) : (
+        <DndContext
+          sensors={dnd.sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={dnd.onDragEnd}
+        >
+          <DroppableRegion id={ROOT_DROP_ID}>
+            {rootTasks.length > 0 && (
+              <TaskList tasks={rootTasks} groupId={ROOT_DROP_ID} tree sortable />
+            )}
+            <InlineAdd defaults={{ project_id: projectId }} placement="bottom" />
+          </DroppableRegion>
 
-        {sections.map((section, i) => {
-          const prev = i > 0 ? sections[i - 1] : undefined
-          const anchor = prev === undefined ? '__first__' : `after:${prev.id}`
-          return (
-            <div key={section.id}>
-              <AddSection projectId={projectId} sections={sections} anchor={anchor} />
-              <SectionBlock
-                projectId={projectId}
-                section={section}
-                tasks={containerTasks(
-                  active,
-                  (t) => t.parent_id === null && t.section_id === section.id,
-                )}
-              />
-            </div>
-          )
-        })}
+          {sections.map((section, i) => {
+            const prev = i > 0 ? sections[i - 1] : undefined
+            const anchor = prev === undefined ? '__first__' : `after:${prev.id}`
+            return (
+              <div key={section.id}>
+                <AddSection projectId={projectId} sections={sections} anchor={anchor} />
+                <SectionBlock
+                  projectId={projectId}
+                  section={section}
+                  tasks={containerTasks(
+                    active,
+                    (t) => t.parent_id === null && t.section_id === section.id,
+                  )}
+                />
+              </div>
+            )
+          })}
 
-        <AddSection projectId={projectId} sections={sections} anchor="__end__" />
-      </DndContext>
+          <AddSection projectId={projectId} sections={sections} anchor="__end__" />
+        </DndContext>
+      )}
+      {prefs.showCompleted && <CompletedSection projectId={projectId} />}
     </div>
   )
 }

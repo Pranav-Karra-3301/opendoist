@@ -1,10 +1,15 @@
 /**
- * Code-based route tree (no codegen file to race on). FROZEN by Task A.
+ * Code-based route tree (no codegen file to race on). FROZEN by Task A (phase 5 revision).
  *
  * /login, /register        — auth pages (no guard)
  * (app layout, pathless)   — session guard → /login; search: ?task=<id> opens task detail
  *   /            → redirect /today
- *   /inbox /today /upcoming /project/$projectId /label/$labelName
+ *   /inbox /today /upcoming /project/$projectId
+ *   /label/$labelId — ID-keyed (phase 5 Task A REPLACED phase 4's /label/$labelName;
+ *                     viewKey('label', id) prefs require the id) → LabelViewPage (Task G)
+ *   /filters-labels /filter/$filterId /reporting — phase-5 feature pages (lazy stubs
+ *                     until Tasks D/G/K replace them)
+ *   /settings → /settings/account; /settings/$page → SettingsLayout (Task L)
  *   /task/$taskId — CANONICAL task deep link (phase 6 notifications + phase 8 CLI build
  *                   `${origin}/task/<id>`) → redirects to /today?task=<id>
  * /dev/tokens              — design-token showcase (kept from phase 1)
@@ -14,17 +19,21 @@ import {
   createRootRouteWithContext,
   createRoute,
   createRouter,
+  lazyRouteComponent,
   Outlet,
   redirect,
 } from '@tanstack/react-router'
 import { z } from 'zod'
+import { api, endpoints } from '@/api/client'
+import { qk } from '@/api/keys'
+import { UserSettingsSchema } from '@/api/schemas'
 import { AppLayout } from '@/app/layout'
 import { authClient } from '@/auth/client'
 import { LoginPage } from '@/auth/login-page'
 import { RegisterPage } from '@/auth/register-page'
 import { TokenShowcase } from '@/dev/token-showcase'
+import { homeViewToTarget } from '@/lib/home-view'
 import { InboxView } from '@/views/inbox'
-import { LabelView } from '@/views/label'
 import { ProjectView } from '@/views/project'
 import { TodayView } from '@/views/today'
 import { UpcomingView } from '@/views/upcoming'
@@ -66,8 +75,30 @@ const appRoute = createRoute({
 const indexRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/',
-  beforeLoad: () => {
-    throw redirect({ to: '/today' })
+  beforeLoad: async ({ context }) => {
+    // Honour the user's Home view (Settings > General). ensureQueryData shares the
+    // ['user-settings'] cache with useUserSettings; on failure we fall through to Today.
+    let homeView: string | undefined
+    try {
+      const settings = await context.queryClient.ensureQueryData({
+        queryKey: qk.userSettings,
+        queryFn: () => api(endpoints.userSettings, { schema: UserSettingsSchema }),
+      })
+      homeView = settings.homeView
+    } catch {
+      // settings unavailable — default to Today below
+    }
+    const target = homeViewToTarget(homeView)
+    switch (target.to) {
+      case '/project/$projectId':
+        throw redirect({ to: target.to, params: target.params })
+      case '/label/$labelId':
+        throw redirect({ to: target.to, params: target.params })
+      case '/filter/$filterId':
+        throw redirect({ to: target.to, params: target.params })
+      default:
+        throw redirect({ to: target.to })
+    }
   },
 })
 
@@ -97,8 +128,40 @@ const projectRoute = createRoute({
 
 const labelRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: '/label/$labelName',
-  component: LabelView,
+  path: '/label/$labelId',
+  component: lazyRouteComponent(() => import('@/features/filter-view/LabelViewPage')),
+})
+
+const filtersLabelsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/filters-labels',
+  component: lazyRouteComponent(() => import('@/features/filters-labels/FiltersLabelsPage')),
+})
+
+const filterViewRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/filter/$filterId',
+  component: lazyRouteComponent(() => import('@/features/filter-view/FilterViewPage')),
+})
+
+const reportingRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/reporting',
+  component: lazyRouteComponent(() => import('@/features/reporting/ReportingPage')),
+})
+
+const settingsIndexRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/settings',
+  beforeLoad: () => {
+    throw redirect({ to: '/settings/$page', params: { page: 'account' } })
+  },
+})
+
+const settingsPageRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/settings/$page',
+  component: lazyRouteComponent(() => import('@/features/settings/SettingsLayout')),
 })
 
 /** Canonical deep link: open the app with the task-detail dialog on Today. */
@@ -126,6 +189,11 @@ const routeTree = rootRoute.addChildren([
     upcomingRoute,
     projectRoute,
     labelRoute,
+    filtersLabelsRoute,
+    filterViewRoute,
+    reportingRoute,
+    settingsIndexRoute,
+    settingsPageRoute,
     taskRoute,
   ]),
   devTokensRoute,

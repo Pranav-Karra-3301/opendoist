@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import { useDialogStore } from '@/features/dialogs/store'
 import { useDroppable } from '@/lib/dnd'
 import { cn } from '@/lib/utils'
 import { sectionDropId } from './use-project-dnd'
@@ -106,7 +107,8 @@ export interface SectionBlockProps {
 }
 
 export function SectionBlock({ projectId, section, tasks }: SectionBlockProps) {
-  const { update, remove } = useSectionMutations()
+  const { update } = useSectionMutations()
+  const openDialog = useDialogStore((s) => s.openDialog)
   const { setNodeRef } = useDroppable({ id: sectionDropId(section.id) })
   const [editing, setEditing] = useState(false)
   const collapsed = section.is_collapsed
@@ -156,9 +158,10 @@ export function SectionBlock({ projectId, section, tasks }: SectionBlockProps) {
                 <Pencil size={16} aria-hidden /> Rename
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              {/* Task X gate wiring: confirm + undo via ProjectConfirms (Task F). */}
               <DropdownMenuItem
                 variant="destructive"
-                onClick={() => remove.mutate({ id: section.id })}
+                onClick={() => openDialog({ kind: 'section-delete', sectionId: section.id })}
               >
                 <Trash2 size={16} aria-hidden /> Delete section
               </DropdownMenuItem>

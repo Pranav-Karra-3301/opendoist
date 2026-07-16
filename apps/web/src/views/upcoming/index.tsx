@@ -6,10 +6,15 @@
  * mutation layer). Every day derives its slice client-side from the one `useActiveTasks`
  * cache via `lib/derive`; no view-specific query. The scroll sentinel extends the range.
  */
+import { viewKey } from '@opendoist/core'
 import type { CSSProperties } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useTaskMutations } from '@/api/hooks/tasks'
 import { TaskRow } from '@/components/task/task-row'
+import { CompletedSection } from '@/features/display/CompletedSection'
+import DisplayMenu, { useFilterContext } from '@/features/display/DisplayMenu'
+import { pipelineDeviates, pipelineSortFilter } from '@/features/display/pipeline'
+import { useViewPrefs } from '@/features/display/useViewPrefs'
 import {
   arrayMove,
   closestCenter,
@@ -23,6 +28,8 @@ import { OverdueBlock } from '@/views/today/overdue-block'
 import { DaySection } from './day-section'
 import { useUpcomingDays, useUpcomingStore } from './use-upcoming-days'
 import { WeekStrip } from './week-strip'
+
+const UPCOMING_KEY = viewKey('upcoming')
 
 export function UpcomingView() {
   const {
@@ -41,6 +48,11 @@ export function UpcomingView() {
   } = useUpcomingDays()
   const { update } = useTaskMutations()
   const sensors = useAppSensors()
+  const { prefs } = useViewPrefs(UPCOMING_KEY)
+  const filterCtx = useFilterContext()
+  // Days ARE the grouping in Upcoming, so the Display menu applies filter+sort WITHIN each day
+  // (dossier §1.8) and disables per-day drag while active; the Overdue block stays untouched.
+  const deviates = pipelineDeviates(prefs)
 
   const [activeId, setActiveId] = useState<string | null>(null)
   const activeTask = activeId === null ? undefined : dated.find((t) => t.id === activeId)
@@ -159,6 +171,7 @@ export function UpcomingView() {
           onPrevWeek={() => pageWeek(-1)}
           onNextWeek={() => pageWeek(1)}
           onToday={jumpToday}
+          actions={<DisplayMenu viewKey={UPCOMING_KEY} />}
         />
       </div>
 
@@ -170,9 +183,15 @@ export function UpcomingView() {
         onDragCancel={onDragCancel}
       >
         <OverdueBlock tasks={overdueTasks} />
-        {days.map((date) => (
-          <DaySection key={date} date={date} tasks={tasksByDay.get(date) ?? []} today={today} />
-        ))}
+        {days.map((date) => {
+          const dayTasks = tasksByDay.get(date) ?? []
+          const shown = deviates
+            ? pipelineSortFilter(dayTasks, prefs, filterCtx, filterCtx.projects)
+            : dayTasks
+          return (
+            <DaySection key={date} date={date} tasks={shown} today={today} sortable={!deviates} />
+          )
+        })}
         <div ref={sentinelRef} aria-hidden className="h-px" />
         <DragOverlay>
           {activeTask ? (
@@ -182,6 +201,7 @@ export function UpcomingView() {
           ) : null}
         </DragOverlay>
       </DndContext>
+      {prefs.showCompleted && <CompletedSection />}
     </div>
   )
 }

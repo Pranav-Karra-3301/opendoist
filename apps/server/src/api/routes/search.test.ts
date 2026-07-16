@@ -58,7 +58,11 @@ function seedComment(t: TestApp, taskId: string, content: string): void {
 }
 
 interface SearchBody {
-  results: { task: { id: string; completed_at: string | null }; matched_in: 'task' | 'comment' }[]
+  results: {
+    task: { id: string; completed_at: string | null }
+    matched_in: 'task' | 'comment'
+    snippet: string
+  }[]
   next_cursor: string | null
 }
 async function search(t: TestApp, params: Record<string, string>): Promise<Response> {
@@ -97,6 +101,26 @@ it('matches text in the task description', async () => {
   expect(body.results).toHaveLength(1)
   expect(body.results[0]?.task.id).toBe(groceries.id)
   expect(body.results[0]?.matched_in).toBe('task')
+})
+
+it('returns an FTS snippet with <b> marks for task, description, and comment hits', async () => {
+  const t = await make()
+  const groceries = seedTask(t, 'Buy groceries', 'almond milk')
+  const weekend = seedTask(t, 'Plan the weekend')
+  seedComment(t, weekend.id, 'discussed groceries strategy')
+
+  const byId = new Map(
+    (await json<SearchBody>(await search(t, { q: 'groceries' }))).results.map((r) => [
+      r.task.id,
+      r,
+    ]),
+  )
+  expect(byId.get(groceries.id)?.snippet).toContain('<b>groceries</b>')
+  expect(byId.get(weekend.id)?.snippet).toContain('<b>groceries</b>')
+
+  // A description-only match still lands its mark in the snippet (column -1 auto-picks it).
+  const desc = await json<SearchBody>(await search(t, { q: 'almond' }))
+  expect(desc.results[0]?.snippet).toContain('<b>almond</b>')
 })
 
 it('excludes completed tasks by default and includes them on request', async () => {

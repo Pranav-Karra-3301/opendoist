@@ -1,8 +1,11 @@
 import { Link, useMatchRoute } from '@tanstack/react-router'
-import { ChevronRight, Tag } from 'lucide-react'
+import { ChevronRight, Filter as FilterIcon, Plus, Tag } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { type Filter, useFilters } from '@/api/hooks/filters'
 import { useLabels } from '@/api/hooks/labels'
 import { useProjectMutations, useProjects } from '@/api/hooks/projects'
 import type { Label, Project } from '@/api/schemas'
+import { useDialogStore } from '@/features/dialogs/store'
 import { cn } from '@/lib/utils'
 
 /** `berry_red` → `var(--od-palette-berry-red, …)`; unknown names fall back to tertiary. */
@@ -47,9 +50,14 @@ function orderedProjects(projects: Project[]): ProjectRow[] {
   return out
 }
 
-function SectionHeading({ children }: { children: string }) {
+function SectionHeading({ children, action }: { children: string; action?: ReactNode }) {
   return (
-    <h2 className="px-[5px] pt-4 pb-1 font-medium text-caption text-text-tertiary">{children}</h2>
+    <div className="flex items-center gap-1 px-[5px] pt-4 pb-1">
+      <h2 className="min-w-0 flex-1 truncate font-medium text-caption text-text-tertiary">
+        {children}
+      </h2>
+      {action}
+    </div>
   )
 }
 
@@ -81,8 +89,10 @@ function FavoriteProjectItem({ project }: { project: Project }) {
 function FavoriteLabelItem({ label }: { label: Label }) {
   return (
     <Link
-      to="/label/$labelName"
-      params={{ labelName: label.name }}
+      // phase 5 Task A re-keyed the label route by id (was /label/$labelName); Task J
+      // owns the full favorites treatment.
+      to="/label/$labelId"
+      params={{ labelId: label.id }}
       className={FAV_LINK_CLASS}
       activeProps={FAV_ACTIVE}
       inactiveProps={FAV_INACTIVE}
@@ -94,6 +104,26 @@ function FavoriteLabelItem({ label }: { label: Label }) {
         aria-hidden="true"
       />
       <span className="truncate">{label.name}</span>
+    </Link>
+  )
+}
+
+function FavoriteFilterItem({ filter }: { filter: Filter }) {
+  return (
+    <Link
+      to="/filter/$filterId"
+      params={{ filterId: filter.id }}
+      className={FAV_LINK_CLASS}
+      activeProps={FAV_ACTIVE}
+      inactiveProps={FAV_INACTIVE}
+    >
+      <FilterIcon
+        size={16}
+        className="shrink-0"
+        style={{ color: paletteVar(filter.color) }}
+        aria-hidden="true"
+      />
+      <span className="truncate">{filter.name}</span>
     </Link>
   )
 }
@@ -147,18 +177,22 @@ function ProjectItem({
   )
 }
 
-/** "Favorites" (favorited projects + labels) and "My Projects" (nested tree). */
+/** "Favorites" (favorited projects + filters + labels) and "My Projects" (nested tree). */
 export function SidebarProjects() {
   const { data: projects = [] } = useProjects()
   const { data: labels = [] } = useLabels()
+  const { data: filters = [] } = useFilters()
   const { update } = useProjectMutations()
+  const openDialog = useDialogStore((s) => s.openDialog)
   const matchRoute = useMatchRoute()
 
   const visible = projects.filter((p) => !p.is_archived && !p.is_inbox)
   const favoriteProjects = visible.filter((p) => p.is_favorite)
+  const favoriteFilters = filters.filter((f) => f.is_favorite)
   const favoriteLabels = labels.filter((l) => l.is_favorite)
   const rows = orderedProjects(visible)
-  const hasFavorites = favoriteProjects.length > 0 || favoriteLabels.length > 0
+  const hasFavorites =
+    favoriteProjects.length > 0 || favoriteFilters.length > 0 || favoriteLabels.length > 0
 
   const toggleCollapsed = (project: Project): void => {
     update.mutate({ id: project.id, patch: { is_collapsed: !project.is_collapsed } })
@@ -172,13 +206,29 @@ export function SidebarProjects() {
           {favoriteProjects.map((project) => (
             <FavoriteProjectItem key={project.id} project={project} />
           ))}
+          {favoriteFilters.map((filter) => (
+            <FavoriteFilterItem key={filter.id} filter={filter} />
+          ))}
           {favoriteLabels.map((label) => (
             <FavoriteLabelItem key={label.id} label={label} />
           ))}
         </section>
       )}
       <section>
-        <SectionHeading>My Projects</SectionHeading>
+        <SectionHeading
+          action={
+            <button
+              type="button"
+              aria-label="Add project"
+              onClick={() => openDialog({ kind: 'project', mode: 'create' })}
+              className="grid size-5 shrink-0 place-items-center rounded-sm text-text-tertiary outline-none transition-colors hover:bg-sidebar-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            >
+              <Plus size={16} strokeWidth={2} aria-hidden="true" />
+            </button>
+          }
+        >
+          My Projects
+        </SectionHeading>
         {rows.length === 0 ? (
           <p className="px-[5px] py-1 text-caption text-text-tertiary italic">No projects yet</p>
         ) : (

@@ -1,5 +1,5 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
-import { and, eq, inArray, isNull, max } from 'drizzle-orm'
+import { and, eq, inArray, isNotNull, isNull, max } from 'drizzle-orm'
 import type { AppEnv } from '../../app'
 import type { Db } from '../../db/db'
 import { projects, sections, tasks } from '../../db/schema'
@@ -55,6 +55,7 @@ const SectionListSchema = z.object({
   results: z.array(SectionDtoSchema),
   next_cursor: z.string().nullable(),
 })
+const OkSchema = z.object({ ok: z.boolean() })
 const CreateSectionSchema = z.object({ project_id: IdSchema, name: z.string().min(1) })
 const UpdateSectionSchema = z.object({
   name: z.string().min(1).optional(),
@@ -123,6 +124,21 @@ const deleteRoute = createRoute({
   security,
   request: { params: IdParam },
   responses: { 204: { description: 'Deleted' }, ...withNotFound },
+})
+const restoreRoute = createRoute({
+  method: 'post',
+  path: '/sections/{id}/restore',
+  tags: ['sections'],
+  summary: 'Restore a soft-deleted section and re-attach its tasks',
+  description:
+    'Clears `deleted_at` on the section and re-attaches the tasks it was deleted with (delete ' +
+    'detaches them, stamping `updated_at` with the same instant). Powers the delete-section undo.',
+  security,
+  request: { params: IdParam },
+  responses: {
+    200: { description: 'Restored', content: { 'application/json': { schema: OkSchema } } },
+    ...withNotFound,
+  },
 })
 
 export const sectionsRoutes = () => {
@@ -279,6 +295,51 @@ export const sectionsRoutes = () => {
     })
     bus.publish({ userId: auth.userId, type: 'section.deleted', entity: 'section', ids: [id] })
     return c.body(null, 204)
+  })
+
+  app.openapi(restoreRoute, (c) => {
+    const auth = c.get('auth')
+    if (!auth) return problem(c, 401, 'unauthorized')
+    const { db, bus } = c.get('deps')
+    const { id } = c.req.valid('param')
+    const section = db
+      .select()
+      .from(sections)
+      .where(
+        and(eq(sections.id, id), eq(sections.userId, auth.userId), isNotNull(sections.deletedAt)),
+      )
+      .get()
+    if (section === undefined || section.deletedAt === null) return problem(c, 404, 'not found')
+    const marker = section.deletedAt
+
+    const now = nowIso()
+    db.update(sections)
+      .set({ deletedAt: null, updatedAt: now })
+      .where(and(eq(sections.id, id), eq(sections.userId, auth.userId)))
+      .run()
+    // Delete detached the section's tasks (section_id → null) and stamped each with updated_at =
+    // the section's deleted_at. Re-attach exactly those: still section-less, live, same project.
+    db.update(tasks)
+      .set({ sectionId: id, updatedAt: now })
+      .where(
+        and(
+          eq(tasks.userId, auth.userId),
+          eq(tasks.projectId, section.projectId),
+          isNull(tasks.sectionId),
+          isNull(tasks.deletedAt),
+          eq(tasks.updatedAt, marker),
+        ),
+      )
+      .run()
+    logActivity(db, {
+      userId: auth.userId,
+      eventType: 'section_restored',
+      entityType: 'section',
+      entityId: id,
+      projectId: section.projectId,
+    })
+    bus.publish({ userId: auth.userId, type: 'section.restored', entity: 'section', ids: [id] })
+    return c.json({ ok: true }, 200)
   })
 
   return app

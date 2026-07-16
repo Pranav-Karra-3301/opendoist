@@ -10,10 +10,12 @@ import {
   desc,
   eq,
   gt,
+  gte,
   inArray,
   isNotNull,
   isNull,
   lt,
+  lte,
   max,
   ne,
   or,
@@ -47,6 +49,7 @@ const TaskListSchema = z.object({
   results: z.array(TaskDtoSchema),
   next_cursor: z.string().nullable(),
 })
+const OkSchema = z.object({ ok: z.boolean() })
 
 interface ResolvedDue {
   dueDate: string | null
@@ -178,7 +181,12 @@ const ListTasksQuerySchema = ListQuerySchema.extend({
   parent_id: IdSchema.optional(),
   label: z.string().optional(),
 })
-const CompletedQuerySchema = ListQuerySchema.extend({ project_id: IdSchema.optional() })
+const CompletedQuerySchema = ListQuerySchema.extend({
+  project_id: IdSchema.optional(),
+  /** ISO date/instant compared against completed_at (mirrors the activities params) */
+  since: z.string().optional(),
+  until: z.string().optional(),
+})
 const MoveBodySchema = z
   .object({
     project_id: IdSchema.optional(),
@@ -315,6 +323,22 @@ const moveTaskRoute = createRoute({
   },
 })
 
+const restoreTaskRoute = createRoute({
+  method: 'post',
+  path: '/tasks/{id}/restore',
+  tags: ['tasks'],
+  summary: 'Restore a soft-deleted task and its subtree',
+  description:
+    'Clears `deleted_at` on the task and every row deleted in the same cascade (delete stamps an ' +
+    'identical `deleted_at` across the subtree). Powers the delete-task undo.',
+  security,
+  request: { params: IdParamSchema },
+  responses: {
+    200: { content: { 'application/json': { schema: OkSchema } }, description: 'Restored' },
+    404: problemResponse('No soft-deleted task with that id'),
+  },
+})
+
 export const tasksRoutes = () => {
   const app = new OpenAPIHono<AppEnv>()
 
@@ -380,7 +404,7 @@ export const tasksRoutes = () => {
     const auth = c.get('auth')
     if (!auth) return problem(c, 401, 'unauthorized')
     const { db } = c.get('deps')
-    const { cursor, limit, project_id } = c.req.valid('query')
+    const { cursor, limit, project_id, since, until } = c.req.valid('query')
 
     let cursorCond: SQL | undefined
     if (cursor !== undefined) {
@@ -400,6 +424,8 @@ export const tasksRoutes = () => {
       cursorCond,
     ]
     if (project_id !== undefined) conds.push(eq(tasks.projectId, project_id))
+    if (since !== undefined) conds.push(gte(tasks.completedAt, since))
+    if (until !== undefined) conds.push(lte(tasks.completedAt, until))
 
     const rows = db
       .select()
@@ -705,11 +731,12 @@ export const tasksRoutes = () => {
 
     logActivity(db, {
       userId: auth.userId,
-      eventType: 'task_updated',
+      eventType: 'task_moved',
       entityType: 'task',
       entityId: id,
+      // project_id is the destination, so the feed's `project_name` reads "Moved to <dest>".
       projectId: newProjectId,
-      payload: { moved: true },
+      payload: { from_project_id: root.projectId, to_project_id: newProjectId },
     })
     bus.publish({
       userId: auth.userId,
@@ -721,6 +748,41 @@ export const tasksRoutes = () => {
     const updated = db.select().from(tasks).where(eq(tasks.id, id)).get()
     if (updated === undefined) return problem(c, 404, 'not found')
     return c.json(toDto(db, updated), 200)
+  })
+
+  // POST /tasks/{id}/restore — un-delete the task and its whole delete-cascade.
+  app.openapi(restoreTaskRoute, (c) => {
+    const auth = c.get('auth')
+    if (!auth) return problem(c, 401, 'unauthorized')
+    const { db, bus } = c.get('deps')
+    const { id } = c.req.valid('param')
+    const root = db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.id, id), eq(tasks.userId, auth.userId), isNotNull(tasks.deletedAt)))
+      .get()
+    if (root === undefined || root.deletedAt === null) return problem(c, 404, 'not found')
+    const marker = root.deletedAt
+
+    const now = nowIso()
+    // The delete handler stamps an identical `deleted_at` across the subtree, so the marker
+    // selects exactly that cascade (unique per delete request for a single user).
+    const restored = db
+      .update(tasks)
+      .set({ deletedAt: null, updatedAt: now })
+      .where(and(eq(tasks.userId, auth.userId), eq(tasks.deletedAt, marker)))
+      .returning({ id: tasks.id })
+      .all()
+    const ids = restored.map((r) => r.id)
+    logActivity(db, {
+      userId: auth.userId,
+      eventType: 'task_restored',
+      entityType: 'task',
+      entityId: id,
+      projectId: root.projectId,
+    })
+    bus.publish({ userId: auth.userId, type: 'task.restored', entity: 'task', ids })
+    return c.json({ ok: true }, 200)
   })
 
   return app

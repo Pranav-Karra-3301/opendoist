@@ -9,11 +9,11 @@ import { useEffect } from 'react'
 import { useProjects } from '@/api/hooks/projects'
 import type { Project } from '@/api/schemas'
 
-export type RecentType = 'view' | 'project' | 'label'
+export type RecentType = 'view' | 'project' | 'label' | 'task'
 
 export interface Recent {
   type: RecentType
-  /** view: 'inbox'|'today'|'upcoming'; project: project id; label: decoded label name */
+  /** view: 'inbox'|'today'|'upcoming'; project: project id; label: decoded label name; task: task id */
   id: string
   title: string
 }
@@ -25,7 +25,7 @@ function isRecent(value: unknown): value is Recent {
   if (value === null || typeof value !== 'object') return false
   const r = value as Record<string, unknown>
   return (
-    (r.type === 'view' || r.type === 'project' || r.type === 'label') &&
+    (r.type === 'view' || r.type === 'project' || r.type === 'label' || r.type === 'task') &&
     typeof r.id === 'string' &&
     typeof r.title === 'string'
   )

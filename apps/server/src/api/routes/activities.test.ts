@@ -1,3 +1,4 @@
+import { ActivityPageSchema } from '@opendoist/core'
 import { describe, expect, it } from 'vitest'
 import { user } from '../../db/auth-schema'
 import type { Db } from '../../db/db'
@@ -12,7 +13,7 @@ interface ActivityDto {
   entity_type: string
   entity_id: string
   project_id: string | null
-  payload: unknown
+  payload: { content: string; project_name: string | null; meta: Record<string, unknown> }
   at: string
 }
 type ActivitiesResponse = { results: ActivityDto[]; next_cursor: string | null }
@@ -130,7 +131,13 @@ describe('activities router', () => {
 
       const all = await json<ActivitiesResponse>(await t.get('/api/v1/activities'))
       const completed = all.results.find((r) => r.entity_id === 'k1')
-      expect(completed?.payload).toEqual({ recurring: true, next_due: '2026-07-16' })
+      // The stored event payload is denormalized under `meta`; content/project_name resolve
+      // to empties here because the seed refs a task/project that don't exist.
+      expect(completed?.payload).toEqual({
+        content: '',
+        project_name: null,
+        meta: { recurring: true, next_due: '2026-07-16' },
+      })
 
       const labels = await json<ActivitiesResponse>(
         await t.get('/api/v1/activities?entity_type=label'),
@@ -298,7 +305,62 @@ describe('activities router', () => {
       )
       expect(res.results).toHaveLength(1)
       expect(res.results[0]?.entity_id).toBe('f1')
-      expect(res.results[0]?.payload).toEqual({ name: 'Work' })
+      expect(res.results[0]?.payload).toEqual({
+        content: '',
+        project_name: null,
+        meta: { name: 'Work' },
+      })
+    } finally {
+      t.close()
+    }
+  })
+
+  it('denormalizes content + project_name at read time and filters by a csv `types` list', async () => {
+    const t = await createTestApp()
+    try {
+      // Real rows so denormalization has something to join.
+      const proj = await json<{ id: string; name: string }>(
+        await t.post('/api/v1/projects', { name: 'Roadmap' }),
+      )
+      const task = await json<{ id: string }>(
+        await t.post('/api/v1/tasks', { content: 'Ship phase 5', project_id: proj.id }),
+      )
+      await t.post(`/api/v1/tasks/${task.id}/close`)
+
+      const feed = await json<ActivitiesResponse>(await t.get('/api/v1/activities'))
+      const added = feed.results.find(
+        (r) => r.event_type === 'task_added' && r.entity_id === task.id,
+      )
+      expect(added?.payload.content).toBe('Ship phase 5')
+      expect(added?.payload.project_name).toBe('Roadmap')
+
+      // csv `types` filter: only completions.
+      const completed = await json<ActivitiesResponse>(
+        await t.get('/api/v1/activities?types=task_completed,task_moved'),
+      )
+      expect(completed.results.length).toBeGreaterThanOrEqual(1)
+      expect(completed.results.every((r) => r.event_type === 'task_completed')).toBe(true)
+      expect(completed.results.some((r) => r.event_type === 'task_added')).toBe(false)
+    } finally {
+      t.close()
+    }
+  })
+
+  it('logs task_moved and the response parses with core ActivityPageSchema', async () => {
+    const t = await createTestApp()
+    try {
+      const dest = await json<{ id: string }>(await t.post('/api/v1/projects', { name: 'Dest' }))
+      const task = await json<{ id: string }>(await t.post('/api/v1/tasks', { content: 'Movable' }))
+      await t.post(`/api/v1/tasks/${task.id}/move`, { project_id: dest.id })
+
+      const res = await t.get('/api/v1/activities')
+      const body = await json<unknown>(res)
+      // The wire response must validate against the frozen client contract.
+      const parsed = ActivityPageSchema.parse(body)
+      const moved = parsed.results.find((r) => r.event_type === 'task_moved')
+      expect(moved).toBeDefined()
+      expect(moved?.entity_id).toBe(task.id)
+      expect(moved?.payload.project_name).toBe('Dest')
     } finally {
       t.close()
     }

@@ -15,7 +15,12 @@ const SearchQuerySchema = z.object({
 })
 
 const MatchedInSchema = z.enum(['task', 'comment'])
-const SearchResultSchema = z.object({ task: TaskDtoSchema, matched_in: MatchedInSchema })
+const SearchResultSchema = z.object({
+  task: TaskDtoSchema,
+  matched_in: MatchedInSchema,
+  /** FTS5 snippet with `<b>…</b>` marks around matches; '' when unavailable */
+  snippet: z.string(),
+})
 const SearchResponseSchema = z.object({
   results: z.array(SearchResultSchema),
   next_cursor: z.string().nullable(),
@@ -25,6 +30,7 @@ type MatchedIn = z.infer<typeof MatchedInSchema>
 interface FtsMatch {
   id: string
   rank: number
+  snippet: string
 }
 
 /**
@@ -91,11 +97,14 @@ export const searchRoutes = () => {
     // Soft-deleted rows stay in the FTS index; filter them (and, by default, completed
     // tasks) at query time. Raw SQL: Drizzle has no FTS5/bm25 bindings.
     const completedClause = include_completed ? '' : ' AND t.completed_at IS NULL'
-    const taskSql = `SELECT t.id AS id, bm25(tasks_fts) AS rank
+    // snippet(fts, -1, …): column -1 lets SQLite pick the matching column (content or description).
+    const taskSql = `SELECT t.id AS id, bm25(tasks_fts) AS rank,
+        snippet(tasks_fts, -1, '<b>', '</b>', '…', 12) AS snippet
       FROM tasks_fts
       JOIN tasks t ON t.rowid = tasks_fts.rowid
       WHERE tasks_fts MATCH ? AND t.user_id = ? AND t.deleted_at IS NULL${completedClause}`
-    const commentSql = `SELECT t.id AS id, bm25(comments_fts) AS rank
+    const commentSql = `SELECT t.id AS id, bm25(comments_fts) AS rank,
+        snippet(comments_fts, -1, '<b>', '</b>', '…', 12) AS snippet
       FROM comments_fts
       JOIN comments cm ON cm.rowid = comments_fts.rowid
       JOIN tasks t ON t.id = cm.task_id
@@ -108,12 +117,14 @@ export const searchRoutes = () => {
       .prepare<[string, string], FtsMatch>(commentSql)
       .all(match, auth.userId)
 
-    // Keep the best (lowest = most relevant) bm25 rank per task id from each source.
-    const bestRank = (hits: FtsMatch[]): Map<string, number> => {
-      const map = new Map<string, number>()
+    // Keep the best (lowest = most relevant) bm25 rank — and its snippet — per task id per source.
+    const bestRank = (hits: FtsMatch[]): Map<string, { rank: number; snippet: string }> => {
+      const map = new Map<string, { rank: number; snippet: string }>()
       for (const hit of hits) {
         const current = map.get(hit.id)
-        if (current === undefined || hit.rank < current) map.set(hit.id, hit.rank)
+        if (current === undefined || hit.rank < current.rank) {
+          map.set(hit.id, { rank: hit.rank, snippet: hit.snippet })
+        }
       }
       return map
     }
@@ -121,10 +132,12 @@ export const searchRoutes = () => {
     const commentBest = bestRank(commentHits)
 
     // Merge: a direct task hit outranks (and replaces) a comment hit for the same task.
-    const merged: { id: string; rank: number; matchedIn: MatchedIn }[] = []
-    for (const [id, rank] of taskBest) merged.push({ id, rank, matchedIn: 'task' })
-    for (const [id, rank] of commentBest) {
-      if (!taskBest.has(id)) merged.push({ id, rank, matchedIn: 'comment' })
+    const merged: { id: string; rank: number; matchedIn: MatchedIn; snippet: string }[] = []
+    for (const [id, { rank, snippet }] of taskBest) {
+      merged.push({ id, rank, matchedIn: 'task', snippet })
+    }
+    for (const [id, { rank, snippet }] of commentBest) {
+      if (!taskBest.has(id)) merged.push({ id, rank, matchedIn: 'comment', snippet })
     }
     merged.sort((a, b) =>
       a.rank !== b.rank ? a.rank - b.rank : a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
@@ -149,10 +162,11 @@ export const searchRoutes = () => {
       )
       .all()
     const dtoById = new Map(tasksToDtos(deps.db, rows).map((dto) => [dto.id, dto]))
-    const results: { task: TaskDto; matched_in: MatchedIn }[] = []
+    const results: { task: TaskDto; matched_in: MatchedIn; snippet: string }[] = []
     for (const row of pageRows) {
       const task = dtoById.get(row.id)
-      if (task !== undefined) results.push({ task, matched_in: row.matchedIn })
+      if (task !== undefined)
+        results.push({ task, matched_in: row.matchedIn, snippet: row.snippet })
     }
     return c.json({ results, next_cursor: nextCursor }, 200)
   })

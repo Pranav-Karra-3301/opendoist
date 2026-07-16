@@ -110,110 +110,35 @@ export const CommentDtoSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
 })
+/**
+ * Read-time-denormalized activity payload (plan phase 5 Task B Step 2). `content` is the entity's
+ * primary text looked up at read time, `project_name` is joined from `project_id`, and the
+ * event-specific payload phase 3 stored lands under `meta`. Byte-compatible with core's
+ * `ActivityEventSchema.payload`, so `ActivityPageSchema` parses the response client-side.
+ */
+export const ActivityPayloadSchema = z.object({
+  content: z.string(),
+  project_name: z.string().nullable(),
+  meta: z.record(z.string(), z.unknown()),
+})
 export const ActivityDtoSchema = z.object({
   id: IdSchema,
   event_type: z.string(),
   entity_type: z.string(),
   entity_id: IdSchema,
   project_id: IdSchema.nullable(),
-  payload: z.unknown().nullable(),
+  payload: ActivityPayloadSchema,
   at: z.string(),
 })
+export type { UserSettings as Settings } from '@opendoist/core'
 /** CANONICAL user-settings wire document for GET/PATCH /api/v1/user/settings.
- *  DELIBERATE exception to the snake_case rule: this is a client-owned preferences document
- *  persisted verbatim in user_settings.settings, so keys are camelCase — phase 4 parses it as-is,
- *  phase 5 re-homes this EXACT schema in @opendoist/core as UserSettingsSchema, and phase 6 reuses
- *  autoReminderMinutes. Decisions frozen here: 8 themes + separate autoDark (NO 'system' theme value
- *  — spec §2.5), timeFormat default '12h', dateFormat 'MDY' | 'DMY' default 'MDY'.
+ *  Re-homed in @opendoist/core as `UserSettingsSchema` (plan phase 5 Task A Step 1 / Task B Step 1);
+ *  the server imports that single definition so web, server, and core share ONE schema. Byte-compatible
+ *  with the phase-3 document — same keys/enums/defaults (8 themes + separate autoDark, timeFormat
+ *  default '12h', dateFormat 'MDY' | 'DMY' default 'MDY'). DELIBERATE camelCase exception to the
+ *  snake_case wire rule: a client-owned preferences blob persisted verbatim in user_settings.settings.
  *  Later phases may not re-key, re-default, or re-declare any field. */
-export const ViewPrefsSchema = z.object({
-  groupBy: z.enum(['none', 'project', 'priority', 'label', 'date']).default('none'),
-  sortBy: z.enum(['manual', 'date', 'added', 'priority', 'alphabetical']).default('manual'),
-  sortDir: z.enum(['asc', 'desc']).default('asc'),
-  filterBy: z
-    .object({
-      priority: z.number().int().min(1).max(4).nullable().default(null),
-      label: z.string().nullable().default(null),
-      due: z.enum(['has-date', 'no-date', 'overdue']).nullable().default(null),
-    })
-    .default({ priority: null, label: null, due: null }),
-  showCompleted: z.boolean().default(false),
-})
-export const QUICK_ADD_CHIP_IDS = [
-  'date',
-  'deadline',
-  'priority',
-  'reminders',
-  'labels',
-  'duration',
-  'description',
-] as const
-export const SettingsSchema = z.object({
-  homeView: z.string().default('today'),
-  timezone: z.string().default('UTC'),
-  dateFormat: z.enum(['MDY', 'DMY']).default('MDY'),
-  timeFormat: z.enum(['12h', '24h']).default('12h'),
-  weekStart: z.number().int().min(1).max(7).default(1),
-  nextWeekDay: z.number().int().min(1).max(7).default(1),
-  weekendDay: z.number().int().min(1).max(7).default(6),
-  smartDate: z.boolean().default(true),
-  theme: z
-    .enum([
-      'kale',
-      'todoist',
-      'dark',
-      'moonstone',
-      'tangerine',
-      'blueberry',
-      'lavender',
-      'raspberry',
-    ])
-    .default('kale'),
-  autoDark: z.boolean().default(true),
-  dailyGoal: z.number().int().min(0).max(100).default(5),
-  weeklyGoal: z.number().int().min(0).max(700).default(25),
-  daysOff: z.array(z.number().int().min(1).max(7)).default([6, 7]),
-  vacationMode: z.boolean().default(false),
-  karmaEnabled: z.boolean().default(true),
-  /** minutes before a timed due for the automatic reminder; 0 = at due time; null = off (phase 6 consumes) */
-  autoReminderMinutes: z.number().int().min(0).max(10080).nullable().default(30),
-  notifications: z
-    .object({
-      push: z.boolean().default(true),
-      ntfy: z.boolean().default(false),
-      gotify: z.boolean().default(false),
-      webhook: z.boolean().default(false),
-    })
-    .default({ push: true, ntfy: false, gotify: false, webhook: false }),
-  sidebar: z
-    .object({
-      showInbox: z.boolean().default(true),
-      showToday: z.boolean().default(true),
-      showUpcoming: z.boolean().default(true),
-      showFiltersLabels: z.boolean().default(true),
-      showReporting: z.boolean().default(true),
-      showCounts: z.boolean().default(true),
-    })
-    .default({
-      showInbox: true,
-      showToday: true,
-      showUpcoming: true,
-      showFiltersLabels: true,
-      showReporting: true,
-      showCounts: true,
-    }),
-  quickAdd: z
-    .object({
-      chips: z
-        .array(z.object({ id: z.enum(QUICK_ADD_CHIP_IDS), visible: z.boolean() }))
-        .default(QUICK_ADD_CHIP_IDS.map((id) => ({ id, visible: true }))),
-      labeled: z.boolean().default(true),
-    })
-    .default({ chips: QUICK_ADD_CHIP_IDS.map((id) => ({ id, visible: true })), labeled: true }),
-  /** keyed by view key ('today', 'project:<id>', …); PATCH semantics: per-key replace */
-  viewPrefs: z.record(z.string(), ViewPrefsSchema).default({}),
-})
-export type Settings = z.infer<typeof SettingsSchema>
+export { UserSettingsSchema as SettingsSchema } from '@opendoist/core'
 export const DueInputSchema = z
   .object({
     string: z.string().optional(),

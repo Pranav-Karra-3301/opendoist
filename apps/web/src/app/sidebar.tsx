@@ -1,9 +1,19 @@
 import { Link } from '@tanstack/react-router'
-import { CalendarCheck, CalendarDays, Inbox, type LucideIcon, Plus } from 'lucide-react'
+import {
+  Activity,
+  CalendarCheck,
+  CalendarDays,
+  Filter,
+  Inbox,
+  type LucideIcon,
+  Plus,
+} from 'lucide-react'
 import { type PointerEvent as ReactPointerEvent, useState } from 'react'
+import { useUserSettings } from '@/features/settings/useSettings'
 import { cn } from '@/lib/utils'
 import { useUiStore } from '@/stores/ui'
 import { useViewCounts } from './counts'
+import { isNavVisible } from './sidebar-nav'
 import { SidebarProjects } from './sidebar-projects'
 
 const SIDEBAR_DEFAULT = 280
@@ -86,6 +96,8 @@ export function Sidebar() {
   const setQuickAddOpen = useUiStore((s) => s.setQuickAddOpen)
   const [dragging, setDragging] = useState(false)
   const counts = useViewCounts()
+  const { settings } = useUserSettings()
+  const sidebar = settings.sidebar
 
   return (
     <aside
@@ -115,46 +127,76 @@ export function Sidebar() {
             Add task
           </button>
           <nav className="mt-1 flex flex-col gap-px">
-            <Link
-              to="/inbox"
-              className={NAV_LINK_CLASS}
-              activeProps={NAV_ACTIVE}
-              inactiveProps={NAV_INACTIVE}
-            >
-              {({ isActive }) => (
-                <NavRowContent
-                  icon={Inbox}
-                  label="Inbox"
-                  count={counts.inbox}
-                  isActive={isActive}
-                />
-              )}
-            </Link>
-            <Link
-              to="/today"
-              className={NAV_LINK_CLASS}
-              activeProps={NAV_ACTIVE}
-              inactiveProps={NAV_INACTIVE}
-            >
-              {({ isActive }) => (
-                <NavRowContent
-                  icon={CalendarCheck}
-                  label="Today"
-                  count={counts.today}
-                  isActive={isActive}
-                />
-              )}
-            </Link>
-            <Link
-              to="/upcoming"
-              className={NAV_LINK_CLASS}
-              activeProps={NAV_ACTIVE}
-              inactiveProps={NAV_INACTIVE}
-            >
-              {({ isActive }) => (
-                <NavRowContent icon={CalendarDays} label="Upcoming" isActive={isActive} />
-              )}
-            </Link>
+            {isNavVisible('inbox', sidebar) && (
+              <Link
+                to="/inbox"
+                className={NAV_LINK_CLASS}
+                activeProps={NAV_ACTIVE}
+                inactiveProps={NAV_INACTIVE}
+              >
+                {({ isActive }) => (
+                  <NavRowContent
+                    icon={Inbox}
+                    label="Inbox"
+                    count={sidebar.showCounts ? counts.inbox : undefined}
+                    isActive={isActive}
+                  />
+                )}
+              </Link>
+            )}
+            {isNavVisible('today', sidebar) && (
+              <Link
+                to="/today"
+                className={NAV_LINK_CLASS}
+                activeProps={NAV_ACTIVE}
+                inactiveProps={NAV_INACTIVE}
+              >
+                {({ isActive }) => (
+                  <NavRowContent
+                    icon={CalendarCheck}
+                    label="Today"
+                    count={sidebar.showCounts ? counts.today : undefined}
+                    isActive={isActive}
+                  />
+                )}
+              </Link>
+            )}
+            {isNavVisible('upcoming', sidebar) && (
+              <Link
+                to="/upcoming"
+                className={NAV_LINK_CLASS}
+                activeProps={NAV_ACTIVE}
+                inactiveProps={NAV_INACTIVE}
+              >
+                {({ isActive }) => (
+                  <NavRowContent icon={CalendarDays} label="Upcoming" isActive={isActive} />
+                )}
+              </Link>
+            )}
+            {isNavVisible('filters-labels', sidebar) && (
+              <Link
+                to="/filters-labels"
+                className={NAV_LINK_CLASS}
+                activeProps={NAV_ACTIVE}
+                inactiveProps={NAV_INACTIVE}
+              >
+                {({ isActive }) => (
+                  <NavRowContent icon={Filter} label="Filters & Labels" isActive={isActive} />
+                )}
+              </Link>
+            )}
+            {isNavVisible('reporting', sidebar) && (
+              <Link
+                to="/reporting"
+                className={NAV_LINK_CLASS}
+                activeProps={NAV_ACTIVE}
+                inactiveProps={NAV_INACTIVE}
+              >
+                {({ isActive }) => (
+                  <NavRowContent icon={Activity} label="Reporting" isActive={isActive} />
+                )}
+              </Link>
+            )}
           </nav>
         </div>
         <div className="mt-1 min-h-0 flex-1 overflow-y-auto px-2 pb-6">

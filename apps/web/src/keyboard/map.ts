@@ -9,8 +9,9 @@
  *     window management, macOS `Cmd+1..5` — the PWA has no OS-level hooks.
  *   - Sort keys `D/P/N/R`, layout `Shift+V`/`W`, and the whole Display menu — phase 5.
  *   - Zoom `Cmd+±/0`, Print `Cmd+P`, `Cmd+Alt+0` collapse-all — browser/native concerns.
- *   - Extra navigation: `Shift+G` (open in project), `Tab` focus cycling, `→`/`←` focus, the
- *     `O`-sequences (`o>p/h/n/u/s/t`) and `g>l`/`g>p`/`g>/`/`g>a`/`g>v` — remaining views land in phase 5.
+ *   - Extra navigation: `Shift+G` (open in project), `Tab` focus cycling, `→`/`←` focus, and the
+ *     still-unbuilt `o>h`/`o>n`/`o>u` and `g>p`/`g>/` sequences. Phase 5 lands the rest: `g>v`/`g>l`
+ *     (Filters & Labels), `g>a`/`o>p` (Reporting), `o>s`/`o>t` (Settings) — see the Navigation group.
  *   - In-editor: `Cmd+E` edit, `Cmd+↑/↓` move-while-editing, `Cmd+V` paste-as-task, `Shift+Enter`.
  *
  * `keys` is the react-hotkeys-hook binding string (default split `+`, sequence `>`, list
@@ -75,6 +76,34 @@ export const SHORTCUTS = [
     display: 'G then U',
     group: 'Navigation',
     desc: 'Go to Upcoming',
+  },
+  {
+    id: 'go-filters-labels',
+    keys: 'g>v, g>l',
+    display: 'G then V',
+    group: 'Navigation',
+    desc: 'Go to Filters & Labels',
+  },
+  {
+    id: 'go-reporting',
+    keys: 'g>a, o>p',
+    display: 'G then A',
+    group: 'Navigation',
+    desc: 'Go to Reporting',
+  },
+  {
+    id: 'open-settings',
+    keys: 'o>s',
+    display: 'O then S',
+    group: 'Navigation',
+    desc: 'Go to Settings',
+  },
+  {
+    id: 'open-theme',
+    keys: 'o>t',
+    display: 'O then T',
+    group: 'Navigation',
+    desc: 'Go to Theme settings',
   },
   {
     id: 'focus-down',

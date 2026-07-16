@@ -1,12 +1,17 @@
 import { Check, Paintbrush } from 'lucide-react'
-import { useState } from 'react'
 import {
   DropdownMenuItem,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu'
-import { applyTheme, getTheme, THEME_CHOICES, type ThemeChoice } from '@/lib/theme'
+import { useUserSettings } from '@/features/settings/useSettings'
+import {
+  settingsPatchForChoice,
+  THEME_CHOICES,
+  type ThemeChoice,
+  themeChoiceFromSettings,
+} from '@/lib/theme'
 import { cn } from '@/lib/utils'
 
 const THEME_LABELS: Record<ThemeChoice, string> = {
@@ -22,17 +27,14 @@ const THEME_LABELS: Record<ThemeChoice, string> = {
 }
 
 /**
- * "Theme ▸" submenu for the user menu — the 9 choices from `lib/theme`, a check on
- * the active one, applying + persisting on select. (The command palette also applies
- * themes; the check reflects this menu's own last selection, refreshed from storage
- * on mount.)
+ * "Theme ▸" submenu for the user menu — the 9 choices from `lib/theme`, a check on the
+ * active one. Phase 5 makes the account settings the single source of truth: selecting
+ * writes `theme`/`autoDark` through the optimistic settings PATCH and `useThemeSync`
+ * (mounted in AppLayout) repaints + mirrors to localStorage for the pre-hydration script.
  */
 export function ThemeMenu() {
-  const [theme, setTheme] = useState<ThemeChoice>(() => getTheme())
-  const select = (choice: ThemeChoice) => {
-    applyTheme(choice)
-    setTheme(choice)
-  }
+  const { settings, update } = useUserSettings()
+  const active = themeChoiceFromSettings(settings)
 
   return (
     <DropdownMenuSub>
@@ -42,11 +44,11 @@ export function ThemeMenu() {
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent className="min-w-[160px]">
         {THEME_CHOICES.map((choice) => (
-          <DropdownMenuItem key={choice} onClick={() => select(choice)}>
+          <DropdownMenuItem key={choice} onClick={() => update(settingsPatchForChoice(choice))}>
             <Check
               size={16}
               aria-hidden="true"
-              className={cn(theme === choice ? 'opacity-100' : 'opacity-0')}
+              className={cn(active === choice ? 'opacity-100' : 'opacity-0')}
             />
             {THEME_LABELS[choice]}
           </DropdownMenuItem>

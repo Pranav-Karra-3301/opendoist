@@ -156,3 +156,45 @@ describe('sections router', () => {
     })
   })
 })
+
+describe('sections restore (undo)', () => {
+  it('delete detaches its tasks; restore re-attaches them to the section', async () => {
+    await withApp(async (app) => {
+      const project = await createProject(app, 'P')
+      const section = await createSection(app, project, 'Doing')
+      const task = await json<{ id: string; section_id: string | null }>(
+        await app.post('/api/v1/tasks', {
+          content: 'work',
+          project_id: project,
+          section_id: section.id,
+        }),
+      )
+      expect(task.section_id).toBe(section.id)
+
+      expect((await app.del(`/api/v1/sections/${section.id}`)).status).toBe(204)
+      expect((await listSections(app, project)).some((s) => s.id === section.id)).toBe(false)
+      const detached = await json<{ section_id: string | null }>(
+        await app.get(`/api/v1/tasks/${task.id}`),
+      )
+      expect(detached.section_id).toBeNull()
+
+      const restore = await app.post(`/api/v1/sections/${section.id}/restore`)
+      expect(restore.status).toBe(200)
+      expect(await json<{ ok: boolean }>(restore)).toEqual({ ok: true })
+
+      expect((await listSections(app, project)).some((s) => s.id === section.id)).toBe(true)
+      const reattached = await json<{ section_id: string | null }>(
+        await app.get(`/api/v1/tasks/${task.id}`),
+      )
+      expect(reattached.section_id).toBe(section.id)
+    })
+  })
+
+  it('restoring a live (non-deleted) section id is a 404', async () => {
+    await withApp(async (app) => {
+      const project = await createProject(app, 'P')
+      const section = await createSection(app, project, 'Live')
+      expect((await app.post(`/api/v1/sections/${section.id}/restore`)).status).toBe(404)
+    })
+  })
+})

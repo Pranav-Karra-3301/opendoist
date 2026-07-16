@@ -371,3 +371,47 @@ it("rejects moving a task into another tenant's section", async () => {
   expect(res.status).toBe(400)
   expect((await json<{ title: string }>(res)).title).toBe('invalid move')
 })
+
+it('restores a soft-deleted task and its whole subtree via /restore', async () => {
+  const t = await make()
+  const parent = await json<TaskDto>(await t.post('/api/v1/tasks', { content: 'parent' }))
+  const child = await json<TaskDto>(
+    await t.post('/api/v1/tasks', { content: 'child', parent_id: parent.id }),
+  )
+  expect((await t.del(`/api/v1/tasks/${parent.id}`)).status).toBe(204)
+
+  const gone = await json<TaskList>(await t.get('/api/v1/tasks'))
+  expect(gone.results.some((r) => r.id === parent.id)).toBe(false)
+  expect(gone.results.some((r) => r.id === child.id)).toBe(false)
+
+  const res = await t.post(`/api/v1/tasks/${parent.id}/restore`)
+  expect(res.status).toBe(200)
+  expect(await json<{ ok: boolean }>(res)).toEqual({ ok: true })
+
+  const back = await json<TaskList>(await t.get('/api/v1/tasks'))
+  expect(back.results.some((r) => r.id === parent.id)).toBe(true)
+  expect(back.results.some((r) => r.id === child.id)).toBe(true)
+})
+
+it('restoring a live (non-deleted) task id is a 404', async () => {
+  const t = await make()
+  const task = await json<TaskDto>(await t.post('/api/v1/tasks', { content: 'live' }))
+  expect((await t.post(`/api/v1/tasks/${task.id}/restore`)).status).toBe(404)
+})
+
+it('lists completed tasks and filters by since/until on completed_at', async () => {
+  const t = await make()
+  const a = await json<TaskDto>(await t.post('/api/v1/tasks', { content: 'done A' }))
+  expect((await t.post(`/api/v1/tasks/${a.id}/close`)).status).toBe(200)
+
+  const all = await json<TaskList>(await t.get('/api/v1/tasks/completed'))
+  expect(all.results.some((r) => r.id === a.id)).toBe(true)
+
+  // completed_at is "now": a far-future `since` excludes it, an ancient `since` keeps it.
+  const future = await json<TaskList>(await t.get('/api/v1/tasks/completed?since=2999-01-01'))
+  expect(future.results.some((r) => r.id === a.id)).toBe(false)
+  const past = await json<TaskList>(await t.get('/api/v1/tasks/completed?since=2000-01-01'))
+  expect(past.results.some((r) => r.id === a.id)).toBe(true)
+  const untilPast = await json<TaskList>(await t.get('/api/v1/tasks/completed?until=2000-01-01'))
+  expect(untilPast.results.some((r) => r.id === a.id)).toBe(false)
+})

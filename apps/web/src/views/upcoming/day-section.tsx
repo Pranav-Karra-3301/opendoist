@@ -16,9 +16,11 @@ export interface DaySectionProps {
   date: string
   tasks: Task[]
   today: string
+  /** false while Display prefs deviate (sorted/filtered) — disables per-day drag reorder. */
+  sortable?: boolean
 }
 
-export function DaySection({ date, tasks, today }: DaySectionProps) {
+export function DaySection({ date, tasks, today, sortable = true }: DaySectionProps) {
   const { setNodeRef, isOver } = useDroppable({ id: `day-${date}` })
   const isToday = date === today
 
@@ -41,7 +43,7 @@ export function DaySection({ date, tasks, today }: DaySectionProps) {
         <span className="text-text-secondary">{weekdayLongLabel(date)}</span>
       </h2>
       <div className={cn('min-h-2 rounded-lg transition-colors', isOver && 'bg-accent-soft')}>
-        {tasks.length > 0 && <TaskList tasks={tasks} groupId={`day-${date}`} sortable />}
+        {tasks.length > 0 && <TaskList tasks={tasks} groupId={`day-${date}`} sortable={sortable} />}
         <InlineAdd
           defaults={{ due: { date, time: null, string: date, recurrence: null } }}
           placement="bottom"

@@ -204,6 +204,33 @@ export function GlobalHotkeys(): ReactElement {
   useHotkeys(goTodayAlias, goToday, seqOpts)
   useHotkeys(shortcutKeys('go-inbox'), () => void navigate({ to: '/inbox' }), seqOpts)
   useHotkeys(shortcutKeys('go-upcoming'), () => void navigate({ to: '/upcoming' }), seqOpts)
+
+  // Phase-5 destinations. `g>v`/`g>l` both anchor Filters & Labels and `g>a`/`o>p` both anchor
+  // Reporting — like go-today, each aliased chord is bound as its own call (v5 can't hold two
+  // `>`-sequences in one binding string). The `o>` prefix feeds SEQUENCE_PREFIXES automatically.
+  const goFiltersLabels = useCallback(() => void navigate({ to: '/filters-labels' }), [navigate])
+  const goReporting = useCallback(() => void navigate({ to: '/reporting' }), [navigate])
+  const goSettings = useCallback(
+    () => void navigate({ to: '/settings/$page', params: { page: 'account' } }),
+    [navigate],
+  )
+  const goThemeSettings = useCallback(
+    () => void navigate({ to: '/settings/$page', params: { page: 'theme' } }),
+    [navigate],
+  )
+  const [filtersChord = 'g>v', filtersAlias = 'g>l'] = shortcutKeys('go-filters-labels')
+    .split(',')
+    .map((chord) => chord.trim())
+  useHotkeys(filtersChord, goFiltersLabels, seqOpts)
+  useHotkeys(filtersAlias, goFiltersLabels, seqOpts)
+  const [reportChord = 'g>a', reportAlias = 'o>p'] = shortcutKeys('go-reporting')
+    .split(',')
+    .map((chord) => chord.trim())
+  useHotkeys(reportChord, goReporting, seqOpts)
+  useHotkeys(reportAlias, goReporting, seqOpts)
+  useHotkeys(shortcutKeys('open-settings'), goSettings, seqOpts)
+  useHotkeys(shortcutKeys('open-theme'), goThemeSettings, seqOpts)
+
   useHotkeys(shortcutKeys('focus-down'), focusDown, rowOpts)
   useHotkeys(shortcutKeys('focus-up'), focusUp, rowOpts)
 

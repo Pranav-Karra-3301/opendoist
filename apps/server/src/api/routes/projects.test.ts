@@ -233,3 +233,49 @@ describe('projects router', () => {
     })
   })
 })
+
+describe('projects restore (undo)', () => {
+  it('delete project with tasks → restore brings the project, sections and tasks back', async () => {
+    await withApp(async (app) => {
+      const proj = await json<ProjectDto>(await app.post('/api/v1/projects', { name: 'Trip' }))
+      const section = await json<{ id: string }>(
+        await app.post('/api/v1/sections', { project_id: proj.id, name: 'Todo' }),
+      )
+      const task = await json<{ id: string }>(
+        await app.post('/api/v1/tasks', {
+          content: 'Book flights',
+          project_id: proj.id,
+          section_id: section.id,
+        }),
+      )
+
+      expect((await app.del(`/api/v1/projects/${proj.id}`)).status).toBe(204)
+      expect((await listProjects(app)).some((p) => p.id === proj.id)).toBe(false)
+      const goneTasks = await json<Envelope<{ id: string }>>(
+        await app.get(`/api/v1/tasks?project_id=${proj.id}`),
+      )
+      expect(goneTasks.results.some((r) => r.id === task.id)).toBe(false)
+
+      const restore = await app.post(`/api/v1/projects/${proj.id}/restore`)
+      expect(restore.status).toBe(200)
+      expect(await json<{ ok: boolean }>(restore)).toEqual({ ok: true })
+
+      expect((await listProjects(app)).some((p) => p.id === proj.id)).toBe(true)
+      const sections = await json<Envelope<{ id: string }>>(
+        await app.get(`/api/v1/sections?project_id=${proj.id}`),
+      )
+      expect(sections.results.some((s) => s.id === section.id)).toBe(true)
+      const backTasks = await json<Envelope<{ id: string }>>(
+        await app.get(`/api/v1/tasks?project_id=${proj.id}`),
+      )
+      expect(backTasks.results.some((r) => r.id === task.id)).toBe(true)
+    })
+  })
+
+  it('restoring a live (non-deleted) project id is a 404', async () => {
+    await withApp(async (app) => {
+      const proj = await json<ProjectDto>(await app.post('/api/v1/projects', { name: 'Live' }))
+      expect((await app.post(`/api/v1/projects/${proj.id}/restore`)).status).toBe(404)
+    })
+  })
+})

@@ -1,5 +1,5 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
-import { and, eq, inArray, isNull, max } from 'drizzle-orm'
+import { and, eq, inArray, isNotNull, isNull, max } from 'drizzle-orm'
 import type { AppEnv } from '../../app'
 import type { Db } from '../../db/db'
 import { projects, sections, tasks } from '../../db/schema'
@@ -100,6 +100,7 @@ const ProjectListSchema = z.object({
   results: z.array(ProjectDtoSchema),
   next_cursor: z.string().nullable(),
 })
+const OkSchema = z.object({ ok: z.boolean() })
 const CreateProjectSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
@@ -212,6 +213,21 @@ const unarchiveRoute = createRoute({
       content: { 'application/json': { schema: ProjectDtoSchema } },
     },
     ...withForbidden,
+  },
+})
+const restoreRoute = createRoute({
+  method: 'post',
+  path: '/projects/{id}/restore',
+  tags: ['projects'],
+  summary: 'Restore a soft-deleted project and its cascade',
+  description:
+    'Clears `deleted_at` on the project and every section/task deleted in the same cascade ' +
+    '(delete stamps an identical `deleted_at`). Powers the delete-project undo.',
+  security,
+  request: { params: IdParam },
+  responses: {
+    200: { description: 'Restored', content: { 'application/json': { schema: OkSchema } } },
+    ...withNotFound,
   },
 })
 
@@ -486,6 +502,47 @@ export const projectsRoutes = () => {
     const updated = getOwnedProject(db, auth.userId, id)
     if (updated === undefined) return problem(c, 404, 'not found')
     return c.json(projectToDto(updated), 200)
+  })
+
+  app.openapi(restoreRoute, (c) => {
+    const auth = c.get('auth')
+    if (!auth) return problem(c, 401, 'unauthorized')
+    const { db, bus } = c.get('deps')
+    const { id } = c.req.valid('param')
+    const project = db
+      .select()
+      .from(projects)
+      .where(
+        and(eq(projects.id, id), eq(projects.userId, auth.userId), isNotNull(projects.deletedAt)),
+      )
+      .get()
+    if (project === undefined || project.deletedAt === null) return problem(c, 404, 'not found')
+    const marker = project.deletedAt
+
+    // The delete handler stamps projects + their sections + their tasks with one identical
+    // `deleted_at`, so the marker restores exactly that cascade.
+    const now = nowIso()
+    db.update(projects)
+      .set({ deletedAt: null, updatedAt: now })
+      .where(and(eq(projects.userId, auth.userId), eq(projects.deletedAt, marker)))
+      .run()
+    db.update(sections)
+      .set({ deletedAt: null, updatedAt: now })
+      .where(and(eq(sections.userId, auth.userId), eq(sections.deletedAt, marker)))
+      .run()
+    db.update(tasks)
+      .set({ deletedAt: null, updatedAt: now })
+      .where(and(eq(tasks.userId, auth.userId), eq(tasks.deletedAt, marker)))
+      .run()
+    logActivity(db, {
+      userId: auth.userId,
+      eventType: 'project_restored',
+      entityType: 'project',
+      entityId: id,
+      projectId: id,
+    })
+    bus.publish({ userId: auth.userId, type: 'project.restored', entity: 'project', ids: [id] })
+    return c.json({ ok: true }, 200)
   })
 
   return app

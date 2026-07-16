@@ -9,6 +9,7 @@
 import type { Weekday } from '@opendoist/core'
 import { addDaysIso } from '@opendoist/core'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import {
@@ -28,6 +29,8 @@ export interface WeekStripProps {
   onPrevWeek: () => void
   onNextWeek: () => void
   onToday: () => void
+  /** Toolbar slot rendered left of the pager — Upcoming's Display menu (Task H). */
+  actions?: ReactNode
 }
 
 export function WeekStrip({
@@ -39,6 +42,7 @@ export function WeekStrip({
   onPrevWeek,
   onNextWeek,
   onToday,
+  actions,
 }: WeekStripProps) {
   const weekStartDate = startOfWeek(anchor, weekStart)
   const cells = Array.from({ length: 7 }, (_, i) => addDaysIso(weekStartDate, i))
@@ -50,6 +54,7 @@ export function WeekStrip({
           {monthYearLabel(anchor)}
         </h1>
         <div className="flex shrink-0 items-center gap-1">
+          {actions}
           <Button variant="ghost" size="sm" onClick={onToday}>
             Today
           </Button>
