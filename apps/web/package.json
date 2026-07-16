@@ -1,0 +1,26 @@
+{
+  "name": "@opendoist/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "node -e \"console.log('web: Playwright arrives in phase 4')\""
+  },
+  "dependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "@opendoist/core": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "tailwindcss": "catalog:",
+    "@tailwindcss/vite": "catalog:",
+    "typescript": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
+  }
+}

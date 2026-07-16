@@ -1,0 +1,28 @@
+{
+  "name": "@opendoist/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build": "node -e \"console.log('core: source-consumed workspace package, no build step')\""
+  },
+  "dependencies": {
+    "zod": "catalog:",
+    "chrono-node": "catalog:",
+    "date-fns": "catalog:",
+    "@date-fns/tz": "catalog:",
+    "temporal-polyfill": "catalog:",
+    "rrule-temporal": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "fast-check": "catalog:",
+    "@types/node": "catalog:"
+  }
+}
