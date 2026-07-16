@@ -52,10 +52,15 @@ The component rules below are copied verbatim from the research dossier (§2.9, 
 | **Dialog / quick-add** | radius 10px; `shadow-dialog`; dark adds 1px `#383838` border; quick-add width ≤ 560px, top-aligned |
 | **Tooltip/toast** | bg `surface-overlay`, white text, radius 5px (toast 10px), `shadow-toast`, z 1000/400 |
 | **Focus ring** | `outline: 2px solid var(--color-focus-ring); outline-offset: 2px` (+ optional outer glow `focus-ring-outer`); always blue, all themes; `:focus-visible` only |
-| **Icons** | Lucide: 24×24 grid, `stroke: currentColor`, default `stroke-width: 2`, round caps/joins ([defaults](https://github.com/lucide-icons/lucide/blob/main/packages/lucide-react/src/defaultAttributes.ts)). Sizes: 16 inline/meta, 18 row actions, 20 toolbar, 24 sidebar/nav. Use `strokeWidth={1.75}` at 20–24 to match Todoist's lighter line, 2 at 16–18 (or `absoluteStrokeWidth`). Icon color `text-secondary`, hover `text-primary`; never accent except active nav |
+| **Icons** | Lucide: 24×24 grid, `stroke: currentColor`, default `stroke-width: 2`, round caps/joins ([defaults](https://github.com/lucide-icons/lucide/blob/main/packages/lucide-react/src/defaultAttributes.ts)). Sizes: 16 inline/meta, 18 row actions, 20 toolbar, 24 sidebar/nav — where "sidebar/nav" means icon-only nav rails; the sidebar's 32px *text* rows use 20 (recorded deviation, phase-4 plan Task D). Use `strokeWidth={1.75}` at 20–24 to match Todoist's lighter line, 2 at 16–18 (or `absoluteStrokeWidth`). Icon color `text-secondary`, hover `text-primary`; never accent except active nav |
 | **Labels/projects** | color dot 12px circle in `--color-palette-*`; label chip text 12px in palette color; palette tokens auto-brighten in dark |
 | **Dates** | today/tomorrow/weekend/next-week/overdue tokens; 12px + 16px icon |
 | **Motion** | hover fades 150ms ease-in; state/color 250–300ms `ease-standard`; checkbox 250ms; respect `prefers-reduced-motion` |
+
+Recorded deviations from Todoist parity (per the rule above — annotated here in the same PR that introduced them):
+
+- `--od-text-tertiary` is **`#707070`** in light themes, not Todoist's `#999999`: `#999` is 2.7–2.8:1 on white and fails both WCAG AA (≥4.5:1) and the spec's axe gate; `#707070` is the nearest passing gray (see the comment in `tokens.css`). `--od-p4` stays `#999999`, preserving checkbox/priority-flag parity.
+- Sidebar nav icons (Inbox/Today/Upcoming) render at **20px** (stroke 1.75) inside the 32px text rows; the Icons row's "24 sidebar/nav" size applies to icon-only nav rails, which the app does not have yet.
 
 ## License
 

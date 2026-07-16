@@ -260,7 +260,7 @@ function CalendarIcon() {
   )
 }
 
-export default function App() {
+export function TokenShowcase() {
   const [theme, setTheme] = useState<ThemeChoice>(readStoredTheme)
   const [computed, setComputed] = useState<Record<string, string>>({})
 
