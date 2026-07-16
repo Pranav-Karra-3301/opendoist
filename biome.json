@@ -1,6 +1,6 @@
 {
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
-  "files": { "includes": ["**", "!assets"] },
+  "files": { "includes": ["**", "!assets", "!apps/server/drizzle"] },
   "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },
   "css": { "parser": { "tailwindDirectives": true } },
   "linter": {

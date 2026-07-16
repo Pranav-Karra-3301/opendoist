@@ -2,6 +2,10 @@ packages:
   - apps/*
   - packages/*
 
+allowBuilds:
+  better-sqlite3: true
+  esbuild: true
+
 catalog:
   typescript: ^5.9.0
   vitest: ^4.1.10
@@ -23,6 +27,20 @@ catalog:
   '@vitejs/plugin-react': ^6.0.0
   tailwindcss: ^4.3.0
   '@tailwindcss/vite': ^4.3.0
+  hono: ^4.12.30
+  '@hono/node-server': ^2.0.9
+  '@hono/zod-openapi': ^1.5.1
+  '@scalar/hono-api-reference': ^0.11.10
+  drizzle-orm: ^0.45.2
+  drizzle-kit: ^0.31.10
+  better-sqlite3: ^12.11.1
+  '@types/better-sqlite3': ^7.6.13
+  better-auth: ^1.6.23
+  '@better-auth/api-key': ^1.6.23
+  '@node-rs/argon2': ^2.0.2
+  pino: ^9.13.1
+  pino-pretty: ^13.1.2
+  tsx: ^4.20.6
 
 minimumReleaseAgeExclude:
   - '@biomejs/biome@2.5.4'
@@ -34,3 +52,9 @@ minimumReleaseAgeExclude:
   - '@biomejs/cli-linux-x64@2.5.4'
   - '@biomejs/cli-win32-arm64@2.5.4'
   - '@biomejs/cli-win32-x64@2.5.4'
+  - '@scalar/client-side-rendering@0.3.3'
+  - '@scalar/helpers@0.9.1'
+  - '@scalar/hono-api-reference@0.11.10'
+  - '@scalar/schemas@0.7.3'
+  - '@scalar/types@0.16.3'
+  - '@scalar/validation@0.6.1'

@@ -1,0 +1,38 @@
+{
+  "name": "@opendoist/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "OPENDOIST_DATA_DIR=./data tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build": "node -e \"console.log('server: tsx-run workspace package, no build step')\"",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@opendoist/core": "workspace:*",
+    "hono": "catalog:",
+    "@hono/node-server": "catalog:",
+    "@hono/zod-openapi": "catalog:",
+    "@scalar/hono-api-reference": "catalog:",
+    "drizzle-orm": "catalog:",
+    "better-sqlite3": "catalog:",
+    "better-auth": "catalog:",
+    "@better-auth/api-key": "catalog:",
+    "@node-rs/argon2": "catalog:",
+    "pino": "catalog:",
+    "nanoid": "catalog:",
+    "zod": "catalog:",
+    "tsx": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "drizzle-kit": "catalog:",
+    "@types/better-sqlite3": "catalog:",
+    "@types/node": "catalog:",
+    "pino-pretty": "catalog:"
+  }
+}
