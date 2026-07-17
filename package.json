@@ -1,6 +1,7 @@
 {
   "name": "opendoist-monorepo",
   "private": true,
+  "packageManager": "pnpm@10.34.5+sha512.pO4F8vc2WCVb1qiYWcBlpFwopX2u+uLIk6Fo7itzFow3uR6D5X6mdlStA/AwMXRkMOi84442LgQmBfuKvIAZLg==",
   "engines": {
     "node": ">=22"
   },
@@ -11,11 +12,18 @@
     "test": "pnpm -r test",
     "build": "pnpm -r build",
     "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
-    "changeset": "changeset"
+    "changeset": "changeset",
+    "icons": "node scripts/generate-icons.mjs",
+    "seed": "pnpm --filter @opendoist/server seed",
+    "screenshots": "node scripts/capture-screenshots.mjs",
+    "check:bundle": "node scripts/check-bundle.mjs",
+    "smoke:docker": "bash scripts/smoke-docker.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@changesets/cli": "catalog:",
+    "sharp": "catalog:",
     "typescript": "catalog:"
-  }
+  },
+  "version": "0.1.0"
 }
