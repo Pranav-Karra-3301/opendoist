@@ -23,11 +23,17 @@ const ARGON2 = { memoryCost: 65536, timeCost: 3, parallelism: 4 }
  */
 export function createAuth(db: Db, config: Config, sessionSecret: string) {
   const baseURL = config.publicUrl ?? `http://localhost:${config.port}`
+  // In dev the SPA is served by a separate Vite dev server (a different origin) and the
+  // browser's requests carry that origin; the server bundles no SPA (webDistDir === null),
+  // so trust the Vite dev origins there. In production the server serves the SPA itself, so
+  // the origin equals baseURL and only baseURL is trusted.
+  const devOrigins =
+    config.webDistDir === null ? ['http://localhost:5173', 'http://127.0.0.1:5173'] : []
   return betterAuth({
     baseURL,
     basePath: '/api/auth',
     secret: sessionSecret,
-    trustedOrigins: [baseURL],
+    trustedOrigins: [baseURL, ...devOrigins],
     database: drizzleAdapter(db, { provider: 'sqlite', schema: authSchema }),
     emailAndPassword: {
       enabled: true,
