@@ -5,8 +5,9 @@
 node_modules/
 dist/
 
-# local data
+# local data (root /data and any dev data dir, e.g. apps/server/data from `pnpm dev`)
 /data/
+data/
 *.local
 .env
 
