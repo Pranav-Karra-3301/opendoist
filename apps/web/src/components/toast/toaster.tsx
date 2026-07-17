@@ -1,15 +1,29 @@
 /**
- * Toaster — fixed bottom-left stack of transient info/error toasts (toasts store) plus
- * 10 s undo entries (undo store). Mounted once by the app layout. Newest sits nearest
- * the corner; the stack grows upward. Task P.
+ * Toaster — fixed bottom-left stack of transient info/error message toasts (toasts store).
+ * Mounted once by the app layout. Newest sits nearest the corner; the stack grows upward.
+ *
+ * Undo toasts do NOT render here: every undoable action — single-task ops (hooks/tasks.ts),
+ * dialog undos, and the bulk multi-select/overdue actions — pushes through the single-slot
+ * undo store (features/undo/store.ts) and renders via UndoHost, so there is ONE undo system.
+ * (Phase 4's parallel `stores/undo.ts` + drain-bar toast were retired by the phase-10 review.)
  */
 import { CircleAlert, Info, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { type Toast, useToastStore } from '@/stores/toasts'
-import { useUndoStore } from '@/stores/undo'
-import { UndoToast, useToastEnter } from './undo-toast'
 
 const TOAST_ICON = { info: Info, error: CircleAlert } as const
+
+/** 150 ms fade/slide-in via a mount toggle (no keyframes plugin in this repo); reduced
+ *  motion collapses it to an instant appearance through the `motion-reduce:` classes. */
+function useToastEnter(): boolean {
+  const [entered, setEntered] = useState(false)
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setEntered(true))
+    return () => cancelAnimationFrame(raf)
+  }, [])
+  return entered
+}
 
 function MessageToast({ toast }: { toast: Toast }) {
   const dismiss = useToastStore((s) => s.dismiss)
@@ -45,15 +59,11 @@ function MessageToast({ toast }: { toast: Toast }) {
 
 export function Toaster() {
   const toasts = useToastStore((s) => s.toasts)
-  const entries = useUndoStore((s) => s.entries)
-  if (toasts.length === 0 && entries.length === 0) return null
+  if (toasts.length === 0) return null
   return (
     <div className="pointer-events-none fixed bottom-4 left-4 z-[var(--z-toast)] flex flex-col gap-2">
       {toasts.map((t) => (
         <MessageToast key={t.id} toast={t} />
-      ))}
-      {entries.map((e) => (
-        <UndoToast key={e.id} entry={e} />
       ))}
     </div>
   )

@@ -151,7 +151,7 @@ function BarChart({
 
   return (
     <div className="overflow-x-auto">
-      <svg width={plotW} height={height} className="block">
+      <svg width={plotW} height={height} role="img" aria-label={ariaLabel} className="block">
         <title>{ariaLabel}</title>
         {/* baseline */}
         <line
@@ -261,6 +261,8 @@ function KarmaSparkline({ points, ariaLabel }: { points: number[]; ariaLabel: st
         height={height}
         viewBox={`0 0 ${width} ${height}`}
         preserveAspectRatio="none"
+        role="img"
+        aria-label={ariaLabel}
         className="block"
         style={{ minWidth: 240 }}
       >
@@ -293,7 +295,7 @@ function ChartSection({
   return (
     <section className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between gap-3">
-        <h3 className="font-medium text-subtitle text-text-primary">{title}</h3>
+        <h2 className="font-medium text-subtitle text-text-primary">{title}</h2>
         <p className="text-caption text-text-tertiary">{subtitle}</p>
       </div>
       {children}

@@ -18,6 +18,7 @@
     "@opendoist/core": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "catalog:",
+    "@tanstack/react-virtual": "catalog:",
     "better-auth": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
@@ -29,6 +30,12 @@
     "react-hotkeys-hook": "catalog:",
     "rich-textarea": "catalog:",
     "tailwind-merge": "catalog:",
+    "workbox-core": "catalog:",
+    "workbox-expiration": "catalog:",
+    "workbox-precaching": "catalog:",
+    "workbox-routing": "catalog:",
+    "workbox-strategies": "catalog:",
+    "workbox-window": "catalog:",
     "zod": "catalog:",
     "zustand": "catalog:"
   },
@@ -42,6 +49,7 @@
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
+    "vite-plugin-pwa": "catalog:",
     "vitest": "catalog:"
   }
 }

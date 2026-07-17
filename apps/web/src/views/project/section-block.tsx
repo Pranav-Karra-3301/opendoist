@@ -116,12 +116,17 @@ export function SectionBlock({ projectId, section, tasks }: SectionBlockProps) {
 
   return (
     <section className="pt-6">
+      {/* Real section heading for heading navigation; the visible name is a click-to-edit
+          button (its accessible name is the edit action), so this carries the section name. */}
+      <h2 className="sr-only">{section.name}</h2>
       <div className="group/section flex items-center gap-1 border-border-subtle border-b pb-1">
         <button
           type="button"
           className="flex size-6 shrink-0 items-center justify-center rounded-sm text-text-secondary hover:bg-hover hover:text-text-primary"
           onClick={() => update.mutate({ id: section.id, patch: { is_collapsed: !collapsed } })}
-          aria-label={collapsed ? 'Expand section' : 'Collapse section'}
+          aria-label={
+            collapsed ? `Expand section ${section.name}` : `Collapse section ${section.name}`
+          }
           aria-expanded={!collapsed}
         >
           {collapsed ? (

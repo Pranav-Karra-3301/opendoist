@@ -11,7 +11,17 @@ env:
   IMAGE: ghcr.io/pranav-karra-3301/opendoist
 
 jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with: { context: ., load: true, push: false, tags: 'opendoist:smoke' }
+      - run: bash scripts/smoke-docker.sh opendoist:smoke
+
   build:
+    needs: [smoke]
     strategy:
       fail-fast: false
       matrix:

@@ -12,9 +12,9 @@ import { useActiveTasks, useTaskMutations } from '@/api/hooks/tasks'
 import type { TaskMove } from '@/api/schemas'
 import { buttonVariants } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useUndoStore } from '@/features/undo/store'
 import { cn } from '@/lib/utils'
 import { useSelectionStore } from '@/stores/selection'
-import { useUndoStore } from '@/stores/undo'
 import { taskToCreate } from './more-menu'
 import { MovePanel } from './move-popover'
 import { PriorityMenu } from './priority-menu'
@@ -52,8 +52,11 @@ export function MultiSelectToolbar(): ReactElement | null {
   const applyComplete = (): void => {
     const snapshot = selectedTasks
     for (const task of snapshot) close.mutate({ id: task.id, silent: true })
-    pushUndo(countLabel(snapshot.length, 'completed'), async () => {
-      for (const task of snapshot) await reopen.mutateAsync({ id: task.id })
+    pushUndo({
+      message: countLabel(snapshot.length, 'completed'),
+      undo: async () => {
+        for (const task of snapshot) await reopen.mutateAsync({ id: task.id })
+      },
     })
     clearSelection()
   }
@@ -61,8 +64,11 @@ export function MultiSelectToolbar(): ReactElement | null {
   const applyDelete = (): void => {
     const snapshot = selectedTasks
     for (const task of snapshot) remove.mutate({ id: task.id, silent: true })
-    pushUndo(countLabel(snapshot.length, 'deleted'), async () => {
-      for (const task of snapshot) await create.mutateAsync(taskToCreate(task))
+    pushUndo({
+      message: countLabel(snapshot.length, 'deleted'),
+      undo: async () => {
+        for (const task of snapshot) await create.mutateAsync(taskToCreate(task))
+      },
     })
     clearSelection()
   }
@@ -70,9 +76,16 @@ export function MultiSelectToolbar(): ReactElement | null {
   const applyPriority = (priority: Priority): void => {
     const snapshot = selectedTasks
     for (const task of snapshot) update.mutate({ id: task.id, patch: { priority }, silent: true })
-    pushUndo(countLabel(snapshot.length, 'updated'), async () => {
-      for (const task of snapshot)
-        await update.mutateAsync({ id: task.id, patch: { priority: task.priority }, silent: true })
+    pushUndo({
+      message: countLabel(snapshot.length, 'updated'),
+      undo: async () => {
+        for (const task of snapshot)
+          await update.mutateAsync({
+            id: task.id,
+            patch: { priority: task.priority },
+            silent: true,
+          })
+      },
     })
     setOpenPopover(null)
   }
@@ -80,9 +93,12 @@ export function MultiSelectToolbar(): ReactElement | null {
   const applySchedule = (due: Due | null): void => {
     const snapshot = selectedTasks
     for (const task of snapshot) update.mutate({ id: task.id, patch: { due }, silent: true })
-    pushUndo(countLabel(snapshot.length, 'rescheduled'), async () => {
-      for (const task of snapshot)
-        await update.mutateAsync({ id: task.id, patch: { due: task.due }, silent: true })
+    pushUndo({
+      message: countLabel(snapshot.length, 'rescheduled'),
+      undo: async () => {
+        for (const task of snapshot)
+          await update.mutateAsync({ id: task.id, patch: { due: task.due }, silent: true })
+      },
     })
     setOpenPopover(null)
   }
@@ -90,17 +106,20 @@ export function MultiSelectToolbar(): ReactElement | null {
   const applyMove = (to: TaskMove): void => {
     const snapshot = selectedTasks
     for (const task of snapshot) move.mutate({ id: task.id, to, silent: true })
-    pushUndo(countLabel(snapshot.length, 'moved'), async () => {
-      for (const task of snapshot)
-        await move.mutateAsync({
-          id: task.id,
-          to: {
-            project_id: task.project_id,
-            section_id: task.section_id,
-            parent_id: task.parent_id,
-          },
-          silent: true,
-        })
+    pushUndo({
+      message: countLabel(snapshot.length, 'moved'),
+      undo: async () => {
+        for (const task of snapshot)
+          await move.mutateAsync({
+            id: task.id,
+            to: {
+              project_id: task.project_id,
+              section_id: task.section_id,
+              parent_id: task.parent_id,
+            },
+            silent: true,
+          })
+      },
     })
     setOpenPopover(null)
   }

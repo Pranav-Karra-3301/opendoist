@@ -72,6 +72,9 @@ export const weekdayLongLabel = (iso: string): string =>
   WEEKDAYS_LONG[isoWeekday(iso) - 1] as string
 export const weekdayInitialLabel = (iso: string): string =>
   WEEKDAY_INITIALS[isoWeekday(iso) - 1] as string
+/** Screen-reader-friendly full date, e.g. "Wednesday, July 16, 2026". */
+export const fullDateLabel = (iso: string): string =>
+  `${weekdayLongLabel(iso)}, ${MONTHS_LONG[month(iso) - 1]} ${dayOfMonth(iso)}, ${year(iso)}`
 
 /** Most recent day on or before `iso` whose ISO weekday equals `weekStart`. */
 export function startOfWeek(iso: string, weekStart: Weekday): string {

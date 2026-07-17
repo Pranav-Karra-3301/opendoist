@@ -126,7 +126,7 @@ export function Sidebar() {
             </span>
             Add task
           </button>
-          <nav className="mt-1 flex flex-col gap-px">
+          <nav aria-label="Projects and views" className="mt-1 flex flex-col gap-px">
             {isNavVisible('inbox', sidebar) && (
               <Link
                 to="/inbox"

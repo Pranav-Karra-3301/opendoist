@@ -8,6 +8,8 @@ export interface TaskCheckboxProps {
   checked: boolean
   uncompletable: boolean
   onToggle: () => void
+  /** Task content appended to the accessible name: "Complete task: {content}". */
+  content?: string
 }
 
 /**
@@ -18,7 +20,13 @@ export interface TaskCheckboxProps {
  * uncompletable task renders a static 6px dot instead of a checkbox. `data-priority` is a
  * frozen Playwright hook.
  */
-export function TaskCheckbox({ priority, checked, uncompletable, onToggle }: TaskCheckboxProps) {
+export function TaskCheckbox({
+  priority,
+  checked,
+  uncompletable,
+  onToggle,
+  content,
+}: TaskCheckboxProps) {
   const [completing, setCompleting] = useState(false)
   const color = `var(--od-p${priority})`
 
@@ -55,7 +63,7 @@ export function TaskCheckbox({ priority, checked, uncompletable, onToggle }: Tas
       type="button"
       role="checkbox"
       aria-checked={checked}
-      aria-label="Complete task"
+      aria-label={content === undefined ? 'Complete task' : `Complete task: ${content}`}
       data-priority={priority}
       onClick={handleClick}
       onAnimationEnd={handleAnimationEnd}

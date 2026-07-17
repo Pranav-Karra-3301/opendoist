@@ -165,7 +165,7 @@ function PushSection() {
           <p className="text-caption text-text-tertiary">Loading devices…</p>
         ) : devices.length === 0 ? (
           <p className="text-caption text-text-tertiary">
-            No devices registered yet. Enable push above to add this one.
+            No devices registered — enable notifications on a device to see it here.
           </p>
         ) : (
           <DevicesTable

@@ -31,11 +31,17 @@ export function AppLayout() {
 
   return (
     <div className="relative h-screen overflow-hidden bg-bg font-sans text-body text-text-primary antialiased">
+      <a
+        href="#main"
+        className="sr-only rounded-sm bg-surface px-4 py-2 font-medium text-body text-text-primary shadow-menu focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[var(--z-toast)] focus:outline-2 focus:outline-offset-2 focus:outline-[var(--od-focus-ring)]"
+      >
+        Skip to content
+      </a>
       <div className="grid h-full grid-cols-[auto_1fr]">
         <Sidebar />
         <div className="flex min-w-0 flex-col overflow-hidden">
           <Topbar />
-          <main className="min-h-0 flex-1 overflow-y-auto">
+          <main id="main" tabIndex={-1} className="min-h-0 flex-1 overflow-y-auto outline-none">
             <Outlet />
           </main>
         </div>
@@ -45,10 +51,12 @@ export function AppLayout() {
       {/* phase-7 (Task K): voice-note review-confirm dialog, opened by the Quick Add mic button */}
       <RambleReview />
       <CommandPalette />
+      {/* info/error message toasts only — undo toasts render via UndoHost below */}
       <Toaster />
       <GlobalHotkeys />
       <MultiSelectToolbar />
-      {/* phase-5 hosts (Task A): dialogs (Tasks E/F) + single-slot undo toast (Task W) */}
+      {/* phase-5 hosts (Task A): dialogs (Tasks E/F) + THE single-slot undo toast (Task W) —
+          the app's one undo system (features/undo/store.ts) */}
       <DialogHost />
       <UndoHost />
       {/* phase-6 host (Task A wiring): push permission pre-prompt + iOS install screen (Task K) */}

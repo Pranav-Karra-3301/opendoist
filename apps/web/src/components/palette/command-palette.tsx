@@ -385,6 +385,19 @@ export function CommandPalette() {
     themeItems.length > 0
   const showGlobalEmpty = !anyStatic && !searchActive
 
+  // Total matches currently rendered — announced via a polite live region so screen-reader
+  // users hear how many results a query produced (the visual list conveys this to sighted users).
+  const resultCount =
+    recents.length +
+    viewItems.length +
+    navItems.length +
+    projectItems.length +
+    labelItems.length +
+    commandItems.length +
+    settingsItems.length +
+    themeItems.length +
+    (searchActive ? taskHits.length : 0)
+
   const renderCommandGroup = (heading: string, items: PaletteCommand[]) =>
     items.length > 0 ? (
       <CommandGroup heading={heading}>
@@ -415,6 +428,7 @@ export function CommandPalette() {
           autoFocus
           value={query}
           onValueChange={setQuery}
+          aria-label="Search or jump to"
           placeholder="Search or jump to…"
         />
         <CommandList>
@@ -580,6 +594,13 @@ export function CommandPalette() {
           )}
         </CommandList>
       </Command>
+      {/* Result-count live region — OUTSIDE <Command> so it isn't an unallowed child of cmdk's
+          role="listbox" (axe aria-required-children); still inside the dialog, so it's announced. */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {hasQuery || searchActive
+          ? `${resultCount} ${resultCount === 1 ? 'result' : 'results'}`
+          : ''}
+      </div>
     </CommandDialog>
   )
 }

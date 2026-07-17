@@ -23,7 +23,7 @@ export const SEL = {
   checkbox: 'Complete task',
   /** Row hover action that opens the "more" row popover (task-row.tsx). */
   moreActions: 'More actions',
-  /** Undo toast action (undo-toast.tsx). */
+  /** Undo toast action (features/undo/UndoHost.tsx — the single undo system). */
   undo: 'Undo',
   /** Collapsible sidebar shell (app/sidebar.tsx). */
   sidebar: 'aside[aria-label="Sidebar"]',

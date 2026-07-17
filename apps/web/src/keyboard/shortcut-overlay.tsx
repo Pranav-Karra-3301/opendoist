@@ -48,23 +48,31 @@ export function ShortcutOverlay(): ReactElement {
           {GROUP_ORDER.map((group) => {
             const items = SHORTCUTS.filter((s) => s.group === group)
             if (items.length === 0) return null
+            // A real <table> per group (caption = category) so screen readers announce the
+            // shortcut list as structured data: each row is a description (row header) + its keys.
             return (
-              <section key={group}>
-                <h3 className="mb-1 font-medium text-caption text-text-tertiary uppercase tracking-wide">
+              <table key={group} className="w-full border-collapse">
+                <caption className="mb-1 text-left font-medium text-caption text-text-tertiary uppercase tracking-wide">
                   {group}
-                </h3>
-                <ul className="grid">
+                </caption>
+                <tbody>
                   {items.map((s) => (
-                    <li
-                      key={s.id}
-                      className="flex items-center justify-between gap-4 rounded-sm px-2 py-1.5 text-copy text-text-primary"
-                    >
-                      <span>{s.desc}</span>
-                      <KeyCaps display={s.display} />
-                    </li>
+                    <tr key={s.id} className="align-middle">
+                      <th
+                        scope="row"
+                        className="rounded-sm py-1.5 pr-4 text-left font-normal text-copy text-text-primary"
+                      >
+                        {s.desc}
+                      </th>
+                      <td className="py-1.5 text-right">
+                        <div className="flex justify-end">
+                          <KeyCaps display={s.display} />
+                        </div>
+                      </td>
+                    </tr>
                   ))}
-                </ul>
-              </section>
+                </tbody>
+              </table>
             )
           })}
         </div>

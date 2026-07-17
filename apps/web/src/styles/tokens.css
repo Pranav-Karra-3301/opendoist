@@ -88,9 +88,10 @@
   /* text */
   --od-text-primary: #202020;
   --od-text-secondary: #666666;
-  /* Todoist-parity #999999 fails WCAG AA (2.7–2.8:1) and the spec's axe gate; #707070 is the
-   * nearest gray with ≥4.5:1 on every light-theme surface (4.69 worst case). */
-  --od-text-tertiary: #707070;
+  /* Todoist-parity #999999 fails WCAG AA (2.7–2.8:1) and the spec's axe gate; #6d6d6d keeps
+   * ≥4.5:1 on every light-theme surface INCLUDING --od-hover #f3f3f3 (4.66 worst case —
+   * #707070 was 4.46:1 there, phase-10 a11y integration fix). */
+  --od-text-tertiary: #6d6d6d;
   /* accent (Kale) */
   --od-accent: #4c7a45;
   --od-accent-hover: #3e6737;
@@ -168,11 +169,16 @@
   --od-input-border-focus: #707070;
   --od-text-primary: #ffffff; /* rgba(255,255,255,.87) also used */
   --od-text-secondary: #cccccc;
-  --od-text-tertiary: #808080;
+  /* ≥4.5:1 on every dark text surface INCLUDING the #363636 hover/selected row that the
+   * palette keycap hints render on (4.62 worst case; the derived #808080 was 3.7–4.2:1,
+   * failing AA — phase-10 a11y integration fix). */
+  --od-text-tertiary: #a0a0a0;
   --od-accent: #7ca86f; /* (derived: kale brightened; 5.9:1 on #1e1e1e) */
   --od-accent-hover: #8fb883; /* (derived) */
   --od-accent-disabled: #3c4d38; /* (derived) */
-  --od-on-accent: #ffffff; /* pair with fill #5d8a54 for buttons (derived) */
+  /* dark text on the brightened accent (6.1:1); white was 2.7:1, under the AA floor for
+   * button labels (phase-10 a11y integration fix). */
+  --od-on-accent: #1e1e1e;
   --od-accent-soft: #26331f; /* (derived; Todoist dark red soft: #6f2625) */
   --od-danger: #ff7066;
   --od-danger-hover: #e36564;
@@ -419,4 +425,37 @@
   --color-destructive: var(--destructive);
   --color-input: var(--input);
   --color-ring: var(--ring);
+}
+
+/* ---------- feedback: skeleton shimmer + global reduced-motion gate (phase 10 Task H) ---------- */
+@keyframes od-shimmer {
+  from {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.6;
+  }
+}
+.od-skeleton {
+  animation: od-shimmer 1.5s var(--ease-standard) infinite;
+}
+
+/* One global gate: neutralize every animation/transition when the user asks for less
+   motion. Components rely on this instead of gating motion individually. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: the gate must override Tailwind's animation/transition utilities, which have higher specificity than `*` */
+    animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: see above */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: see above */
+    transition-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: see above */
+    scroll-behavior: auto !important;
+  }
 }

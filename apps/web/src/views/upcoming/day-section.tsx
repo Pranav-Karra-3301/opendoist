@@ -43,7 +43,11 @@ export function DaySection({ date, tasks, today, sortable = true }: DaySectionPr
         <span className="text-text-secondary">{weekdayLongLabel(date)}</span>
       </h2>
       <div className={cn('min-h-2 rounded-lg transition-colors', isOver && 'bg-accent-soft')}>
-        {tasks.length > 0 && <TaskList tasks={tasks} groupId={`day-${date}`} sortable={sortable} />}
+        {tasks.length > 0 ? (
+          <TaskList tasks={tasks} groupId={`day-${date}`} sortable={sortable} />
+        ) : (
+          <p className="px-[5px] pt-1 text-caption text-text-tertiary">Nothing scheduled</p>
+        )}
         <InlineAdd
           defaults={{ due: { date, time: null, string: date, recurrence: null } }}
           placement="bottom"

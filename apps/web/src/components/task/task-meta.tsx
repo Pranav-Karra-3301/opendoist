@@ -75,7 +75,14 @@ export function TaskMeta({ task, showProject }: TaskMetaProps) {
         <span
           key={name}
           className="flex items-center gap-1"
-          style={{ color: paletteVar(labels?.find((l) => l.name === name)?.color ?? '') }}
+          // Palette values are tuned as fills; painted as 12px TEXT the pale ones (teal,
+          // mint, yellow, grey) fall under the WCAG AA 4.5:1 floor. Mixing in 35% of the
+          // theme's primary text color deepens them in light and lifts them in dark, so
+          // every palette clears AA on all scan surfaces (worst light case: grey 4.53:1
+          // on --od-hover). Phase-10 a11y integration fix.
+          style={{
+            color: `color-mix(in srgb, ${paletteVar(labels?.find((l) => l.name === name)?.color ?? '')} 65%, var(--od-text-primary))`,
+          }}
         >
           <Tag size={12} strokeWidth={2} />
           {name}

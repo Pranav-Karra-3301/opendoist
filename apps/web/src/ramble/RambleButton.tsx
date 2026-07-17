@@ -171,7 +171,7 @@ export function RambleButton() {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger
-            aria-label="Record a voice note"
+            aria-label="Hold to record a voice note"
             aria-disabled="true"
             onClick={(e) => e.preventDefault()}
             className={cn(
@@ -191,7 +191,7 @@ export function RambleButton() {
     <div className="flex items-center gap-2">
       <button
         type="button"
-        aria-label={pressed ? 'Stop recording' : 'Record a voice note'}
+        aria-label={pressed ? 'Stop recording' : 'Hold to record a voice note'}
         aria-pressed={pressed}
         title="Hold to record a voice note"
         disabled={uploading}

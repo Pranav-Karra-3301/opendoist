@@ -150,6 +150,7 @@ function RowView({
           checked={completed}
           uncompletable={task.uncompletable}
           onToggle={handleToggle}
+          content={task.content}
         />
       </span>
 

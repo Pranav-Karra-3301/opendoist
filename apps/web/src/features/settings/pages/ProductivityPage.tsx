@@ -141,7 +141,7 @@ export default function ProductivityPage() {
                   className={cn(
                     'h-8 min-w-11 cursor-pointer rounded-sm border px-2.5 text-copy transition-colors duration-150 ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]',
                     selected
-                      ? 'border-transparent bg-accent-soft font-semibold text-accent'
+                      ? 'border-transparent bg-selected font-semibold text-selected-text'
                       : 'border-input-border bg-surface-raised font-medium text-text-secondary hover:bg-hover hover:text-text-primary',
                   )}
                 >

@@ -148,7 +148,7 @@ function ProjectItem({
       {hasChildren ? (
         <button
           type="button"
-          aria-label={project.is_collapsed ? 'Expand project' : 'Collapse project'}
+          aria-label={`${project.is_collapsed ? 'Expand' : 'Collapse'} ${project.name}`}
           aria-expanded={!project.is_collapsed}
           onClick={() => onToggle(project)}
           className="grid size-5 shrink-0 place-items-center rounded-sm text-text-tertiary outline-none transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-focus-ring"

@@ -10,7 +10,8 @@ dist/
 *.local
 .env
 
-# playwright artifacts (e2e/.auth holds a real session — never commit)
+# playwright artifacts (.auth dirs hold a real session — never commit)
 apps/web/e2e/.auth/
+apps/web/.auth/
 apps/web/test-results/
 apps/web/playwright-report/

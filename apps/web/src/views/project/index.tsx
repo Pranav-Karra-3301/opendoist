@@ -6,13 +6,14 @@
  */
 import { viewKey } from '@opendoist/core'
 import { useParams } from '@tanstack/react-router'
-import { Archive, Ellipsis, Pencil, Plus, Settings2, Trash2 } from 'lucide-react'
+import { Archive, Ellipsis, Hash, Pencil, Plus, Settings2, Trash2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { useProjectMutations, useProjects } from '@/api/hooks/projects'
 import { useSections } from '@/api/hooks/sections'
 import { useActiveTasks } from '@/api/hooks/tasks'
 import type { Task } from '@/api/schemas'
+import { EmptyState, ODErrorBoundary } from '@/components/feedback'
 import { InlineAdd } from '@/components/quick-add/inline-add'
 import { TaskList } from '@/components/task/task-list'
 import { buttonVariants } from '@/components/ui/button'
@@ -76,7 +77,7 @@ function ProjectShell({ children }: { children: ReactNode }) {
 
 function ProjectLoading() {
   return (
-    <div className={CONTENT}>
+    <div className={CONTENT} aria-busy="true">
       <div className="flex items-center gap-2 pt-8 pb-4">
         <Skeleton className="size-3 rounded-full" />
         <Skeleton className="h-6 w-40" />
@@ -91,6 +92,14 @@ function ProjectLoading() {
 }
 
 export function ProjectView() {
+  return (
+    <ODErrorBoundary label="Project">
+      <ProjectViewInner />
+    </ODErrorBoundary>
+  )
+}
+
+function ProjectViewInner() {
   const { projectId } = useParams({ strict: false })
   const projectsQ = useProjects()
   const sectionsQ = useSections()
@@ -126,6 +135,9 @@ export function ProjectView() {
       <header className="flex items-start justify-between gap-4 pt-8 pb-4">
         <div className="flex min-w-0 items-center gap-2">
           <ColorDot color={project.color} />
+          {/* Accessible page heading: the visible title is a click-to-edit button, so a
+              visually-hidden h1 carries the project name for heading navigation and axe. */}
+          <h1 className="sr-only">{project.name}</h1>
           <EditableText
             value={project.name}
             editing={titleEditing}
@@ -203,6 +215,13 @@ export function ProjectView() {
           <DroppableRegion id={ROOT_DROP_ID}>
             {rootTasks.length > 0 && (
               <TaskList tasks={rootTasks} groupId={ROOT_DROP_ID} tree sortable />
+            )}
+            {active.length === 0 && sections.length === 0 && (
+              <EmptyState
+                icon={Hash}
+                title={`No tasks in ${project.name}`}
+                description="Add one with A, or press Q from anywhere."
+              />
             )}
             <InlineAdd defaults={{ project_id: projectId }} placement="bottom" />
           </DroppableRegion>

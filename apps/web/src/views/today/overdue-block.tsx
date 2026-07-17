@@ -23,17 +23,17 @@ import {
   resolveNaturalDate,
 } from '@opendoist/core'
 import { Armchair, Ban, CalendarArrowUp, CalendarClock, CalendarDays, Sun } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useId, useState } from 'react'
 import { useTaskMutations } from '@/api/hooks/tasks'
 import type { Task } from '@/api/schemas'
 import { TaskList } from '@/components/task/task-list'
 import { buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useUndoStore } from '@/features/undo/store'
 import { activeTasks, overdue } from '@/lib/derive'
 import { useParseCtx } from '@/lib/parse-context'
 import { cn } from '@/lib/utils'
-import { useUndoStore } from '@/stores/undo'
 
 const MONTH_ABBREV = [
   'Jan',
@@ -81,6 +81,7 @@ export function OverdueBlock({ tasks }: { tasks: Task[] }) {
   const { update } = useTaskMutations()
   const pushUndo = useUndoStore((s) => s.push)
   const [open, setOpen] = useState(false)
+  const headingId = useId()
 
   if (overdueTasks.length === 0) return null
 
@@ -94,23 +95,31 @@ export function OverdueBlock({ tasks }: { tasks: Task[] }) {
     }
     if (restores.length > 0) {
       const n = restores.length
-      pushUndo(`Rescheduled ${n} ${n === 1 ? 'task' : 'tasks'}`, async () => {
-        await Promise.all(
-          restores.map((r) =>
-            update.mutateAsync({ id: r.id, patch: { due: r.due }, silent: true }),
-          ),
-        )
+      pushUndo({
+        message: `Rescheduled ${n} ${n === 1 ? 'task' : 'tasks'}`,
+        undo: async () => {
+          await Promise.all(
+            restores.map((r) =>
+              update.mutateAsync({ id: r.id, patch: { due: r.due }, silent: true }),
+            ),
+          )
+        },
       })
     }
     setOpen(false)
   }
 
   return (
-    <section aria-label="Overdue" className="mb-5">
+    <section aria-labelledby={headingId} className="mb-5">
       <div className="flex items-center justify-between border-border-subtle border-b py-2">
-        <h2 className="font-medium text-body text-text-primary">Overdue</h2>
+        <h2 id={headingId} className="font-medium text-body text-text-primary">
+          Overdue
+        </h2>
         <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger className={cn(buttonVariants({ variant: 'link', size: 'sm' }))}>
+          <PopoverTrigger
+            aria-label="Reschedule all overdue tasks"
+            className={cn(buttonVariants({ variant: 'link', size: 'sm' }))}
+          >
             Reschedule
           </PopoverTrigger>
           <PopoverContent align="end" className="p-2">

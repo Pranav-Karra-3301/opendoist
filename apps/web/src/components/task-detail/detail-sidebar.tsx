@@ -23,6 +23,7 @@ import { useProjects } from '@/api/hooks/projects'
 import { useSections } from '@/api/hooks/sections'
 import { useTaskMutations } from '@/api/hooks/tasks'
 import type { Task } from '@/api/schemas'
+import { priorityOptionLabel } from '@/components/task/priority-menu'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -127,11 +128,12 @@ function ProjectField({ task }: { task: Task }) {
             {currentSection ? ` / ${currentSection.name}` : ''}
           </span>
         </PopoverTrigger>
-        <PopoverContent align="end" className="w-64 p-0">
+        <PopoverContent align="end" aria-label="Move task to project" className="w-64 p-0">
           <div className="border-border-subtle border-b p-2">
             <Input
               value={query}
               autoFocus
+              aria-label="Move to project"
               placeholder="Move to…"
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -241,11 +243,12 @@ function DateField({ task }: { task: Task }) {
             <span className="text-text-tertiary">+ Add date</span>
           )}
         </PopoverTrigger>
-        <PopoverContent align="end" className="w-64 p-0">
+        <PopoverContent align="end" aria-label="Set due date" className="w-64 p-0">
           <div className="p-2">
             <Input
               value={text}
               autoFocus
+              aria-label="Due date"
               placeholder="Type a date…"
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => {
@@ -339,9 +342,10 @@ function DeadlineField({ task }: { task: Task }) {
             <span className="text-text-tertiary">+ Add deadline</span>
           )}
         </PopoverTrigger>
-        <PopoverContent align="end" className="w-56">
+        <PopoverContent align="end" aria-label="Set deadline" className="w-56">
           <Input
             type="date"
+            aria-label="Deadline date"
             value={task.deadline_date ?? ''}
             onChange={(e) =>
               update.mutate({
@@ -381,6 +385,7 @@ function PriorityField({ task }: { task: Task }) {
           {PRIORITIES.map((p) => (
             <DropdownMenuItem
               key={p}
+              aria-label={priorityOptionLabel(p)}
               onClick={() => update.mutate({ id: task.id, patch: { priority: p } })}
             >
               <PriorityFlag priority={p} />
@@ -445,11 +450,12 @@ function LabelsField({ task }: { task: Task }) {
             <span className="text-text-tertiary">+ Add labels</span>
           )}
         </PopoverTrigger>
-        <PopoverContent align="end" className="w-64 p-0">
+        <PopoverContent align="end" aria-label="Edit labels" className="w-64 p-0">
           <div className="border-border-subtle border-b p-2">
             <Input
               value={query}
               autoFocus
+              aria-label="Add a label"
               placeholder="Type a label…"
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -523,7 +529,7 @@ function DurationField({ task }: { task: Task }) {
             <span className="text-text-tertiary">+ Add duration</span>
           )}
         </PopoverTrigger>
-        <PopoverContent align="end" className="w-56">
+        <PopoverContent align="end" aria-label="Set duration" className="w-56">
           <div className="flex items-center gap-2">
             <Input
               type="number"
@@ -531,6 +537,7 @@ function DurationField({ task }: { task: Task }) {
               max={1440}
               value={value}
               autoFocus
+              aria-label="Duration in minutes"
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {

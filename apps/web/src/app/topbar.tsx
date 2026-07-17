@@ -33,6 +33,7 @@ export function Topbar() {
         <button
           type="button"
           onClick={() => setPaletteOpen(true)}
+          aria-label="Search"
           className="flex h-8 items-center gap-2 rounded-sm px-2 text-copy text-text-secondary outline-none transition-colors hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-focus-ring focus-visible:outline-offset-2"
         >
           <Search size={16} aria-hidden="true" />

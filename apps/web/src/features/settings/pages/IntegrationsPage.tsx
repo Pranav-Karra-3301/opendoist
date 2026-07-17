@@ -155,7 +155,7 @@ function EmptyTokens() {
     <div className="flex flex-col items-start gap-2 px-4 py-6">
       <div className="flex items-center gap-2 text-body text-text-primary">
         <KeyRound size={16} className="text-text-tertiary" aria-hidden="true" />
-        No API tokens yet
+        No API tokens
       </div>
       <p className="text-caption text-text-tertiary">
         Create one, then send it as a Bearer header on every request:

@@ -716,7 +716,7 @@ function DangerZone({ email }: { email: string }) {
         <div className="flex items-center justify-between gap-4 px-4 py-3">
           <div className="min-w-0">
             <div className="text-body text-text-primary">Sign out everywhere</div>
-            <div className="text-caption text-text-tertiary">
+            <div id="danger-signout-desc" className="text-caption text-text-tertiary">
               Revoke every active session, including this one.
             </div>
           </div>
@@ -725,6 +725,7 @@ function DangerZone({ email }: { email: string }) {
             onClick={() => void signOutEverywhere()}
             disabled={signingOut}
             aria-busy={signingOut}
+            aria-describedby="danger-signout-desc"
           >
             {signingOut ? 'Signing out…' : 'Sign out everywhere'}
           </Button>
@@ -732,11 +733,15 @@ function DangerZone({ email }: { email: string }) {
         <div className="flex items-center justify-between gap-4 px-4 py-3">
           <div className="min-w-0">
             <div className="text-body text-text-primary">Delete account</div>
-            <div className="text-caption text-text-tertiary">
+            <div id="danger-delete-desc" className="text-caption text-text-tertiary">
               Permanently erase your account and all of your data.
             </div>
           </div>
-          <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
+          <Button
+            variant="destructive"
+            onClick={() => setDeleteOpen(true)}
+            aria-describedby="danger-delete-desc"
+          >
             Delete account
           </Button>
         </div>

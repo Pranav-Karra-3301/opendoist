@@ -26,6 +26,7 @@ import {
   sortTasks,
   type ViewPrefs,
 } from '@opendoist/core'
+import type { ReactNode } from 'react'
 import { useProjects } from '@/api/hooks/projects'
 import { useSections } from '@/api/hooks/sections'
 import { useActiveTasks } from '@/api/hooks/tasks'
@@ -116,6 +117,8 @@ export interface FilterPaneProps {
   subQuery?: string
   className?: string
   emptyText?: string
+  /** Rich empty-state node rendered when the pane has zero tasks (overrides `emptyText`). */
+  emptyState?: ReactNode
 }
 
 /**
@@ -132,6 +135,7 @@ export function FilterPane({
   subQuery,
   className,
   emptyText,
+  emptyState,
 }: FilterPaneProps) {
   const filtered = applyViewFilter(tasks, prefs.filterBy, ctx)
   const sorted = sortTasks(filtered, prefs.sortBy, prefs.sortDir, ctx)
@@ -142,37 +146,40 @@ export function FilterPane({
   const groupTop = subQuery === undefined ? 'top-0' : 'top-9'
 
   return (
-    <section data-testid="filter-pane" className={cn('min-w-0', className)}>
+    <section
+      data-testid="filter-pane"
+      role={subQuery === undefined ? undefined : 'region'}
+      aria-label={subQuery}
+      className={cn('min-w-0', className)}
+    >
       {subQuery !== undefined && (
         <header className="sticky top-0 z-20 flex items-baseline gap-2 border-border-subtle border-b bg-bg py-2">
           <span className="min-w-0 truncate text-copy text-text-secondary">{subQuery}</span>
           <span className="shrink-0 text-caption text-text-tertiary tabular-nums">{count}</span>
         </header>
       )}
-      {count === 0 ? (
-        <p className="py-4 text-copy text-text-tertiary italic">{empty}</p>
-      ) : (
-        groups.map((group) => (
-          <div key={group.key}>
-            {group.label !== '' && (
-              <h3
-                className={cn(
-                  'sticky z-[5] border-border-subtle border-b bg-bg py-2 font-medium text-copy text-text-secondary',
-                  groupTop,
-                )}
-              >
-                {group.label}
-              </h3>
-            )}
-            <TaskList
-              tasks={pickDtos(group.tasks, taskById)}
-              groupId={`${paneKey}:${group.key}`}
-              showProject
-              emptyText={empty}
-            />
-          </div>
-        ))
-      )}
+      {count === 0
+        ? (emptyState ?? <p className="py-4 text-copy text-text-tertiary italic">{empty}</p>)
+        : groups.map((group) => (
+            <div key={group.key}>
+              {group.label !== '' && (
+                <h3
+                  className={cn(
+                    'sticky z-[5] border-border-subtle border-b bg-bg py-2 font-medium text-copy text-text-secondary',
+                    groupTop,
+                  )}
+                >
+                  {group.label}
+                </h3>
+              )}
+              <TaskList
+                tasks={pickDtos(group.tasks, taskById)}
+                groupId={`${paneKey}:${group.key}`}
+                showProject
+                emptyText={empty}
+              />
+            </div>
+          ))}
     </section>
   )
 }

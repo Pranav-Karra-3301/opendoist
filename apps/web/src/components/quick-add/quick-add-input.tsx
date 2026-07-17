@@ -52,7 +52,11 @@ function renderOverlay(
       <span
         key={`tok-${token.start}-${token.kind}`}
         data-kind={token.kind}
-        title="Click to remove"
+        // The highlight overlay is decorative + aria-hidden (rich-textarea) so it never alters the
+        // textarea's accessible value; this click-to-detokenize affordance is mouse-only (keyboard/
+        // SR users detokenize via the chip row or by editing the raw text). Descriptive title per
+        // the Task-F "Remove {kind}: {text}" intent for the pointer path.
+        title={`Remove ${token.kind}: ${value.slice(token.start, token.end)}`}
         onClick={() => onIgnore(token)}
         style={{
           background: `color-mix(in srgb, var(${tokenColorVar(token)}) 18%, transparent)`,

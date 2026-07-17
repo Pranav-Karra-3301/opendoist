@@ -108,9 +108,9 @@ export default function SettingsLayout() {
             >
               <ChevronLeft size={18} aria-hidden="true" />
             </button>
-            <h2 className="min-w-0 truncate font-medium text-header text-text-primary">
+            <h1 className="min-w-0 truncate font-medium text-header text-text-primary">
               {active.title}
-            </h2>
+            </h1>
           </header>
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6 md:px-6">
             <Suspense fallback={<PaneSpinner />}>

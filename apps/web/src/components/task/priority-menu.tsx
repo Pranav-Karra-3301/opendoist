@@ -21,6 +21,13 @@ const ITEMS: ReadonlyArray<{ n: Priority; className: string; filled: boolean }> 
   { n: 4, className: 'text-text-tertiary', filled: false },
 ]
 
+/** Accessible name for a priority option — P1 is highest, P4 is the default (spec §Global). */
+export function priorityOptionLabel(n: Priority): string {
+  if (n === 1) return 'Priority 1 (highest)'
+  if (n === 4) return 'Priority 4 (default)'
+  return `Priority ${n}`
+}
+
 export function PriorityMenu({ value, onPick }: PriorityMenuProps): ReactElement {
   return (
     <div role="menu" className="flex flex-col">
@@ -30,6 +37,7 @@ export function PriorityMenu({ value, onPick }: PriorityMenuProps): ReactElement
           type="button"
           role="menuitemradio"
           aria-checked={value === n}
+          aria-label={priorityOptionLabel(n)}
           onClick={() => onPick(n)}
           className="flex h-8 items-center gap-2.5 rounded-sm px-2 text-copy text-text-primary transition-colors duration-150 hover:bg-hover focus-visible:bg-hover focus-visible:outline-none"
         >

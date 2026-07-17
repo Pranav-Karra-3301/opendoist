@@ -5,6 +5,7 @@
  */
 import { dateInTz } from '@opendoist/core'
 import { useMemo, useState } from 'react'
+import { ODErrorBoundary } from '@/components/feedback'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ViewHeader } from '@/components/view-header'
 import { useUserSettings } from '@/features/settings/useSettings'
@@ -21,6 +22,14 @@ import { ReportingFilters } from './ReportingFilters'
 type ReportingTab = 'activity' | 'completed' | 'goals'
 
 export default function ReportingPage() {
+  return (
+    <ODErrorBoundary label="Reporting">
+      <ReportingPageInner />
+    </ODErrorBoundary>
+  )
+}
+
+function ReportingPageInner() {
   const { settings } = useUserSettings()
   const [tab, setTab] = useState<ReportingTab>('activity')
   const [filters, setFilters] = useState<ReportingFilterState>(DEFAULT_REPORTING_FILTERS)

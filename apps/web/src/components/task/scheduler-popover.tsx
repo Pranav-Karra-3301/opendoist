@@ -98,11 +98,11 @@ export function SchedulerPanel({ onPick }: SchedulerPanelProps): ReactElement {
           }
         }}
         placeholder="Type a date…"
-        aria-label="Schedule date"
+        aria-label="Due date"
         className="h-8 w-full rounded-sm border border-input-border bg-surface-raised px-2 text-body text-text-primary outline-none transition-colors duration-150 ease-standard placeholder:text-text-tertiary focus:border-input-border-focus"
       />
       {text.trim() !== '' && (
-        <div className="px-1 text-caption">
+        <div className="px-1 text-caption" role="status" aria-live="polite">
           {previewChip ? (
             <span style={{ color: `var(${DUE_TONE_VAR[previewChip.tone]})` }}>
               {previewChip.label}

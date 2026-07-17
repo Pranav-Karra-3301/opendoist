@@ -14,10 +14,10 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import {
   dayOfMonth,
+  fullDateLabel,
   monthYearLabel,
   startOfWeek,
   weekdayInitialLabel,
-  weekdayLongLabel,
 } from './use-upcoming-days'
 
 export interface WeekStripProps {
@@ -77,7 +77,7 @@ export function WeekStrip({
               key={date}
               type="button"
               disabled={isPast}
-              aria-label={`${weekdayLongLabel(date)} ${monthYearLabel(date)}`}
+              aria-label={fullDateLabel(date)}
               aria-current={isSelected ? 'date' : undefined}
               onClick={() => onSelectDay(date)}
               className={cn(

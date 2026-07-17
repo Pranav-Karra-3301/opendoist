@@ -71,6 +71,7 @@ export function Comments({ taskId }: { taskId: string }) {
               submit()
             }
           }}
+          aria-label="Add a comment"
           placeholder="Comment"
           rows={2}
           className="w-full resize-y rounded-sm border border-input-border bg-surface-raised px-2 py-1.5 text-copy text-text-primary outline-none transition-colors duration-150 ease-standard placeholder:text-text-tertiary focus:border-input-border-focus"

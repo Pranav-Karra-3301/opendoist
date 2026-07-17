@@ -31,6 +31,8 @@ import { AppLayout } from '@/app/layout'
 import { authClient } from '@/auth/client'
 import { LoginPage } from '@/auth/login-page'
 import { RegisterPage } from '@/auth/register-page'
+import { requireSessionOrOffline } from '@/auth/session-guard'
+import { TaskListSkeleton } from '@/components/feedback'
 import { TokenShowcase } from '@/dev/token-showcase'
 import { homeViewToTarget } from '@/lib/home-view'
 import { InboxView } from '@/views/inbox'
@@ -60,13 +62,14 @@ const registerRoute = createRoute({
   component: RegisterPage,
 })
 
-/** Pathless layout route carrying the session guard and the ?task search param. */
+/** Pathless layout route carrying the session guard and the ?task search param.
+ *  The guard is offline-aware (session-guard.ts): a network-failure from the session
+ *  probe renders the cached shell instead of the router error screen or /login. */
 const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'app',
   beforeLoad: async () => {
-    const { data } = await authClient.getSession()
-    if (!data?.session) throw redirect({ to: '/login' })
+    await requireSessionOrOffline(() => authClient.getSession())
   },
   validateSearch: z.object({ task: z.string().optional() }),
   component: AppLayout,
@@ -147,7 +150,10 @@ const filterViewRoute = createRoute({
 const reportingRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/reporting',
+  // Route-level code split (perf, Task I): Reporting/Productivity is off the hot path; its chunk
+  // loads lazily behind a skeleton so the initial bundle stays small.
   component: lazyRouteComponent(() => import('@/features/reporting/ReportingPage')),
+  pendingComponent: () => <TaskListSkeleton rows={4} />,
 })
 
 const settingsIndexRoute = createRoute({
@@ -161,7 +167,11 @@ const settingsIndexRoute = createRoute({
 const settingsPageRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/settings/$page',
+  // Route-level code split (perf, Task I): the whole Settings surface — including the heavy
+  // Todoist importer, which SettingsLayout further React.lazy-loads per page — lives in its own
+  // chunk, kept off the initial bundle behind a skeleton fallback.
   component: lazyRouteComponent(() => import('@/features/settings/SettingsLayout')),
+  pendingComponent: () => <TaskListSkeleton rows={4} />,
 })
 
 /** Canonical deep link: open the app with the task-detail dialog on Today. */

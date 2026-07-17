@@ -208,6 +208,7 @@ export default function ImportPage() {
           ref={fileInputRef}
           type="file"
           accept=".zip,application/zip"
+          aria-label="Todoist backup .zip file"
           className="sr-only"
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
         />

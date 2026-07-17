@@ -2,13 +2,14 @@
  * UndoHost — the single-slot undo toast (plan Task W). Renders the frozen
  * `useUndoStore.current` as one bottom-left toast: message + Undo action + dismiss, styled per
  * the visual law (surface-overlay, white text, 10px radius, `--shadow-toast`, z 400). It
- * auto-dismisses after 10s (paused while hovered); a fresh push replaces the current toast (the
+ * auto-dismisses after 10s (paused while hovered or focused); a fresh push replaces the current toast (the
  * store is single-slot, matching Todoist), and `mod+z` runs Undo while a toast is visible.
  * An Undo that rejects surfaces as a follow-up error toast via the shared toast store.
  *
- * Every task undo (complete / delete / reschedule / move — hooks/tasks.ts) and every dialog undo
- * (project archive/delete, section delete, filter/label delete — Tasks E/F) pushes through the
- * same store and renders here, so there is ONE undo system.
+ * Every task undo (complete / delete / reschedule / move — hooks/tasks.ts), every dialog undo
+ * (project archive/delete, section delete, filter/label delete — Tasks E/F), and every bulk undo
+ * (multi-select toolbar, overdue reschedule-all) pushes through the same store and renders here,
+ * so there is ONE undo system.
  */
 import { X } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -72,8 +73,10 @@ function UndoToast({
     return () => cancelAnimationFrame(raf)
   }, [])
 
-  // Auto-dismiss after the full window; hovering pauses it (clears the timer) and leaving restarts
-  // a fresh window — the frozen store owns no timer, so the host is its single source.
+  // Auto-dismiss after the full window; hovering OR focusing the toast pauses it (clears the
+  // timer) and leaving restarts a fresh window — the frozen store owns no timer, so the host is
+  // its single source. Focus pause (onFocus/onBlur bubble from the Undo button) gives keyboard
+  // users the same "don't rush me" affordance a mouse user gets on hover (WCAG 2.2.1).
   useEffect(() => {
     if (paused) return
     const timer = setTimeout(onDismiss, UNDO_WINDOW_MS)
@@ -85,6 +88,8 @@ function UndoToast({
       role="status"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
       className={cn(
         'pointer-events-auto flex min-w-[300px] max-w-[440px] items-center gap-3 rounded-lg bg-surface-overlay py-2.5 pr-2 pl-3.5 text-white [box-shadow:var(--shadow-toast)]',
         'transition-[opacity,transform] duration-150 ease-standard motion-reduce:transition-none',

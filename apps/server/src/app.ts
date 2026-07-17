@@ -174,7 +174,17 @@ export function createApp(deps: AppDeps): OpenAPIHono<AppEnv> {
   })
 
   // 7. Guard: everything else under /api/v1 requires auth; writes require read_write scope.
+  // The API *description* is deliberately public, like /api/v1/info above: the Scalar page
+  // and the OpenAPI document expose only the endpoint schema (already public in the OSS
+  // repo), never instance data — docs/api.md points fresh visitors straight at /api/v1/docs
+  // (phase-10 integration fix: these were 401 only because they register below this guard).
   app.use('/api/v1/*', async (c, next) => {
+    if (
+      c.req.method === 'GET' &&
+      (c.req.path === '/api/v1/docs' || c.req.path === '/api/v1/openapi.json')
+    ) {
+      return next()
+    }
     const auth = c.get('auth')
     if (!auth) return problem(c, 401, 'unauthorized')
     if (c.req.method !== 'GET' && c.req.method !== 'HEAD' && auth.scope === 'read') {

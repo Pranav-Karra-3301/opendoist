@@ -10,7 +10,9 @@
 
 import { viewKey } from '@opendoist/core'
 import { useParams } from '@tanstack/react-router'
+import { Tag } from 'lucide-react'
 import { useLabels } from '@/api/hooks/labels'
+import { EmptyState, ODErrorBoundary } from '@/components/feedback'
 import { colorVar } from '@/features/dialogs/ColorPicker'
 import DisplayMenu from '@/features/display/DisplayMenu'
 import { useViewPrefs } from '@/features/display/useViewPrefs'
@@ -23,6 +25,14 @@ import {
 } from './FilterPane'
 
 export default function LabelViewPage() {
+  return (
+    <ODErrorBoundary label="Label">
+      <LabelViewPageInner />
+    </ODErrorBoundary>
+  )
+}
+
+function LabelViewPageInner() {
   const { labelId } = useParams({ strict: false })
   const labelsQuery = useLabels()
   const data = useFilterViewData()
@@ -66,6 +76,7 @@ export default function LabelViewPage() {
         ctx={data.ctx}
         taskById={data.taskById}
         emptyText={`No tasks with @${label.name}.`}
+        emptyState={<EmptyState icon={Tag} title={`No tasks with @${label.name}`} />}
       />
     </div>
   )

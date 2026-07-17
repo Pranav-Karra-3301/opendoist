@@ -127,6 +127,7 @@ function EditableContent({ task }: { task: Task }) {
       onValueChange={setDraft}
       autoFocus
       rows={1}
+      aria-label="Task name"
       onKeyDown={(e) => {
         if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
           e.preventDefault()
@@ -186,6 +187,7 @@ function EditableDescription({ task }: { task: Task }) {
       autoFocus
       rows={2}
       placeholder="Description"
+      aria-label="Description"
       onKeyDown={(e) => {
         if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
           e.preventDefault()
@@ -224,6 +226,7 @@ export function DetailMain({ task, onClose }: { task: Task; onClose: () => void 
             checked={completed}
             uncompletable={task.uncompletable}
             onToggle={onToggle}
+            content={task.content}
           />
         </div>
         <div className="min-w-0 flex-1">

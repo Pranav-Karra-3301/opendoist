@@ -91,7 +91,15 @@ function getTimeZones(): string[] {
 
 // `value` is `number` because core's `WeekdaySchema` (z.number) infers `number`, not the
 // hand-written `Weekday` union; we narrow back to `Weekday` on change.
-function WeekdaySelect({ value, onChange }: { value: number; onChange: (day: Weekday) => void }) {
+function WeekdaySelect({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: number
+  onChange: (day: Weekday) => void
+}) {
   return (
     <Select
       value={value}
@@ -100,7 +108,7 @@ function WeekdaySelect({ value, onChange }: { value: number; onChange: (day: Wee
       }}
       items={WEEKDAYS}
     >
-      <SelectTrigger className="w-40">
+      <SelectTrigger className="w-40" aria-label={label}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -212,7 +220,7 @@ export default function GeneralPage() {
               }}
               items={homeItems}
             >
-              <SelectTrigger className="w-56">
+              <SelectTrigger className="w-56" aria-label="Home view">
                 <SelectValue placeholder="Select a view" />
               </SelectTrigger>
               <SelectContent>
@@ -281,7 +289,7 @@ export default function GeneralPage() {
               }}
               items={DATE_FORMATS}
             >
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40" aria-label="Date format">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -304,7 +312,7 @@ export default function GeneralPage() {
               }}
               items={TIME_FORMATS}
             >
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40" aria-label="Time format">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -325,6 +333,7 @@ export default function GeneralPage() {
           description="The first day of the week in calendar views."
           control={
             <WeekdaySelect
+              label="Week start"
               value={settings.weekStart}
               onChange={(weekStart) => update({ weekStart })}
             />
@@ -335,6 +344,7 @@ export default function GeneralPage() {
           description={'The day "next week" points to in Quick Add and scheduling.'}
           control={
             <WeekdaySelect
+              label="Next week"
               value={settings.nextWeekDay}
               onChange={(nextWeekDay) => update({ nextWeekDay })}
             />
@@ -345,6 +355,7 @@ export default function GeneralPage() {
           description="The day your weekend begins."
           control={
             <WeekdaySelect
+              label="Weekend"
               value={settings.weekendDay}
               onChange={(weekendDay) => update({ weekendDay })}
             />

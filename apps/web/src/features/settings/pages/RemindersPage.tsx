@@ -11,6 +11,7 @@
  * PATCH boundary accepts: null, 0, 5, 10, 15, 30, 45, 60, 120.
  */
 import { BellRing } from 'lucide-react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -60,11 +61,23 @@ export function reminderMinutesFromValue(value: string): number | null {
 export default function RemindersPage() {
   const { settings, update } = useUserSettings()
   const test = useReminderTest()
+  const [testResult, setTestResult] = useState<string | null>(null)
 
   const sendTest = () => {
+    // `aria-disabled` keeps the button focusable while inflight, so guard re-entry here.
+    if (test.isPending) return
+    setTestResult(null)
     test.mutate(undefined, {
-      onSuccess: (result) => toast.info(summarizeTestFire(result)),
-      onError: () => toast.error('Could not send a test notification'),
+      onSuccess: (result) => {
+        const message = summarizeTestFire(result)
+        setTestResult(message)
+        toast.info(message)
+      },
+      onError: () => {
+        const message = 'Could not send a test notification.'
+        setTestResult(message)
+        toast.error(message)
+      },
     })
   }
 
@@ -85,7 +98,7 @@ export default function RemindersPage() {
               }}
               items={REMINDER_OPTIONS}
             >
-              <SelectTrigger className="w-56">
+              <SelectTrigger className="w-56" aria-label="Automatic reminders">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -102,13 +115,23 @@ export default function RemindersPage() {
           label="Test notification"
           description="Send a sample reminder to every push device and channel you've set up."
           control={
-            <Button variant="outline" onClick={sendTest} disabled={test.isPending}>
+            <Button
+              variant="outline"
+              onClick={sendTest}
+              aria-disabled={test.isPending}
+              aria-busy={test.isPending}
+              className={test.isPending ? 'opacity-60' : undefined}
+            >
               <BellRing size={16} aria-hidden={true} />
               {test.isPending ? 'Sending…' : 'Send test'}
             </Button>
           }
         />
       </SettingsSection>
+      {/* Polite live region: announces the test outcome to assistive tech without stealing focus. */}
+      <p role="status" className="mt-3 min-h-[1.25rem] text-copy text-text-secondary">
+        {testResult}
+      </p>
     </div>
   )
 }

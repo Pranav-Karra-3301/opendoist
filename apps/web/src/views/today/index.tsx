@@ -13,10 +13,11 @@
  * and `showCompleted` appends recently completed tasks.
  */
 import { dateInTz, viewKey } from '@opendoist/core'
+import { Sun } from 'lucide-react'
 import { useActiveTasks } from '@/api/hooks/tasks'
+import { EmptyState, ODErrorBoundary, TaskListSkeleton } from '@/components/feedback'
 import { InlineAdd } from '@/components/quick-add/inline-add'
 import { TaskList } from '@/components/task/task-list'
-import { Skeleton } from '@/components/ui/skeleton'
 import { ViewHeader } from '@/components/view-header'
 import { CompletedSection } from '@/features/display/CompletedSection'
 import DisplayMenu, { GroupedTaskList, useFilterContext } from '@/features/display/DisplayMenu'
@@ -26,7 +27,6 @@ import { activeTasks, byDayOrder, dueOn, overdue } from '@/lib/derive'
 import { useParseCtx } from '@/lib/parse-context'
 import { OverdueBlock } from './overdue-block'
 
-const SKELETON_ROWS = ['a', 'b', 'c']
 const TODAY_KEY = viewKey('today')
 const MONTH_ABBREV = [
   'Jan',
@@ -67,47 +67,48 @@ export function TodayView() {
   const deviates = pipelineDeviates(prefs)
 
   return (
-    <div className="mx-auto max-w-[var(--content-max)] px-6 pb-24">
-      <ViewHeader
-        title="Today"
-        subtitle={tasksQuery.isPending ? undefined : `${count} ${count === 1 ? 'task' : 'tasks'}`}
-        actions={<DisplayMenu viewKey={TODAY_KEY} />}
-      />
-      {tasksQuery.isPending ? (
-        <div className="flex flex-col gap-1">
-          {SKELETON_ROWS.map((key) => (
-            <Skeleton key={key} className="h-[42px] w-full" />
-          ))}
-        </div>
-      ) : (
-        <>
-          <OverdueBlock tasks={active} />
-          <section aria-label="Today">
-            <h2 className="border-border-subtle border-b py-2 font-medium text-copy text-text-primary">
-              {formatTodayLine(today)}
-            </h2>
-            {deviates ? (
-              <GroupedTaskList
-                groups={pipelineGroups(todayTasks, prefs, filterCtx, filterCtx.projects)}
-                showProject
-                emptyText="No tasks due today."
+    <ODErrorBoundary label="Today">
+      <div className="mx-auto max-w-[var(--content-max)] px-6 pb-24">
+        <ViewHeader
+          title="Today"
+          subtitle={tasksQuery.isPending ? undefined : `${count} ${count === 1 ? 'task' : 'tasks'}`}
+          actions={<DisplayMenu viewKey={TODAY_KEY} />}
+        />
+        {tasksQuery.isPending ? (
+          <div aria-busy="true">
+            <TaskListSkeleton rows={8} />
+          </div>
+        ) : (
+          <>
+            <OverdueBlock tasks={active} />
+            <section aria-label="Today">
+              <h2 className="border-border-subtle border-b py-2 font-medium text-copy text-text-primary">
+                {formatTodayLine(today)}
+              </h2>
+              {deviates ? (
+                <GroupedTaskList
+                  groups={pipelineGroups(todayTasks, prefs, filterCtx, filterCtx.projects)}
+                  showProject
+                  emptyText="No tasks due today."
+                />
+              ) : todayTasks.length === 0 ? (
+                <EmptyState
+                  icon={Sun}
+                  title="No tasks today"
+                  description="Enjoy the calm, or press Q to plan something."
+                />
+              ) : (
+                <TaskList tasks={todayTasks} groupId="today" showProject />
+              )}
+              <InlineAdd
+                defaults={{ due: { date: today, time: null, string: today, recurrence: null } }}
+                placement="bottom"
               />
-            ) : (
-              <TaskList
-                tasks={todayTasks}
-                groupId="today"
-                showProject
-                emptyText="No tasks due today."
-              />
-            )}
-            <InlineAdd
-              defaults={{ due: { date: today, time: null, string: today, recurrence: null } }}
-              placement="bottom"
-            />
-          </section>
-          {prefs.showCompleted && <CompletedSection />}
-        </>
-      )}
-    </div>
+            </section>
+            {prefs.showCompleted && <CompletedSection />}
+          </>
+        )}
+      </div>
+    </ODErrorBoundary>
   )
 }

@@ -32,6 +32,7 @@ import {
   Timer,
 } from 'lucide-react'
 import { Fragment, type ReactNode } from 'react'
+import { priorityOptionLabel } from '@/components/task/priority-menu'
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useUserSettings } from '@/features/settings/useSettings'
 import { DUE_TONE_VAR, formatDueChip } from '@/lib/format-date'
@@ -114,9 +115,18 @@ function Chip({
   )
 }
 
-function MenuItem({ children, onSelect }: { children: ReactNode; onSelect: () => void }) {
+function MenuItem({
+  children,
+  onSelect,
+  ariaLabel,
+}: {
+  children: ReactNode
+  onSelect: () => void
+  ariaLabel?: string
+}) {
   return (
     <PopoverClose
+      aria-label={ariaLabel}
       className="flex h-8 w-full cursor-pointer items-center gap-2 rounded-sm px-2 text-left text-copy text-text-primary hover:bg-hover"
       onClick={onSelect}
     >
@@ -194,6 +204,7 @@ function PriorityChip({ rc }: { rc: RenderCtx }) {
         {([1, 2, 3, 4] as const).map((p) => (
           <MenuItem
             key={p}
+            ariaLabel={priorityOptionLabel(p)}
             onSelect={() => rc.rewrite(setPriorityText(rc.text, rc.activeTokens, p))}
           >
             <Flag

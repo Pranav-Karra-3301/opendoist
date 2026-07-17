@@ -23,9 +23,11 @@ import {
 } from '@opendoist/core'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
+import { ListFilter } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { z } from 'zod'
 import { apiAllPages } from '@/api/client'
+import { EmptyState, ODErrorBoundary } from '@/components/feedback'
 import { Button } from '@/components/ui/button'
 import { ViewHeader } from '@/components/view-header'
 import { useDialogStore } from '@/features/dialogs/store'
@@ -79,7 +81,7 @@ function FilterErrorCard({
   return (
     <div className="mx-auto max-w-[var(--content-max)] px-6 pb-24">
       <ViewHeader title={filter.name} actions={actions} />
-      <div className="rounded-lg border border-border bg-surface-raised p-6">
+      <div role="alert" className="rounded-lg border border-border bg-surface-raised p-6">
         <h2 className="font-medium text-subtitle text-text-primary">
           This filter has a syntax error
         </h2>
@@ -98,6 +100,14 @@ function FilterErrorCard({
 }
 
 export default function FilterViewPage() {
+  return (
+    <ODErrorBoundary label="Filter">
+      <FilterViewPageInner />
+    </ODErrorBoundary>
+  )
+}
+
+function FilterViewPageInner() {
   const { filterId } = useParams({ strict: false })
   const openDialog = useDialogStore((s) => s.openDialog)
   const key = viewKey('filter', filterId ?? '')
@@ -158,6 +168,13 @@ export default function FilterViewPage() {
               ctx={data.ctx}
               taskById={data.taskById}
               emptyText="No matching tasks in this pane."
+              emptyState={
+                <EmptyState
+                  icon={ListFilter}
+                  title="No tasks match this filter"
+                  description={pane.raw}
+                />
+              }
             />
           ))}
         </div>
@@ -170,6 +187,13 @@ export default function FilterViewPage() {
             ctx={data.ctx}
             taskById={data.taskById}
             emptyText="No tasks match this filter."
+            emptyState={
+              <EmptyState
+                icon={ListFilter}
+                title="No tasks match this filter"
+                description={filter.query}
+              />
+            }
           />
         </div>
       )}

@@ -10,6 +10,7 @@ import { viewKey } from '@opendoist/core'
 import type { CSSProperties } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useTaskMutations } from '@/api/hooks/tasks'
+import { ODErrorBoundary, TaskListSkeleton } from '@/components/feedback'
 import { TaskRow } from '@/components/task/task-row'
 import { CompletedSection } from '@/features/display/CompletedSection'
 import DisplayMenu, { useFilterContext } from '@/features/display/DisplayMenu'
@@ -41,6 +42,7 @@ export function UpcomingView() {
     overdueTasks,
     datesWithTasks,
     dated,
+    isLoading,
     gotoWeek,
     gotoToday,
     setAnchor,
@@ -157,51 +159,65 @@ export function UpcomingView() {
   }
 
   return (
-    <div
-      className="mx-auto max-w-[var(--content-max)] px-6 pb-24"
-      style={{ '--od-strip-h': `${stripH}px` } as CSSProperties}
-    >
-      <div ref={stripRef} className="sticky top-0 z-[var(--z-sticky)] bg-bg">
-        <WeekStrip
-          today={today}
-          anchor={anchor}
-          weekStart={weekStart}
-          datesWithTasks={datesWithTasks}
-          onSelectDay={selectDay}
-          onPrevWeek={() => pageWeek(-1)}
-          onNextWeek={() => pageWeek(1)}
-          onToday={jumpToday}
-          actions={<DisplayMenu viewKey={UPCOMING_KEY} />}
-        />
-      </div>
-
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-        onDragCancel={onDragCancel}
+    <ODErrorBoundary label="Upcoming">
+      <div
+        className="mx-auto max-w-[var(--content-max)] px-6 pb-24"
+        style={{ '--od-strip-h': `${stripH}px` } as CSSProperties}
       >
-        <OverdueBlock tasks={overdueTasks} />
-        {days.map((date) => {
-          const dayTasks = tasksByDay.get(date) ?? []
-          const shown = deviates
-            ? pipelineSortFilter(dayTasks, prefs, filterCtx, filterCtx.projects)
-            : dayTasks
-          return (
-            <DaySection key={date} date={date} tasks={shown} today={today} sortable={!deviates} />
-          )
-        })}
-        <div ref={sentinelRef} aria-hidden className="h-px" />
-        <DragOverlay>
-          {activeTask ? (
-            <div className="rounded-sm bg-bg shadow-drag">
-              <TaskRow task={activeTask} />
-            </div>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
-      {prefs.showCompleted && <CompletedSection />}
-    </div>
+        <div ref={stripRef} className="sticky top-0 z-[var(--z-sticky)] bg-bg">
+          <WeekStrip
+            today={today}
+            anchor={anchor}
+            weekStart={weekStart}
+            datesWithTasks={datesWithTasks}
+            onSelectDay={selectDay}
+            onPrevWeek={() => pageWeek(-1)}
+            onNextWeek={() => pageWeek(1)}
+            onToday={jumpToday}
+            actions={<DisplayMenu viewKey={UPCOMING_KEY} />}
+          />
+        </div>
+
+        {isLoading ? (
+          <div aria-busy="true" className="pt-4">
+            <TaskListSkeleton rows={8} />
+          </div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
+            onDragCancel={onDragCancel}
+          >
+            <OverdueBlock tasks={overdueTasks} />
+            {days.map((date) => {
+              const dayTasks = tasksByDay.get(date) ?? []
+              const shown = deviates
+                ? pipelineSortFilter(dayTasks, prefs, filterCtx, filterCtx.projects)
+                : dayTasks
+              return (
+                <DaySection
+                  key={date}
+                  date={date}
+                  tasks={shown}
+                  today={today}
+                  sortable={!deviates}
+                />
+              )
+            })}
+            <div ref={sentinelRef} aria-hidden className="h-px" />
+            <DragOverlay>
+              {activeTask ? (
+                <div className="rounded-sm bg-bg shadow-drag">
+                  <TaskRow task={activeTask} />
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        )}
+        {prefs.showCompleted && <CompletedSection />}
+      </div>
+    </ODErrorBoundary>
   )
 }

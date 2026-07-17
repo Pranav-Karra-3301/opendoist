@@ -16,6 +16,10 @@ npm install -g opendoist
 
 Requires **Node ≥ 22**. The published package is a single self-contained bundle — no runtime dependencies to install.
 
+> **Not on npm yet as of 0.1.0.** Until the first npm release lands, use the copy bundled in
+> the Docker image (see [Docker](#docker) below) or build from the monorepo with
+> `pnpm --filter opendoist build` and run `node packages/cli/dist/index.js`.
+
 Most people alias it to `od`:
 
 ```sh

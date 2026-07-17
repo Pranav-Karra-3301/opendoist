@@ -64,7 +64,9 @@ stage failed.
 
 Ramble reads two independent provider "slots" — STT and LLM — from environment variables.
 These are **instance defaults**; each user can override the whole slot from
-**Settings → Integrations** (see the note below).
+**Settings → Integrations** (see the note below). This page documents only the Ramble STT
+and LLM variables; see [Configuration](configuration.md) for every other OpenDoist
+environment variable.
 
 | Variable | Values / example | Notes |
 |---|---|---|
@@ -256,3 +258,9 @@ re-enable the microphone for the site in the browser's permission settings and r
 including iOS Safari since **18.4 (March 2025)** — and falls back to `audio/mp4` (AAC) on
 older iOS. Both formats are accepted server-side and by every provider above; no
 transcoding happens in the browser.
+
+---
+
+**Related:** [Configuration](configuration.md) ·
+[Install & first run](install.md) · [API reference](api.md) · [FAQ](faq.md) ·
+[back to the docs index](README.md)

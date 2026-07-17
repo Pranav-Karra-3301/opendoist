@@ -44,3 +44,14 @@ it('reports the OPENDOIST_VERSION override verbatim', async () => {
   const info = InfoDtoSchema.parse(await json<unknown>(res))
   expect(info.version).toBe('9.9.9')
 })
+
+it('serves the API description without auth: /api/v1/docs (Scalar) and /api/v1/openapi.json', async () => {
+  const t = await make({ signup: false })
+  const docs = await t.request('/api/v1/docs')
+  expect(docs.status).toBe(200)
+  expect(await docs.text()).toContain('OpenDoist')
+  const spec = await t.request('/api/v1/openapi.json')
+  expect(spec.status).toBe(200)
+  const doc = await json<{ info: { title: string } }>(spec)
+  expect(doc.info.title).toBe('OpenDoist API')
+})

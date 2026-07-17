@@ -1,0 +1,41 @@
+name: Prepare Release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (X.Y.Z, no v prefix)'
+        required: true
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Validate version
+        run: echo "${{ inputs.version }}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
+      # pnpm version comes from the root package.json `packageManager` pin (action-setup
+      # errors if a `version` input disagrees with the pin, so none is passed here).
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Bump version
+        run: npm pkg set version=${{ inputs.version }}
+      - name: Generate changelog
+        run: pnpm dlx git-cliff@2 --tag v${{ inputs.version }} -o CHANGELOG.md
+      - name: Commit + tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json CHANGELOG.md
+          git commit -m "chore(release): v${{ inputs.version }}"
+          git tag "v${{ inputs.version }}"
+          git push origin HEAD:main --follow-tags
+      - name: Create GitHub Release
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          gh release create "v${{ inputs.version }}" \
+            --generate-notes \
+            --title "v${{ inputs.version }}" \
+            deploy/docker-compose.yml deploy/.env.example

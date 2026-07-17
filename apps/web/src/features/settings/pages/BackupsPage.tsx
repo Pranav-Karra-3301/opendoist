@@ -17,12 +17,12 @@
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  Archive,
   Clock,
   DatabaseBackup,
   Download,
   FileArchive,
   FileJson,
-  FolderClock,
   Hand,
   Loader2,
   Paperclip,
@@ -34,6 +34,7 @@ import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from 'r
 import { createPortal } from 'react-dom'
 import { ApiError, api } from '@/api/client'
 import { paginated } from '@/api/schemas'
+import { EmptyState } from '@/components/feedback'
 import { Button, buttonVariants } from '@/components/ui/button'
 import {
   Dialog,
@@ -142,7 +143,14 @@ function SnapshotsSection() {
       </div>
 
       {view.kind === 'loading' ? <ListSkeleton /> : null}
-      {view.kind === 'empty' ? <EmptyState /> : null}
+      {view.kind === 'empty' ? (
+        <EmptyState
+          icon={Archive}
+          title="No backups yet"
+          description="Snapshots are written as a nightly VACUUM INTO of your database. Use “Back up now” to create one immediately."
+          action={{ label: 'Back up now', onClick: () => backupNow.mutate() }}
+        />
+      ) : null}
       {view.kind === 'error' ? (
         <ErrorCard message={view.message} onRetry={() => void query.refetch()} />
       ) : null}
@@ -245,23 +253,6 @@ function ListSkeleton() {
   return (
     <div className="flex items-center justify-center rounded-lg border border-border bg-surface-raised py-12 text-text-tertiary">
       <Loader2 size={20} className="animate-spin" aria-label="Loading backups" />
-    </div>
-  )
-}
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center gap-3 rounded-lg border border-border border-dashed bg-surface-raised px-6 py-12 text-center">
-      <FolderClock size={28} strokeWidth={1.75} className="text-text-tertiary" aria-hidden="true" />
-      <div className="font-medium text-body text-text-primary">
-        No backups yet — your first nightly snapshot will appear here
-      </div>
-      <p className="max-w-prose text-copy text-text-secondary">
-        Snapshots are written as a nightly{' '}
-        <code className="font-mono text-caption">VACUUM INTO</code> of your database. Use{' '}
-        <span className="font-medium text-text-primary">Back up now</span> to create one
-        immediately.
-      </p>
     </div>
   )
 }
@@ -456,7 +447,7 @@ function AttachmentsControl({
               'h-8 cursor-pointer px-2.5 font-medium text-caption transition-colors duration-150 ease-standard focus-visible:z-10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--od-focus-ring)] disabled:cursor-not-allowed disabled:opacity-60',
               index > 0 && 'border-input-border border-l',
               selected
-                ? 'bg-accent-soft text-accent'
+                ? 'bg-selected text-selected-text'
                 : 'bg-surface-raised text-text-secondary hover:bg-hover hover:text-text-primary',
             )}
           >

@@ -9,7 +9,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "build": "node -e \"console.log('server: tsx-run workspace package, no build step')\"",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "seed": "tsx src/seed.ts"
   },
   "dependencies": {
     "@opendoist/core": "workspace:*",

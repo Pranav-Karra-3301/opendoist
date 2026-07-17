@@ -32,6 +32,19 @@ const POPOVER_CLASS: Record<RowPopoverKind, string> = {
   more: `w-56 p-1 ${MENU_CHROME}`,
 }
 
+/**
+ * Accessible name for each popover surface. Base UI's Popover.Popup renders `role="dialog"`
+ * and only labels itself from a `Popover.Title`, which these bare panels don't render — so a
+ * dialog with no accessible name would fail axe. An explicit `aria-label` names each one.
+ */
+const POPOVER_LABEL: Record<RowPopoverKind, string> = {
+  schedule: 'Schedule task',
+  priority: 'Set priority',
+  move: 'Move to project',
+  labels: 'Edit labels',
+  more: 'More actions',
+}
+
 function OpenRowPopover({ taskId, kind }: { taskId: string; kind: RowPopoverKind }): ReactElement {
   const closeRowPopover = useUiStore((state) => state.closeRowPopover)
   const { data: tasks } = useActiveTasks()
@@ -107,6 +120,7 @@ function OpenRowPopover({ taskId, kind }: { taskId: string; kind: RowPopoverKind
             anchor={anchorRef}
             side="bottom"
             align="end"
+            aria-label={POPOVER_LABEL[kind]}
             className={POPOVER_CLASS[kind]}
           >
             {content}
