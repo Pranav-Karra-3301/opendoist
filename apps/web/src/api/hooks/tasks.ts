@@ -8,10 +8,12 @@
  *
  * AS-BUILT (verified against the live server, 2026-07-16):
  * - `due` in create/update bodies is serialized centrally by client.ts `serializeBody`; full
- *   core `Due` objects are fine to hand over. A recurring due serializes to `{ string }` (the
- *   server re-parses the recurrence); a plain due to `{ date, time }` (an exact restore).
- * - move: server ignores `child_order` (schemas.ts `toMoveBody` strips it) and requires ≥1 of
- *   project_id/section_id/parent_id.
+ *   core `Due` objects are fine to hand over. A due with a known date serializes to
+ *   `{ string, date, time? }` — the server pins the exact date/time, stores the phrase
+ *   verbatim, and re-parses recurrence from it — so undo restores are exact for both plain
+ *   and recurring dues; a date-less due travels as `{ string }` alone.
+ * - move: server honors an explicit `child_order` (undo restores the captured pre-move
+ *   position; omitted = append) and requires ≥1 of project_id/section_id/parent_id.
  * - delete: DELETE is a soft delete and Task B landed POST /tasks/{id}/restore (subtree
  *   cascade), so undo-delete restores the task under its ORIGINAL id via `restoreEntity`.
  * - complete: a recurring occurrence advances the due and stays open (no completed_at), and the
@@ -173,8 +175,9 @@ export function useTaskMutations(): TaskMutations {
               .label
       useUndoStore.getState().push({
         message: `Rescheduled to ${label}`,
-        // Restore the FULL previous due (serializeBody re-forms it for the server): a plain due
-        // round-trips its exact date/time, a recurring due its `string` (recurrence re-parsed).
+        // Restore the FULL previous due (serializeBody re-forms it for the server): the exact
+        // date/time AND the natural-language `string` round-trip verbatim; a recurring phrase
+        // is re-parsed for its spec while the explicit date pins the restored occurrence.
         undo: async () => {
           await inverses.current?.update({ id: vars.id, patch: { due: prevDue }, silent: true })
           invalidateAffected()

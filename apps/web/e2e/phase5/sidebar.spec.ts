@@ -29,17 +29,30 @@ test('g/o sequences reach the phase-5 views and the overlay lists them', async (
   await page.keyboard.press('a')
   await expect(page).toHaveURL(/\/reporting/)
 
+  // Settings opens as a lazily-mounted MODAL dialog that focus-traps its search input.
+  // Hotkeys are disabled while a modal is open (and swallowed by the focused input), so wait
+  // for the dialog and close it before the next sequence — pressing on without waiting races
+  // the mount and can stack the `?` overlay on top of it (mount-order-dependent Escape).
+  const settingsDialog = page.getByRole('dialog', { name: 'Settings' })
+  const closeSettings = async () => {
+    await expect(settingsDialog).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('dialog')).toBeHidden()
+  }
+
   await page.keyboard.press('o')
   await page.keyboard.press('s')
   await expect(page).toHaveURL(/\/settings\/account/)
+  await closeSettings()
 
   await page.keyboard.press('o')
   await page.keyboard.press('t')
   await expect(page).toHaveURL(/\/settings\/theme/)
+  await closeSettings()
 
   // `?` overlay lists the new navigation shortcuts.
   await page.keyboard.press('Shift+Slash')
-  const overlay = page.getByRole('dialog')
+  const overlay = page.getByRole('dialog', { name: 'Keyboard shortcuts' })
   await expect(overlay).toBeVisible()
   await expect(overlay.getByText(/filters & labels/i).first()).toBeVisible()
   await expect(overlay.getByText(/go to reporting/i).first()).toBeVisible()

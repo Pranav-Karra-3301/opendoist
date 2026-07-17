@@ -113,6 +113,7 @@ export function ActivityFeed({ params }: { params: ReportingParams }) {
         <section key={group.key}>
           <h2 className="sticky top-0 z-[1] bg-bg py-2 font-medium text-caption text-text-secondary">
             {group.label}
+            <span className="font-normal text-text-tertiary">{` · ${group.items.length}`}</span>
           </h2>
           <ul className="flex flex-col">
             {group.items.map((event) => {

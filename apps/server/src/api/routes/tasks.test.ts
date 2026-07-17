@@ -203,6 +203,70 @@ it('reorders tasks by child_order', async () => {
   expect(list.results.map((r) => r.content)).toEqual(['b', 'a'])
 })
 
+it('move honors an explicit child_order so an undo restores the original position', async () => {
+  const t = await make()
+  const dest = makeProject(t, 'Beta')
+  const a = await json<TaskDto>(await t.post('/api/v1/tasks', { content: 'a' }))
+  const b = await json<TaskDto>(await t.post('/api/v1/tasks', { content: 'b' }))
+  await t.post('/api/v1/tasks', { content: 'c' })
+  expect(b.child_order).toBe(1)
+
+  // Forward move without child_order keeps the append-in-destination behavior…
+  const moved = await json<TaskDto>(
+    await t.post(`/api/v1/tasks/${b.id}/move`, { project_id: dest }),
+  )
+  expect(moved.child_order).toBe(0)
+
+  // …and the inverse move carries the captured child_order back verbatim (spec §2.4:
+  // inverse-operation undo restores the exact prior state, position included).
+  const undone = await json<TaskDto>(
+    await t.post(`/api/v1/tasks/${b.id}/move`, {
+      project_id: a.project_id,
+      section_id: null,
+      parent_id: null,
+      child_order: 1,
+    }),
+  )
+  expect(undone.child_order).toBe(1)
+  const list = await json<TaskList>(await t.get('/api/v1/tasks'))
+  expect(list.results.map((r) => r.content)).toEqual(['a', 'b', 'c'])
+})
+
+it('stores a natural-language due string verbatim when an explicit date pins the resolved value', async () => {
+  const t = await make()
+  const created = await json<TaskDto>(
+    await t.post('/api/v1/tasks', { content: 'x', due: { string: 'today' } }),
+  )
+  expect(created.due?.string).toBe('today')
+
+  // Undo of a reschedule restores the FULL previous due: the explicit date/time must win
+  // over re-parsing the phrase (which by then could resolve to a different day) and the
+  // phrase itself must round-trip unchanged.
+  const restored = await json<TaskDto>(
+    await t.patch(`/api/v1/tasks/${created.id}`, { due: { string: 'today', date: '2030-01-15' } }),
+  )
+  expect(restored.due?.date).toBe('2030-01-15')
+  expect(restored.due?.time).toBeNull()
+  expect(restored.due?.string).toBe('today')
+  expect(restored.due?.is_recurring).toBe(false)
+})
+
+it('keeps the exact occurrence when a recurring due string arrives with an explicit date', async () => {
+  const t = await make()
+  // Restoring an overdue recurring occurrence: re-parsing "every day" from now would land on
+  // a future date, but the explicit date pins the stored occurrence exactly.
+  const dto = await json<TaskDto>(
+    await t.post('/api/v1/tasks', {
+      content: 'r',
+      due: { string: 'every day 9am', date: '2020-05-05', time: '09:00' },
+    }),
+  )
+  expect(dto.due?.is_recurring).toBe(true)
+  expect(dto.due?.date).toBe('2020-05-05')
+  expect(dto.due?.time).toBe('09:00')
+  expect(dto.due?.string).toBe('every day 9am')
+})
+
 it('rejects a move that would create a parent cycle', async () => {
   const t = await make()
   const parent = await json<TaskDto>(await t.post('/api/v1/tasks', { content: 'parent' }))

@@ -157,9 +157,9 @@ export interface TaskMove {
   project_id?: string
   section_id?: string | null
   parent_id?: string | null
-  /** AS-BUILT: POST /tasks/{id}/move IGNORES child_order (moved tasks append at the end of
-   *  the target container). Reorder afterwards via POST /tasks/reorder or PATCH child_order.
-   *  Kept in the frozen type so plan-written call sites typecheck; `toMoveBody` strips it. */
+  /** AS-BUILT: POST /tasks/{id}/move honors an explicit child_order (undo restores the
+   *  captured pre-move position); omitted, moved tasks append at the end of the target
+   *  container. Batch reordering still goes through POST /tasks/reorder. */
   child_order?: number
 }
 
@@ -167,16 +167,18 @@ export interface TaskMove {
 
 /** What POST/PATCH /tasks actually accepts for `due` (server `DueInputSchema`):
  *  `{ string }` → server re-parses the phrase authoritatively (recurrence included);
- *  `{ date, time? }` → exact values, recurrence CLEARED; `null` → clears the due.
- *  The full core `Due` object is NOT accepted — `time: null` fails validation and
- *  `recurrence` is stripped. */
+ *  `{ date, time? }` → exact values, recurrence CLEARED; `{ string, date, time? }` →
+ *  exact values with the phrase stored verbatim (recurrence re-parsed from the string),
+ *  the shape undo uses for exact restores; `null` → clears the due. The full core `Due`
+ *  object is NOT accepted — `time: null` fails validation and `recurrence` is stripped. */
 export type DueInput = { string?: string; date?: string; time?: string } | null
 
 /**
- * Serialize a client-side `Due` (or an already-wire-shaped input) for the server:
- * a recurring due (or one without an explicit date) travels as its natural-language
- * `string` so the server recomputes recurrence; otherwise the exact `{date, time?}`
- * wins (deterministic — what the user previewed is what is stored).
+ * Serialize a client-side `Due` (or an already-wire-shaped input) for the server: when a
+ * date is known it travels alongside the natural-language `string` so the stored due is
+ * deterministic (what the user previewed is what is stored) AND the phrase round-trips
+ * verbatim — a restore of `{string, date, time?}` is exact, recurrence included. Without
+ * a date the phrase alone is sent for the server to resolve authoritatively.
  */
 export function toDueInput(due: Due | DueInput | undefined): DueInput | undefined {
   if (due === undefined) return undefined
@@ -184,25 +186,30 @@ export function toDueInput(due: Due | DueInput | undefined): DueInput | undefine
   const d = due as Partial<Due>
   const str = typeof d.string === 'string' ? d.string.trim() : ''
   const hasDate = typeof d.date === 'string' && d.date !== ''
-  if (str !== '' && (d.recurrence != null || !hasDate)) return { string: str }
-  if (hasDate) {
-    return typeof d.time === 'string'
-      ? { date: d.date as string, time: d.time }
-      : { date: d.date as string }
-  }
-  return str === '' ? null : { string: str }
+  if (!hasDate) return str === '' ? null : { string: str }
+  const wire: NonNullable<DueInput> = { date: d.date as string }
+  if (typeof d.time === 'string') wire.time = d.time
+  if (str !== '') wire.string = str
+  return wire
 }
 
-/** AS-BUILT: the move body must carry ≥1 of project_id/section_id/parent_id and the
- *  server strips child_order — send only the accepted keys. */
+/** AS-BUILT: the move body must carry ≥1 of project_id/section_id/parent_id; an explicit
+ *  child_order pins the position among the destination siblings (omitted = append). */
 export function toMoveBody(to: TaskMove): {
   project_id?: string
   section_id?: string | null
   parent_id?: string | null
+  child_order?: number
 } {
-  const body: { project_id?: string; section_id?: string | null; parent_id?: string | null } = {}
+  const body: {
+    project_id?: string
+    section_id?: string | null
+    parent_id?: string | null
+    child_order?: number
+  } = {}
   if (to.project_id !== undefined) body.project_id = to.project_id
   if (to.section_id !== undefined) body.section_id = to.section_id
   if (to.parent_id !== undefined) body.parent_id = to.parent_id
+  if (to.child_order !== undefined) body.child_order = to.child_order
   return body
 }

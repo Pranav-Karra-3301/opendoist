@@ -61,8 +61,10 @@ interface ResolvedDue {
 /**
  * Turn a `due` input into stored columns. A `due.string` is parsed against the user's
  * ParseContext — first as a recurrence phrase, then as a one-off natural date; the raw
- * string is always kept so recurring tasks can be re-parsed later. An explicit
- * `date`/`time` bypasses parsing. `null`/absent/unparseable clears the due entirely.
+ * string is always kept so recurring tasks can be re-parsed later. An explicit `date`
+ * pins the resolved occurrence (parsing only supplies the recurrence spec), so a restore
+ * of `{string, date, time?}` round-trips the exact prior due even when the phrase would
+ * re-resolve differently by then (undo §2.4). `null`/absent/unparseable clears the due.
  */
 function resolveDue(
   due: { string?: string; date?: string; time?: string } | null | undefined,
@@ -74,10 +76,19 @@ function resolveDue(
     const rec = parseRecurrenceText(due.string, ctx)
     if (rec !== null) {
       return {
-        dueDate: rec.firstDate,
-        dueTime: rec.firstTime,
+        dueDate: due.date ?? rec.firstDate,
+        dueTime: due.date !== undefined ? (due.time ?? rec.firstTime) : rec.firstTime,
         dueString: due.string,
         recurrence: rec.spec,
+      }
+    }
+    if (due.date !== undefined) {
+      // Non-recurring phrase with explicit values: store the phrase verbatim, values exact.
+      return {
+        dueDate: due.date,
+        dueTime: due.time ?? null,
+        dueString: due.string,
+        recurrence: null,
       }
     }
     const nat = resolveNaturalDate(due.string, ctx)
@@ -192,6 +203,9 @@ const MoveBodySchema = z
     project_id: IdSchema.optional(),
     section_id: IdSchema.nullable().optional(),
     parent_id: IdSchema.nullable().optional(),
+    /** Explicit position among the destination siblings; omitted = append at the end.
+     *  Undo sends the captured pre-move value so an inverse move is an exact restore. */
+    child_order: z.number().int().optional(),
   })
   .refine(
     (b) => b.project_id !== undefined || b.section_id !== undefined || b.parent_id !== undefined,
@@ -713,7 +727,9 @@ export const tasksRoutes = () => {
         projectId: newProjectId,
         sectionId: newSectionId,
         parentId: newParentId,
-        childOrder: (maxOrder?.m ?? -1) + 1,
+        // Explicit child_order (the undo path restoring the pre-move position) wins;
+        // otherwise append after the destination container's last sibling.
+        childOrder: body.child_order ?? (maxOrder?.m ?? -1) + 1,
         updatedAt: now,
       })
       .where(eq(tasks.id, id))
