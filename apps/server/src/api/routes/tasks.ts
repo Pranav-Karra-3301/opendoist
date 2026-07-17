@@ -30,6 +30,7 @@ import { nowIso } from '../../lib/ids'
 import { decodeCursor, encodeCursor, ListQuerySchema } from '../../lib/pagination'
 import { parseContextFor } from '../../lib/parse-context'
 import { problem } from '../../lib/problem'
+import { recordDeletion } from '../../productivity/rollup'
 import { syncTaskReminders } from '../../reminders/materialize'
 import { type TaskDto, type TaskRow, tasksToDtos } from '../../services/task-read'
 import { createTask, getSettings, resolveLabelIds } from '../../services/task-write'
@@ -646,6 +647,12 @@ export const tasksRoutes = () => {
       .set({ deletedAt: now, updatedAt: now })
       .where(and(inArray(tasks.id, ids), eq(tasks.userId, auth.userId)))
       .run()
+    // Karma penalty for deleting an overdue task (root only, mirroring completion's root-only count).
+    try {
+      recordDeletion(db, { userId: auth.userId, taskId: id, dueDate: root.dueDate, deletedAt: now })
+    } catch (err) {
+      c.get('deps').logger.error({ err, taskId: id }, 'recordDeletion hook failed')
+    }
     logActivity(db, {
       userId: auth.userId,
       eventType: 'task_deleted',

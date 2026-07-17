@@ -23,7 +23,8 @@ it('GET /api/v1/info matches InfoDtoSchema on a fresh instance', async () => {
   expect(info.auth_providers.password).toBe(true)
   expect(info.auth_providers.oidc).toBeNull()
   expect(info.features).toEqual({ stt: false, llm: false, push: true })
-  expect(info.available_importers).toEqual([])
+  expect(info.available_importers).toEqual(['todoist-csv', 'todoist-api'])
+  expect(info.update).toBeNull()
   expect(info.version.length).toBeGreaterThan(0)
 })
 

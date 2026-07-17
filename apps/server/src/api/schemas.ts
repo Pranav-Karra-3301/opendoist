@@ -174,4 +174,8 @@ export const InfoDtoSchema = z.object({
   }),
   features: z.object({ stt: z.boolean(), llm: z.boolean(), push: z.boolean() }),
   available_importers: z.array(z.string()),
+  /** phase 9: last update-check result; null until the daily update.check job has succeeded */
+  update: z
+    .object({ available: z.boolean(), latestVersion: z.string(), url: z.string() })
+    .nullable(),
 })

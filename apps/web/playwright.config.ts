@@ -46,7 +46,9 @@ export default defineConfig({
   webServer: [
     {
       command:
-        'OPENDOIST_DATA_DIR="$(mktemp -d)" OPENDOIST_PUBLIC_URL=http://localhost:5173 pnpm --filter @opendoist/server start',
+        // OPENDOIST_DISABLE_UPDATE_CHECK: the phase-9 boot-time update.check job would otherwise
+        // call the real GitHub releases API on every suite run (external network, nondeterministic).
+        'OPENDOIST_DATA_DIR="$(mktemp -d)" OPENDOIST_PUBLIC_URL=http://localhost:5173 OPENDOIST_DISABLE_UPDATE_CHECK=true pnpm --filter @opendoist/server start',
       url: `${API_ORIGIN}/api/health`,
       reuseExistingServer: false,
       timeout: 60_000,

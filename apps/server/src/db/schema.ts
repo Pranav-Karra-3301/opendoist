@@ -210,6 +210,9 @@ export const dayStats = sqliteTable(
     date: text('date').notNull(),
     completedCount: integer('completed_count').notNull().default(0),
     goalMet: integer('goal_met', { mode: 'boolean' }).notNull().default(false),
+    /** phase 9: captured from productivity settings when the row is created (streak semantics) */
+    isDayOff: integer('is_day_off', { mode: 'boolean' }).notNull().default(false),
+    isVacation: integer('is_vacation', { mode: 'boolean' }).notNull().default(false),
   },
   (t) => [primaryKey({ columns: [t.userId, t.date] })],
 )
@@ -341,4 +344,71 @@ export const providerSettings = sqliteTable('provider_settings', {
   llmModel: text('llm_model'),
   llmApiKeyEnc: text('llm_api_key_enc'),
   updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
+})
+
+/* ---------- phase 9: backups + importer + karma (frozen contract — plan Task A Step 3) ----------
+ * NOTE: `productivity_settings` from the plan is intentionally SKIPPED — the phase-5 settings
+ * document (core UserSettingsSchema stored in `user_settings.settings` JSON) already persists
+ * dailyGoal/weeklyGoal/daysOff/vacationMode/karmaEnabled; `productivity/settings.ts` wraps it. */
+
+export const backupsMeta = sqliteTable('backups_meta', {
+  id: text('id').primaryKey(),
+  filename: text('filename').notNull().unique(),
+  kind: text('kind', { enum: ['scheduled', 'manual', 'pre_restore'] }).notNull(),
+  sizeBytes: integer('size_bytes').notNull(),
+  includesAttachments: integer('includes_attachments', { mode: 'boolean' }).notNull(),
+  createdAt: text('created_at').notNull(),
+})
+
+export const backupSettings = sqliteTable('backup_settings', {
+  /** singleton row id=1; null field = fall back to env/default */
+  id: integer('id').primaryKey(),
+  retentionDays: integer('retention_days'),
+  includeAttachments: integer('include_attachments', { mode: 'boolean' }),
+})
+
+export const karmaLedger = sqliteTable(
+  'karma_ledger',
+  {
+    id: text('id').primaryKey(),
+    /** owner — keys rows against phase 3's (user_id, date) day_stats composite PK */
+    userId: text('user_id').notNull(),
+    /** ISO instant */
+    at: text('at').notNull(),
+    /** user-tz calendar date the points count toward; weekly_goal rows use the week-start date */
+    date: text('date').notNull(),
+    reason: text('reason', {
+      enum: [
+        'completion',
+        'on_time_bonus',
+        'daily_goal',
+        'weekly_goal',
+        'overdue_penalty',
+        'reversal',
+        'reconcile',
+      ],
+    }).notNull(),
+    taskId: text('task_id'),
+    delta: integer('delta').notNull(),
+  },
+  (t) => [
+    index('karma_ledger_user_date').on(t.userId, t.date),
+    uniqueIndex('karma_ledger_goal_once')
+      .on(t.userId, t.date, t.reason)
+      .where(sql`reason IN ('daily_goal','weekly_goal')`),
+  ],
+)
+
+export const importJobs = sqliteTable('import_jobs', {
+  id: text('id').primaryKey(),
+  source: text('source', { enum: ['todoist-csv', 'todoist-api'] }).notNull(),
+  mode: text('mode', { enum: ['dry-run', 'apply'] }).notNull(),
+  status: text('status', { enum: ['running', 'done', 'error'] }).notNull(),
+  /** JSON ImportProgress */
+  progress: text('progress').notNull(),
+  /** JSON ImportReport when done */
+  report: text('report'),
+  error: text('error'),
+  createdAt: text('created_at').notNull(),
+  finishedAt: text('finished_at'),
 })

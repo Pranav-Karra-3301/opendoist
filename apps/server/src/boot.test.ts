@@ -32,7 +32,7 @@ it('fresh instance: /api/v1/info reports first_run and open registration', async
   }>(res)
   expect(info.first_run).toBe(true)
   expect(info.registration_open).toBe(true)
-  expect(info.available_importers).toEqual([])
+  expect(info.available_importers).toEqual(['todoist-csv', 'todoist-api'])
 })
 
 it('after signup: first_run false and registration locked by default', async () => {

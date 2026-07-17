@@ -1,13 +1,14 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
 import { dateInTz, nextOccurrence, parseQuickAdd, RecurrenceSpecSchema } from '@opendoist/core'
-import { and, eq, inArray, isNull, sql } from 'drizzle-orm'
+import { and, eq, inArray, isNull } from 'drizzle-orm'
 import type { AppEnv } from '../../app'
 import type { Db } from '../../db/db'
-import { dayStats, reminders, tasks } from '../../db/schema'
+import { reminders, tasks } from '../../db/schema'
 import { logActivity } from '../../lib/activity'
 import { newId, nowIso } from '../../lib/ids'
 import { parseContextFor } from '../../lib/parse-context'
 import { problem } from '../../lib/problem'
+import { recordCompletion, recordUncompletion } from '../../productivity/rollup'
 import { syncTaskReminders } from '../../reminders/materialize'
 import { resolveProject, resolveSection } from '../../services/quick-resolve'
 import type { TaskDto, TaskRow } from '../../services/task-read'
@@ -28,24 +29,6 @@ const problemResponse = (description: string) => ({
   content: { 'application/problem+json': { schema: ProblemSchema } },
   description,
 })
-
-/** Adjust `day_stats.completed_count` for a user/date, flooring at 0 on decrement. */
-function bumpDayStat(db: Db, userId: string, date: string, delta: number): void {
-  if (delta >= 0) {
-    db.insert(dayStats)
-      .values({ userId, date, completedCount: delta, goalMet: false })
-      .onConflictDoUpdate({
-        target: [dayStats.userId, dayStats.date],
-        set: { completedCount: sql`${dayStats.completedCount} + ${delta}` },
-      })
-      .run()
-    return
-  }
-  db.update(dayStats)
-    .set({ completedCount: sql`max(0, ${dayStats.completedCount} + ${delta})` })
-    .where(and(eq(dayStats.userId, userId), eq(dayStats.date, date)))
-    .run()
-}
 
 /** Breadth-first walk of a task's still-open, non-deleted descendants. */
 function collectOpenDescendants(db: Db, userId: string, rootId: string): TaskRow[] {
@@ -365,7 +348,12 @@ export const taskActionsRoutes = () => {
           projectId: task.projectId,
           payload: { recurring: true, next_due: next.date },
         })
-        bumpDayStat(db, userId, todayTz, 1)
+        // Recurring occurrence still counts as a completion; the occurrence's due is task.dueDate.
+        try {
+          recordCompletion(db, { userId, taskId: task.id, dueDate: task.dueDate, completedAt: now })
+        } catch (err) {
+          c.get('deps').logger.error({ err, taskId: task.id }, 'recordCompletion hook failed')
+        }
         bus.publish({ userId, type: 'task.completed', entity: 'task', ids: [task.id] })
         bus.publish({ userId, type: 'task.updated', entity: 'task', ids: [task.id] })
         // phase 6: the advanced due re-arms this task's reminders around the next occurrence.
@@ -400,7 +388,12 @@ export const taskActionsRoutes = () => {
         projectId: d.projectId,
       })
     }
-    bumpDayStat(db, userId, todayTz, 1)
+    // Karma/day_stats count only the root task, mirroring the single day_stats increment.
+    try {
+      recordCompletion(db, { userId, taskId: task.id, dueDate: task.dueDate, completedAt: now })
+    } catch (err) {
+      c.get('deps').logger.error({ err, taskId: task.id }, 'recordCompletion hook failed')
+    }
     bus.publish({ userId, type: 'task.completed', entity: 'task', ids: closedIds })
     // phase 6: completing a non-recurring task unarms its relative/auto reminders.
     await syncTaskReminders(db, task.id)
@@ -421,9 +414,9 @@ export const taskActionsRoutes = () => {
     if (task === undefined) return problem(c, 404, 'not found')
     if (task.completedAt === null) return problem(c, 409, 'not completed')
 
+    // Capture the completion instant BEFORE the update below clears it (karma reversal keys off it).
+    const previousCompletedAt = task.completedAt
     const now = nowIso()
-    const ctx = parseContextFor(getSettings(db, userId), now)
-    const completionDate = dateInTz(task.completedAt, ctx.timezone)
 
     const reopenedIds = [task.id]
     db.update(tasks)
@@ -448,7 +441,11 @@ export const taskActionsRoutes = () => {
       parentId = parent.parentId
     }
 
-    bumpDayStat(db, userId, completionDate, -1)
+    try {
+      recordUncompletion(db, { userId, taskId: task.id, previousCompletedAt })
+    } catch (err) {
+      c.get('deps').logger.error({ err, taskId: task.id }, 'recordUncompletion hook failed')
+    }
     logActivity(db, {
       userId,
       eventType: 'task_uncompleted',

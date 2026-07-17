@@ -28,6 +28,7 @@ import { useHotkeys } from 'react-hotkeys-hook'
 import { useTaskMutations } from '@/api/hooks/tasks'
 import { qk } from '@/api/keys'
 import type { Task } from '@/api/schemas'
+import { useProductivityPopoverStore } from '@/productivity/ProductivityPopover'
 import { useSelectionStore } from '@/stores/selection'
 import { toast } from '@/stores/toasts'
 import { useUiStore } from '@/stores/ui'
@@ -205,9 +206,10 @@ export function GlobalHotkeys(): ReactElement {
   useHotkeys(shortcutKeys('go-inbox'), () => void navigate({ to: '/inbox' }), seqOpts)
   useHotkeys(shortcutKeys('go-upcoming'), () => void navigate({ to: '/upcoming' }), seqOpts)
 
-  // Phase-5 destinations. `g>v`/`g>l` both anchor Filters & Labels and `g>a`/`o>p` both anchor
-  // Reporting — like go-today, each aliased chord is bound as its own call (v5 can't hold two
-  // `>`-sequences in one binding string). The `o>` prefix feeds SEQUENCE_PREFIXES automatically.
+  // Phase-5 destinations. `g>v`/`g>l` both anchor Filters & Labels — like go-today, each aliased
+  // chord is bound as its own call (v5 can't hold two `>`-sequences in one binding string).
+  // Reporting keeps its lone `g>a` chord; phase 9 rebinds `o>p` to open the productivity popover.
+  // The `o>` prefix feeds SEQUENCE_PREFIXES automatically.
   const goFiltersLabels = useCallback(() => void navigate({ to: '/filters-labels' }), [navigate])
   const goReporting = useCallback(() => void navigate({ to: '/reporting' }), [navigate])
   const goSettings = useCallback(
@@ -223,11 +225,12 @@ export function GlobalHotkeys(): ReactElement {
     .map((chord) => chord.trim())
   useHotkeys(filtersChord, goFiltersLabels, seqOpts)
   useHotkeys(filtersAlias, goFiltersLabels, seqOpts)
-  const [reportChord = 'g>a', reportAlias = 'o>p'] = shortcutKeys('go-reporting')
-    .split(',')
-    .map((chord) => chord.trim())
-  useHotkeys(reportChord, goReporting, seqOpts)
-  useHotkeys(reportAlias, goReporting, seqOpts)
+  useHotkeys(shortcutKeys('go-reporting'), goReporting, seqOpts)
+  useHotkeys(
+    shortcutKeys('productivity'),
+    () => useProductivityPopoverStore.getState().setOpen(true),
+    seqOpts,
+  )
   useHotkeys(shortcutKeys('open-settings'), goSettings, seqOpts)
   useHotkeys(shortcutKeys('open-theme'), goThemeSettings, seqOpts)
 

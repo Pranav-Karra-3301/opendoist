@@ -1,0 +1,9 @@
+TYPE,CONTENT,DESCRIPTION,PRIORITY,INDENT,AUTHOR,RESPONSIBLE,DATE,DATE_LANG,TIMEZONE,DURATION,DURATION_UNIT,DEADLINE,DEADLINE_LANG
+section,Planning,,,,,,,,,,,,
+task,Draft Q3 roadmap @work,Outline the big rocks,4,1,Pranav (1234567),,every friday,en,,45,minute,2026-08-01,en
+note,Remember to include the hiring plan,,,,Pranav (1234567),,2026-07-10T14:03:22Z,,,,,,
+task,* Reference material,,1,2,Pranav (1234567),,,,,,,,
+task,Book flights @travel @work,,3,1,Pranav (1234567),Someone (7654321),Jul 22,en,US/Eastern,,,,
+,,,,,,,,,,,,,
+section,Later,,,,,,,,,,,,
+task,Water plants,,1,1,Pranav (1234567),,every! 3 days,en,,,,,

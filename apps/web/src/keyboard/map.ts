@@ -11,7 +11,8 @@
  *   - Zoom `Cmd+±/0`, Print `Cmd+P`, `Cmd+Alt+0` collapse-all — browser/native concerns.
  *   - Extra navigation: `Shift+G` (open in project), `Tab` focus cycling, `→`/`←` focus, and the
  *     still-unbuilt `o>h`/`o>n`/`o>u` and `g>p`/`g>/` sequences. Phase 5 lands the rest: `g>v`/`g>l`
- *     (Filters & Labels), `g>a`/`o>p` (Reporting), `o>s`/`o>t` (Settings) — see the Navigation group.
+ *     (Filters & Labels), `g>a` (Reporting), `o>s`/`o>t` (Settings), `o>p` (Productivity) — see the
+ *     Navigation group.
  *   - In-editor: `Cmd+E` edit, `Cmd+↑/↓` move-while-editing, `Cmd+V` paste-as-task, `Shift+Enter`.
  *
  * `keys` is the react-hotkeys-hook binding string (default split `+`, sequence `>`, list
@@ -86,10 +87,17 @@ export const SHORTCUTS = [
   },
   {
     id: 'go-reporting',
-    keys: 'g>a, o>p',
+    keys: 'g>a',
     display: 'G then A',
     group: 'Navigation',
     desc: 'Go to Reporting',
+  },
+  {
+    id: 'productivity',
+    keys: 'o>p',
+    display: 'O then P',
+    group: 'Navigation',
+    desc: 'Productivity stats',
   },
   {
     id: 'open-settings',

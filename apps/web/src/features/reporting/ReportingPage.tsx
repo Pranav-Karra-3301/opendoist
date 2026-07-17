@@ -15,9 +15,10 @@ import {
   type ReportingFilterState,
 } from './activity-presentation'
 import { CompletedFeed } from './CompletedFeed'
+import { GoalCharts } from './GoalCharts'
 import { ReportingFilters } from './ReportingFilters'
 
-type ReportingTab = 'activity' | 'completed'
+type ReportingTab = 'activity' | 'completed' | 'goals'
 
 export default function ReportingPage() {
   const { settings } = useUserSettings()
@@ -38,13 +39,21 @@ export default function ReportingPage() {
         <TabsList>
           <TabsTrigger value="activity">Activity</TabsTrigger>
           <TabsTrigger value="completed">Completed</TabsTrigger>
+          <TabsTrigger value="goals">Goals</TabsTrigger>
         </TabsList>
-        <ReportingFilters state={filters} onChange={setFilters} showTypes={tab === 'activity'} />
+        {/* Goals reads its own date window from the productivity API — the project/date filters
+            don't apply, so they're hidden there (activity/completed keep the shared row). */}
+        {tab !== 'goals' && (
+          <ReportingFilters state={filters} onChange={setFilters} showTypes={tab === 'activity'} />
+        )}
         <TabsContent value="activity">
           <ActivityFeed params={activityParams} />
         </TabsContent>
         <TabsContent value="completed">
           <CompletedFeed params={scope} />
+        </TabsContent>
+        <TabsContent value="goals">
+          <GoalCharts />
         </TabsContent>
       </Tabs>
     </div>

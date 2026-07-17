@@ -167,6 +167,22 @@ it('mints od_ API keys whose scope gates writes through the guard', async () => 
   expect(rwPost.status).toBe(404)
 })
 
+it('od_ keys keep authenticating past 10 requests (plugin default rate limit disabled)', async () => {
+  const t = await make()
+  // better-auth's api-key plugin defaults to rateLimit {enabled, 10 requests/day}; the 11th
+  // verifyApiKey would throw RATE_LIMITED, which the bearer middleware reads as 401. Regression
+  // for the phase-9 gate fix (`rateLimit: {enabled: false}` in auth.ts).
+  const key = await t.deps.auth.api.createApiKey({
+    body: { name: 'cli-busy', userId: t.userId, permissions: { opendoist: ['read'] } },
+  })
+  for (let i = 0; i < 12; i++) {
+    const res = await t.request('/api/v1/tasks', {
+      headers: { authorization: `Bearer ${key.key}` },
+    })
+    expect(res.status, `request ${i + 1} of 12`).toBe(200)
+  }
+})
+
 it('HTTP-created API keys default to the explicit read-only permission shape', async () => {
   const t = await make()
 

@@ -21,12 +21,18 @@ import { tasksRoutes } from './api/routes/tasks'
 import { tokensRoutes } from './api/routes/tokens'
 import { userRoutes } from './api/routes/user'
 import type { Auth } from './auth'
+import { maintenanceGuard } from './backups/lock'
+import { backupsRouter } from './backups/routes'
 import type { Config } from './config'
 import { user } from './db/auth-schema'
 import type { Db } from './db/db'
 import type { EventBus } from './events/bus'
+import { exportRouter } from './export/routes'
 import { icalFeedRoutes, icalTokenRoutes } from './ical/routes'
+import { importRouter } from './import/routes'
+import { getUpdateState } from './jobs/update-check'
 import { problem } from './lib/problem'
+import { productivityRouter } from './productivity/routes'
 import { integrationsRoutes } from './rambles/integrations-routes'
 import { rambleRoutes } from './rambles/routes'
 import { channelRoutes } from './reminders/channel-routes'
@@ -107,6 +113,10 @@ export function createApp(deps: AppDeps): OpenAPIHono<AppEnv> {
   // 3. Health.
   app.get('/api/health', (c) => c.json({ status: 'ok' }))
 
+  // 3b. Maintenance lock (phase 9): while a restore runs, everything below (auth, API, SPA)
+  // answers 503 problem JSON. /api/health stays reachable — its route is registered above.
+  app.use('*', maintenanceGuard)
+
   // 4. better-auth endpoints.
   app.on(['GET', 'POST'], '/api/auth/*', (c) => deps.auth.handler(c.req.raw))
 
@@ -140,6 +150,7 @@ export function createApp(deps: AppDeps): OpenAPIHono<AppEnv> {
   app.get('/api/v1/info', async (c) => {
     const [row] = await deps.db.select({ n: count() }).from(user)
     const firstRun = (row?.n ?? 0) === 0
+    const updateState = getUpdateState()
     return c.json({
       version: deps.config.version,
       first_run: firstRun,
@@ -150,7 +161,15 @@ export function createApp(deps: AppDeps): OpenAPIHono<AppEnv> {
       },
       // push is always available: VAPID keys are auto-generated into secrets.json at first boot.
       features: { stt: deps.config.stt !== null, llm: deps.config.llm !== null, push: true },
-      available_importers: [],
+      available_importers: ['todoist-csv', 'todoist-api'],
+      // phase 9: last update-check result (null until the daily update.check job has succeeded)
+      update: updateState
+        ? {
+            available: updateState.updateAvailable,
+            latestVersion: updateState.latestVersion,
+            url: updateState.url,
+          }
+        : null,
     })
   })
 
@@ -186,6 +205,11 @@ export function createApp(deps: AppDeps): OpenAPIHono<AppEnv> {
   // phase 7 (Task N wiring): voice rambles + provider integrations settings
   app.route('/api/v1', rambleRoutes())
   app.route('/api/v1', integrationsRoutes())
+  // phase 9 (Task A wiring): backups, Todoist import, productivity/karma, export
+  app.route('/api/v1', backupsRouter())
+  app.route('/api/v1', importRouter())
+  app.route('/api/v1', productivityRouter())
+  app.route('/api/v1', exportRouter())
 
   // 9. OpenAPI document + security schemes.
   app.doc('/api/v1/openapi.json', {

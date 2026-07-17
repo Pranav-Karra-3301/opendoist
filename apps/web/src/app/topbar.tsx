@@ -2,6 +2,7 @@ import { CircleHelp, PanelLeft, Search } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
+import { ProductivityPopover } from '@/productivity/ProductivityPopover'
 import { useUiStore } from '@/stores/ui'
 import { UserMenu } from './user-menu'
 
@@ -40,6 +41,8 @@ export function Topbar() {
             {isMac ? '⌘K' : 'Ctrl K'}
           </kbd>
         </button>
+
+        <ProductivityPopover />
 
         <Tooltip>
           <TooltipTrigger

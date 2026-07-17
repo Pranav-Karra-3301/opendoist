@@ -2,6 +2,8 @@
  * Settings page registry — FROZEN by Task A (plan Step 5). Task L renders it in
  * SettingsLayout + SettingsSearch; Task I adds one palette command per entry.
  * Pages are lazy default exports under ./pages/.
+ *
+ * Phase 9 Task H owns the `import` entry below (route /settings/import).
  */
 import { type ComponentType, type LazyExoticComponent, lazy } from 'react'
 
@@ -86,6 +88,13 @@ export const SETTINGS_PAGES: SettingsPageDef[] = [
     title: 'Backups',
     keywords: ['backup', 'restore', 'download', 'retention'],
     Component: lazy(() => import('./pages/BackupsPage')),
+  },
+  {
+    key: 'import',
+    title: 'Import',
+    // NB: no 'token' keyword — SettingsSearch.test.ts pins 'token' → only Integrations.
+    keywords: ['import', 'todoist', 'migrate', 'csv', 'backup file', 'transfer'],
+    Component: lazy(() => import('./pages/ImportPage')),
   },
   {
     key: 'integrations',

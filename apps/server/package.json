@@ -28,12 +28,16 @@
     "tsx": "catalog:",
     "croner": "catalog:",
     "web-push": "catalog:",
-    "ical-generator": "catalog:"
+    "ical-generator": "catalog:",
+    "archiver": "catalog:",
+    "node-stream-zip": "catalog:",
+    "csv-parse": "catalog:"
   },
   "devDependencies": {
     "typescript": "catalog:",
     "vitest": "catalog:",
     "drizzle-kit": "catalog:",
+    "@types/archiver": "catalog:",
     "@types/better-sqlite3": "catalog:",
     "@types/node": "catalog:",
     "@types/web-push": "catalog:",

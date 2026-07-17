@@ -66,6 +66,11 @@ catalog:
   cli-table3: ^0.6.5
   tsdown: ^0.22.8
   '@changesets/cli': ^2.31.0
+  # phase 9: backups + Todoist importer + export
+  archiver: ^7.0.1
+  '@types/archiver': ^6.0.3
+  node-stream-zip: ^1.15.0
+  csv-parse: ^5.6.0
 
 minimumReleaseAgeExclude:
   - '@biomejs/biome@2.5.4'
