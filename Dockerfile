@@ -8,9 +8,11 @@ COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json ./
 COPY apps/server/package.json apps/server/
 COPY apps/web/package.json apps/web/
 COPY packages/core/package.json packages/core/
+COPY packages/cli/package.json packages/cli/
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm --filter @opendoist/web build
+RUN pnpm --filter opendoist build
 RUN pnpm --filter @opendoist/server --prod deploy /out/server
 
 FROM node:22-alpine AS runtime
@@ -18,6 +20,12 @@ RUN apk add --no-cache wget
 WORKDIR /app
 COPY --from=build /out/server ./server
 COPY --from=build /app/apps/web/dist ./web-dist
+# OpenDoist CLI: `docker exec <container> opendoist …` (od = short alias)
+COPY --from=build /app/packages/cli/dist/index.js /usr/local/lib/opendoist-cli/index.js
+RUN printf '#!/bin/sh\nexec node /usr/local/lib/opendoist-cli/index.js "$@"\n' > /usr/local/bin/opendoist \
+  && chmod +x /usr/local/bin/opendoist \
+  && ln -s /usr/local/bin/opendoist /usr/local/bin/od
+ENV OPENDOIST_URL=http://127.0.0.1:7968
 ARG OPENDOIST_VERSION=nightly
 ENV NODE_ENV=production \
     OPENDOIST_VERSION=${OPENDOIST_VERSION} \

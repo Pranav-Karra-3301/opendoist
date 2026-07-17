@@ -1,0 +1,51 @@
+{
+  "name": "opendoist",
+  "version": "0.1.0",
+  "description": "Command-line client for OpenDoist, the self-hosted keyboard-first task manager",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "bin": {
+    "opendoist": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pranav-karra-3301/opendoist.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/pranav-karra-3301/opendoist#readme",
+  "bugs": "https://github.com/pranav-karra-3301/opendoist/issues",
+  "keywords": [
+    "opendoist",
+    "todoist",
+    "tasks",
+    "todo",
+    "cli",
+    "self-hosted"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm build"
+  },
+  "devDependencies": {
+    "@opendoist/core": "workspace:*",
+    "@types/node": "catalog:",
+    "cli-table3": "catalog:",
+    "commander": "catalog:",
+    "env-paths": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
