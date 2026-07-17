@@ -29,6 +29,13 @@
       "when": 1784256278792,
       "tag": "0003_right_spectrum",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1784262924300,
+      "tag": "0004_large_squadron_supreme",
+      "breakpoints": true
     }
   ]
 }

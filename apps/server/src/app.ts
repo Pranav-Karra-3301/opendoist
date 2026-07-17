@@ -27,6 +27,8 @@ import type { Db } from './db/db'
 import type { EventBus } from './events/bus'
 import { icalFeedRoutes, icalTokenRoutes } from './ical/routes'
 import { problem } from './lib/problem'
+import { integrationsRoutes } from './rambles/integrations-routes'
+import { rambleRoutes } from './rambles/routes'
 import { channelRoutes } from './reminders/channel-routes'
 import { pushRoutes } from './reminders/push-routes'
 import { remindersRoutes } from './reminders/routes'
@@ -181,6 +183,9 @@ export function createApp(deps: AppDeps): OpenAPIHono<AppEnv> {
   app.route('/api/v1', pushRoutes())
   app.route('/api/v1', channelRoutes())
   app.route('/api/v1', icalTokenRoutes())
+  // phase 7 (Task N wiring): voice rambles + provider integrations settings
+  app.route('/api/v1', rambleRoutes())
+  app.route('/api/v1', integrationsRoutes())
 
   // 9. OpenAPI document + security schemes.
   app.doc('/api/v1/openapi.json', {

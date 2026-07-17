@@ -4,6 +4,7 @@ import {
   index,
   integer,
   primaryKey,
+  real,
   sqliteTable,
   text,
   uniqueIndex,
@@ -290,4 +291,54 @@ export const icalTokens = sqliteTable('ical_tokens', {
   token: text('token').notNull().unique(),
   createdAt: text('created_at').notNull().$defaultFn(nowIso),
   lastAccessedAt: text('last_accessed_at'),
+})
+
+/* ---------- phase 7: ramble voice capture (frozen contract — plan Task A Step 1) ---------- */
+
+export const rambleStatuses = [
+  'uploaded',
+  'transcribed',
+  'extracted',
+  'confirmed',
+  'failed',
+] as const
+export const rambleFailedStages = ['transcribe', 'extract'] as const
+
+export const rambles = sqliteTable(
+  'rambles',
+  {
+    id: text('id').primaryKey(), // nanoid via lib/ids newId()
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    status: text('status', { enum: rambleStatuses }).notNull().default('uploaded'),
+    /** relative to DATA_DIR, e.g. 'rambles/<id>.webm'; null after confirm/discard deletes the file */
+    audioPath: text('audio_path'),
+    audioMime: text('audio_mime').notNull(),
+    audioBytes: integer('audio_bytes').notNull(),
+    durationSec: real('duration_sec'),
+    transcript: text('transcript'),
+    /** JSON string: ExtractedTask[] (rambles/schemas.ts) */
+    extractedJson: text('extracted_json'),
+    error: text('error'),
+    failedStage: text('failed_stage', { enum: rambleFailedStages }),
+    ...timestamps,
+  },
+  (t) => [index('rambles_user_id_idx').on(t.userId)],
+)
+
+export const providerSettings = sqliteTable('provider_settings', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  sttProvider: text('stt_provider', { enum: ['openai-compatible', 'deepgram', 'elevenlabs'] }),
+  sttBaseUrl: text('stt_base_url'),
+  sttModel: text('stt_model'),
+  /** secret-crypto envelope (lib/secret-crypto.ts), never plaintext */
+  sttApiKeyEnc: text('stt_api_key_enc'),
+  llmProvider: text('llm_provider', { enum: ['openai-compatible'] }),
+  llmBaseUrl: text('llm_base_url'),
+  llmModel: text('llm_model'),
+  llmApiKeyEnc: text('llm_api_key_enc'),
+  updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
 })

@@ -14,6 +14,7 @@ import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from '@/compone
 import { useParseCtx } from '@/lib/parse-context'
 import { cn } from '@/lib/utils'
 import { maybeShowReminderPermissionPrompt } from '@/push'
+import { RambleButton } from '@/ramble/RambleButton'
 import { useUiStore } from '@/stores/ui'
 import { useAutocompleteResources } from './autocomplete'
 import { ChipRow } from './chip-row'
@@ -256,6 +257,7 @@ export function QuickAddDialog() {
             </Popover>
 
             <div className="flex items-center gap-2">
+              <RambleButton />
               <button
                 type="button"
                 onClick={requestClose}

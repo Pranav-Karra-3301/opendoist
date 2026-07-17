@@ -23,6 +23,7 @@ import { listTokens, revokeToken } from '@/lib/api/phase5'
 import { cn } from '@/lib/utils'
 import { toast } from '@/stores/toasts'
 import CalendarFeedCard from '../CalendarFeedCard'
+import IntegrationsVoiceSettings from '../IntegrationsVoiceSettings'
 import { SettingRow, SettingsSection } from '../ui'
 import {
   BEARER_EXAMPLE,
@@ -128,6 +129,8 @@ export default function IntegrationsPage() {
           }
         />
       </SettingsSection>
+
+      <IntegrationsVoiceSettings />
 
       <CalendarFeedCard />
 

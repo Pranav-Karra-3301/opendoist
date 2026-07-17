@@ -11,6 +11,7 @@ import UndoHost from '@/features/undo/UndoHost'
 import { GlobalHotkeys } from '@/keyboard'
 import { useThemeSync } from '@/lib/theme'
 import { initPushOnBoot, PushPrompts } from '@/push'
+import { RambleReview } from '@/ramble/RambleReview'
 import { Sidebar } from './sidebar'
 import { Topbar } from './topbar'
 
@@ -41,6 +42,8 @@ export function AppLayout() {
       </div>
       <QuickAddDialog />
       <TaskDetailDialog />
+      {/* phase-7 (Task K): voice-note review-confirm dialog, opened by the Quick Add mic button */}
+      <RambleReview />
       <CommandPalette />
       <Toaster />
       <GlobalHotkeys />
