@@ -74,6 +74,15 @@ export function useSseInvalidation(): void {
         case 'filter':
           // No phase-4 consumer; phase 5 adds the ['filters'] key.
           break
+        case 'reminders':
+          invalidate('reminders', qk.reminders)
+          break
+        case 'push_subscriptions':
+          invalidate('push_subscriptions', qk.pushSubscriptions)
+          break
+        case 'notification_channels':
+          invalidate('notification_channels', qk.channels)
+          break
       }
     }
 

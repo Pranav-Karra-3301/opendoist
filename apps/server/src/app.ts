@@ -25,7 +25,11 @@ import type { Config } from './config'
 import { user } from './db/auth-schema'
 import type { Db } from './db/db'
 import type { EventBus } from './events/bus'
+import { icalFeedRoutes, icalTokenRoutes } from './ical/routes'
 import { problem } from './lib/problem'
+import { channelRoutes } from './reminders/channel-routes'
+import { pushRoutes } from './reminders/push-routes'
+import { remindersRoutes } from './reminders/routes'
 import type { Secrets } from './secrets'
 
 export interface AppDeps {
@@ -142,7 +146,8 @@ export function createApp(deps: AppDeps): OpenAPIHono<AppEnv> {
         password: true,
         oidc: deps.config.oidc === null ? null : { name: deps.config.oidc.name },
       },
-      features: { stt: deps.config.stt !== null, llm: deps.config.llm !== null, push: false },
+      // push is always available: VAPID keys are auto-generated into secrets.json at first boot.
+      features: { stt: deps.config.stt !== null, llm: deps.config.llm !== null, push: true },
       available_importers: [],
     })
   })
@@ -171,6 +176,11 @@ export function createApp(deps: AppDeps): OpenAPIHono<AppEnv> {
   app.route('/api/v1', activitiesRoutes())
   app.route('/api/v1', searchRoutes())
   app.route('/api/v1', eventsRoutes())
+  // phase 6 (Task A wiring): reminders, push subscriptions, notification channels, iCal token
+  app.route('/api/v1', remindersRoutes())
+  app.route('/api/v1', pushRoutes())
+  app.route('/api/v1', channelRoutes())
+  app.route('/api/v1', icalTokenRoutes())
 
   // 9. OpenAPI document + security schemes.
   app.doc('/api/v1/openapi.json', {
@@ -193,6 +203,10 @@ export function createApp(deps: AppDeps): OpenAPIHono<AppEnv> {
 
   // 11. Unknown /api paths never fall through to the SPA.
   app.all('/api/*', (c) => problem(c, 404, 'not found'))
+
+  // 12. Public iCal feed (phase 6): the capability token in the path IS the credential —
+  // no session auth, and it must be registered before the SPA fallback below.
+  app.route('/', icalFeedRoutes())
 
   // Static SPA + index.html fallback (GETs outside /api), only when configured and present.
   if (deps.config.webDistDir !== null && existsSync(deps.config.webDistDir)) {

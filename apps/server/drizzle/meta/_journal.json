@@ -22,6 +22,13 @@
       "when": 1784182778984,
       "tag": "0002_cool_giant_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1784256278792,
+      "tag": "0003_right_spectrum",
+      "breakpoints": true
     }
   ]
 }

@@ -30,6 +30,7 @@ import { nowIso } from '../../lib/ids'
 import { decodeCursor, encodeCursor, ListQuerySchema } from '../../lib/pagination'
 import { parseContextFor } from '../../lib/parse-context'
 import { problem } from '../../lib/problem'
+import { syncTaskReminders } from '../../reminders/materialize'
 import { type TaskDto, type TaskRow, tasksToDtos } from '../../services/task-read'
 import { createTask, getSettings, resolveLabelIds } from '../../services/task-write'
 import { CreateTaskSchema, IdSchema, TaskDtoSchema, UpdateTaskSchema } from '../schemas'
@@ -457,7 +458,7 @@ export const tasksRoutes = () => {
   })
 
   // POST /tasks
-  app.openapi(createTaskRoute, (c) => {
+  app.openapi(createTaskRoute, async (c) => {
     const auth = c.get('auth')
     if (!auth) return problem(c, 401, 'unauthorized')
     const { db, bus } = c.get('deps')
@@ -495,6 +496,8 @@ export const tasksRoutes = () => {
       projectId: row.projectId,
     })
     bus.publish({ userId: auth.userId, type: 'task.created', entity: 'task', ids: [row.id] })
+    // phase 6: materialize the auto-reminder + fire instants for the new due.
+    await syncTaskReminders(db, row.id)
     return c.json(toDto(db, row), 201)
   })
 
@@ -617,6 +620,8 @@ export const tasksRoutes = () => {
       payload: Object.keys(raw),
     })
     bus.publish({ userId: auth.userId, type: 'task.updated', entity: 'task', ids: [id] })
+    // phase 6: a due change re-arms this task's reminders (and re-materializes the auto-reminder).
+    await syncTaskReminders(db, id)
 
     const updated = db.select().from(tasks).where(eq(tasks.id, id)).get()
     if (updated === undefined) return problem(c, 404, 'not found')
@@ -624,7 +629,7 @@ export const tasksRoutes = () => {
   })
 
   // DELETE /tasks/{id} — soft-delete the task and every descendant.
-  app.openapi(deleteTaskRoute, (c) => {
+  app.openapi(deleteTaskRoute, async (c) => {
     const auth = c.get('auth')
     if (!auth) return problem(c, 401, 'unauthorized')
     const { db, bus } = c.get('deps')
@@ -649,6 +654,8 @@ export const tasksRoutes = () => {
       projectId: root.projectId,
     })
     bus.publish({ userId: auth.userId, type: 'task.deleted', entity: 'task', ids })
+    // phase 6: soft-delete unarms this task's reminders (subtree rows are skipped at fire time).
+    await syncTaskReminders(db, id)
     return c.body(null, 204)
   })
 

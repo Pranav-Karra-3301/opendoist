@@ -221,3 +221,73 @@ export const userSettings = sqliteTable('user_settings', {
   settings: text('settings').notNull(),
   updatedAt: text('updated_at').notNull(),
 })
+
+/* ---------- phase 6: reminders (frozen contract — plan Task A Step 2) ---------- */
+
+export const reminders = sqliteTable(
+  'reminders',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id),
+    taskId: text('task_id')
+      .notNull()
+      .references(() => tasks.id, { onDelete: 'cascade' }),
+    /** 'relative' | 'absolute' | 'recurring' */
+    type: text('type', { enum: ['relative', 'absolute', 'recurring'] }).notNull(),
+    /** relative only: minutes before due time (0 = at time) */
+    minuteOffset: integer('minute_offset'),
+    /** absolute/recurring: JSON of core Due ({date, time, string, recurrence}) */
+    dueJson: text('due_json'),
+    isAuto: integer('is_auto', { mode: 'boolean' }).notNull().default(false),
+    /** next fire instant, ISO UTC (ms precision, `new Date(x).toISOString()`); null = currently unfireable */
+    fireAtUtc: text('fire_at_utc'),
+    /** set when dispatched (or suppressed); null = pending */
+    firedAt: text('fired_at'),
+    ...timestamps,
+  },
+  (t) => [
+    index('idx_reminders_pending').on(t.firedAt, t.fireAtUtc),
+    index('idx_reminders_task').on(t.taskId),
+  ],
+)
+
+export const pushSubscriptions = sqliteTable('push_subscriptions', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id),
+  endpoint: text('endpoint').notNull().unique(),
+  p256dh: text('p256dh').notNull(),
+  auth: text('auth').notNull(),
+  userAgent: text('user_agent'),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+  lastUsedAt: text('last_used_at'),
+})
+
+export const notificationChannels = sqliteTable('notification_channels', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id),
+  type: text('type', { enum: ['ntfy', 'gotify', 'webhook'] }).notNull(),
+  name: text('name').notNull(),
+  enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
+  /** zod-validated per type at the API boundary; stored as JSON text */
+  configJson: text('config_json').notNull(),
+  consecutiveFailures: integer('consecutive_failures').notNull().default(0),
+  disabledReason: text('disabled_reason'),
+  ...timestamps,
+})
+
+export const icalTokens = sqliteTable('ical_tokens', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .unique()
+    .references(() => user.id),
+  token: text('token').notNull().unique(),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+  lastAccessedAt: text('last_accessed_at'),
+})

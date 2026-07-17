@@ -52,7 +52,7 @@ test('create a token (shown once), then revoke it', async ({ page }) => {
   await expect(settings.getByRole('row', { name: new RegExp(tokenName) })).toHaveCount(0)
 })
 
-test('developer links and the calendar-feed placeholder render', async ({ page }) => {
+test('developer links and the calendar-feed card render', async ({ page }) => {
   await page.goto('/settings/integrations')
   const settings = page.getByRole('dialog', { name: 'Settings' })
 
@@ -65,7 +65,13 @@ test('developer links and the calendar-feed placeholder render', async ({ page }
     '/api/v1/openapi.json',
   )
 
-  // Calendar feed (phase-6 placeholder): the URL field and Rotate button are disabled.
-  await expect(settings.getByRole('textbox', { name: 'Calendar feed URL' })).toBeDisabled()
-  await expect(settings.getByRole('button', { name: 'Rotate URL' })).toBeDisabled()
+  // Calendar feed (real since phase 6, CalendarFeedCard): the https + webcal capability URLs
+  // load from GET /api/v1/ical-token into read-only inputs, and Rotate is a live action.
+  const feedUrl = settings.getByRole('textbox', { name: 'Feed URL' })
+  await expect(feedUrl).toHaveValue(/^https?:\/\/.+\/ical\/.+\/tasks\.ics$/)
+  await expect(feedUrl).toHaveAttribute('readonly', '')
+  await expect(settings.getByRole('textbox', { name: 'One-click subscribe' })).toHaveValue(
+    /^webcal:\/\/.+\/ical\/.+\/tasks\.ics$/,
+  )
+  await expect(settings.getByRole('button', { name: 'Rotate link' })).toBeEnabled()
 })

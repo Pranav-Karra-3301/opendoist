@@ -46,7 +46,7 @@ describe('REMINDER_OPTIONS', () => {
     }
   })
 
-  it('offers the Todoist offset menu (off, at-time, and minutes-before)', () => {
-    expect(REMINDER_OPTIONS.map((o) => o.minutes)).toEqual([null, 0, 10, 30, 45, 60, 120])
+  it('offers the offset menu the server accepts (off, at-time, and minutes-before)', () => {
+    expect(REMINDER_OPTIONS.map((o) => o.minutes)).toEqual([null, 0, 5, 10, 15, 30, 45, 60, 120])
   })
 })

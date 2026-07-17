@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/compone
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useParseCtx } from '@/lib/parse-context'
 import { cn } from '@/lib/utils'
+import { maybeShowReminderPermissionPrompt } from '@/push'
 import { useUiStore } from '@/stores/ui'
 import { useAutocompleteResources } from './autocomplete'
 import { ChipRow } from './chip-row'
@@ -124,6 +125,11 @@ export function QuickAddDialog() {
     } catch {
       // Task B's mutations surface the problem via toast.error; keep the draft for retry.
       return
+    }
+    // First-reminder moment (spec §2.5): if the task carried a reminder token, nudge the
+    // user toward push notifications (no-ops unless it can actually help).
+    if (parsed.reminders.length > 0) {
+      maybeShowReminderPermissionPrompt()
     }
     if (keepOpen) {
       setState(EMPTY_QUICK_ADD_STATE)

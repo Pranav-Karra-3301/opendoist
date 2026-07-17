@@ -57,6 +57,15 @@ catalog:
   'tailwind-merge': ^3.3.0
   '@playwright/test': ^1.61.1
   '@axe-core/playwright': ^4.10.2
+  croner: ^10.0.1
+  web-push: ^3.6.7
+  '@types/web-push': ^3.6.4
+  ical-generator: ^11.0.0
+  commander: ^15.0.0
+  env-paths: ^4.0.0
+  cli-table3: ^0.6.5
+  tsdown: ^0.22.8
+  '@changesets/cli': ^2.31.0
 
 minimumReleaseAgeExclude:
   - '@biomejs/biome@2.5.4'

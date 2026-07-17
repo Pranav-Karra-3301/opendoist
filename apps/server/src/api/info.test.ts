@@ -22,7 +22,7 @@ it('GET /api/v1/info matches InfoDtoSchema on a fresh instance', async () => {
   expect(info.registration_open).toBe(true)
   expect(info.auth_providers.password).toBe(true)
   expect(info.auth_providers.oidc).toBeNull()
-  expect(info.features).toEqual({ stt: false, llm: false, push: false })
+  expect(info.features).toEqual({ stt: false, llm: false, push: true })
   expect(info.available_importers).toEqual([])
   expect(info.version.length).toBeGreaterThan(0)
 })
@@ -34,7 +34,7 @@ it('GET /api/v1/info matches InfoDtoSchema after signup with registration locked
   const info = InfoDtoSchema.parse(await json<unknown>(res))
   expect(info.first_run).toBe(false)
   expect(info.registration_open).toBe(false)
-  expect(info.features).toEqual({ stt: false, llm: false, push: false })
+  expect(info.features).toEqual({ stt: false, llm: false, push: true })
 })
 
 it('reports the OPENDOIST_VERSION override verbatim', async () => {

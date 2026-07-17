@@ -1,15 +1,16 @@
 /**
- * Reminders settings — the automatic-reminder offset applied to every task that gets a due
- * *time*, plus a Test-notification button that is the phase-6 delivery hook point.
+ * Reminders settings (phase 6 Task L) — the automatic-reminder offset applied to every task that
+ * gets a due *time*, plus a Send-test button that fires a real reminder to every push device and
+ * notification channel and reports the per-sink outcome.
  *
  * The offset writes immediately through the optimistic `useUserSettings` PATCH
- * (features/settings/useSettings.ts). It maps to core's `autoReminderMinutes`
- * (null = no automatic reminder, 0 = at due time, otherwise minutes-before). Because the
- * Select cannot carry a `null` value natively, the offset is round-tripped through the
- * string-keyed `REMINDER_OPTIONS` below (pure helpers, unit-tested). Implements plan Task S.
+ * (features/settings/useSettings.ts). It maps to core's `autoReminderMinutes` (null = no automatic
+ * reminder, 0 = at task time, otherwise minutes-before). Because the Select control cannot carry a
+ * `null` value natively, the offset round-trips through the string-keyed `REMINDER_OPTIONS` below
+ * (pure helpers, unit-tested in RemindersPage.test.ts). The menu mirrors the exact set the server
+ * PATCH boundary accepts: null, 0, 5, 10, 15, 30, 45, 60, 120.
  */
-import { useState } from 'react'
-import { ApiError, apiVoid } from '@/api/client'
+import { BellRing } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -19,23 +20,27 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { toast } from '@/stores/toasts'
+import { summarizeTestFire, useReminderTest } from '../notifications-api'
 import { SettingRow, SettingsSection } from '../ui'
 import { useUserSettings } from '../useSettings'
 
-/** One automatic-reminder offset choice. `value` is the Select's string key (the control
- *  cannot hold a `null` value); `minutes` is the stored `autoReminderMinutes`. */
+/** One automatic-reminder offset choice. `value` is the Select's string key (the control cannot
+ *  hold a `null` value); `minutes` is the stored `autoReminderMinutes`. */
 export interface ReminderOption {
   value: string
   label: string
-  /** null = no automatic reminder, 0 = at due time, otherwise minutes before the due time. */
+  /** null = no automatic reminder, 0 = at task time, otherwise minutes before the due time. */
   minutes: number | null
 }
 
-/** Offset menu, matching Todoist's "Automatic reminders" options (default = 30 min before). */
+/** Offset menu — the exact value set the server accepts (Task A constrained the PATCH boundary to
+ *  null, 0, 5, 10, 15, 30, 45, 60, 120). Default = 30 min before. */
 export const REMINDER_OPTIONS: readonly ReminderOption[] = [
   { value: 'none', label: 'No automatic reminder', minutes: null },
-  { value: '0', label: 'At due time', minutes: 0 },
+  { value: '0', label: 'At time of task', minutes: 0 },
+  { value: '5', label: '5 minutes before', minutes: 5 },
   { value: '10', label: '10 minutes before', minutes: 10 },
+  { value: '15', label: '15 minutes before', minutes: 15 },
   { value: '30', label: '30 minutes before', minutes: 30 },
   { value: '45', label: '45 minutes before', minutes: 45 },
   { value: '60', label: '1 hour before', minutes: 60 },
@@ -47,30 +52,20 @@ export function reminderSelectValue(minutes: number | null): string {
   return REMINDER_OPTIONS.find((o) => o.minutes === minutes)?.value ?? 'none'
 }
 
-/** Select's string value → `autoReminderMinutes` (null = off, 0 = at due time). */
+/** Select's string value → `autoReminderMinutes` (null = off, 0 = at task time). */
 export function reminderMinutesFromValue(value: string): number | null {
   return REMINDER_OPTIONS.find((o) => o.value === value)?.minutes ?? null
 }
 
 export default function RemindersPage() {
   const { settings, update } = useUserSettings()
-  const [sending, setSending] = useState(false)
+  const test = useReminderTest()
 
-  const sendTest = async () => {
-    setSending(true)
-    try {
-      await apiVoid('/channels/test', { method: 'POST' })
-      toast.info('Test notification sent')
-    } catch (err) {
-      // The channels route ships in phase 6; until then the endpoint 404s (or a stub 501s).
-      if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
-        toast.info('Notification channels arrive in phase 6')
-      } else {
-        toast.error('Could not send a test notification')
-      }
-    } finally {
-      setSending(false)
-    }
+  const sendTest = () => {
+    test.mutate(undefined, {
+      onSuccess: (result) => toast.info(summarizeTestFire(result)),
+      onError: () => toast.error('Could not send a test notification'),
+    })
   }
 
   return (
@@ -81,7 +76,7 @@ export default function RemindersPage() {
       >
         <SettingRow
           label="Automatic reminders"
-          description="Added automatically to tasks that have a due time."
+          description="Applied to tasks that have a due time."
           control={
             <Select
               value={reminderSelectValue(settings.autoReminderMinutes)}
@@ -105,10 +100,11 @@ export default function RemindersPage() {
         />
         <SettingRow
           label="Test notification"
-          description="Send a sample notification to confirm your channels are set up."
+          description="Send a sample reminder to every push device and channel you've set up."
           control={
-            <Button variant="outline" onClick={sendTest} disabled={sending}>
-              {sending ? 'Sending…' : 'Send test'}
+            <Button variant="outline" onClick={sendTest} disabled={test.isPending}>
+              <BellRing size={16} aria-hidden={true} />
+              {test.isPending ? 'Sending…' : 'Send test'}
             </Button>
           }
         />

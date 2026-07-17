@@ -3,11 +3,12 @@ import { dateInTz, nextOccurrence, parseQuickAdd, RecurrenceSpecSchema } from '@
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm'
 import type { AppEnv } from '../../app'
 import type { Db } from '../../db/db'
-import { dayStats, tasks } from '../../db/schema'
+import { dayStats, reminders, tasks } from '../../db/schema'
 import { logActivity } from '../../lib/activity'
-import { nowIso } from '../../lib/ids'
+import { newId, nowIso } from '../../lib/ids'
 import { parseContextFor } from '../../lib/parse-context'
 import { problem } from '../../lib/problem'
+import { syncTaskReminders } from '../../reminders/materialize'
 import { resolveProject, resolveSection } from '../../services/quick-resolve'
 import type { TaskDto, TaskRow } from '../../services/task-read'
 import { tasksToDtos } from '../../services/task-read'
@@ -101,8 +102,9 @@ const quickRoute = createRoute({
   summary: 'Create a task from a raw Quick Add line',
   description:
     'Parses the Quick Add grammar (natural-language due, `{deadline}`, `#project`, `/section`, ' +
-    '`@label`, `p1`–`p4`, `// description`, leading `* ` uncompletable). Missing projects/sections/' +
-    'labels are auto-created. Parsed reminder tokens are ignored until phase 6.',
+    '`@label`, `p1`–`p4`, `// description`, leading `* ` uncompletable, `!` reminders). Missing ' +
+    'projects/sections/labels are auto-created. Parsed `!` reminder tokens are persisted; a relative ' +
+    'reminder is skipped when the task has no due time.',
   request: {
     body: {
       content: { 'application/json': { schema: z.object({ text: z.string().min(1) }) } },
@@ -192,7 +194,7 @@ export const taskActionsRoutes = () => {
     },
   })
 
-  app.openapi(quickRoute, (c) => {
+  app.openapi(quickRoute, async (c) => {
     const auth = c.get('auth')
     if (!auth) return problem(c, 401, 'unauthorized')
     const { db, bus } = c.get('deps')
@@ -237,6 +239,70 @@ export const taskActionsRoutes = () => {
       payload: { via: 'quick' },
     })
     bus.publish({ userId, type: 'task.created', entity: 'task', ids: [row.id] })
+
+    // phase 6: persist the parsed `!` reminder tokens, then materialize the auto-reminder + fire
+    // instants for the whole task. A relative reminder is skipped (not an error) when the task has
+    // no due time — there is nothing to fire relative to (Todoist behaves the same way).
+    const remNow = nowIso()
+    for (const draft of parsed.reminders) {
+      if (draft.kind === 'relative') {
+        if (row.dueDate === null || row.dueTime === null) continue
+        db.insert(reminders)
+          .values({
+            id: newId(),
+            userId,
+            taskId: row.id,
+            type: 'relative',
+            minuteOffset: draft.minutesBefore,
+            dueJson: null,
+            isAuto: false,
+            fireAtUtc: null,
+            firedAt: null,
+            createdAt: remNow,
+            updatedAt: remNow,
+          })
+          .run()
+      } else if (draft.kind === 'absolute') {
+        const due = {
+          date: draft.date,
+          time: draft.time,
+          string: `${draft.date} ${draft.time}`,
+          recurrence: null,
+        }
+        db.insert(reminders)
+          .values({
+            id: newId(),
+            userId,
+            taskId: row.id,
+            type: 'absolute',
+            minuteOffset: null,
+            dueJson: JSON.stringify(due),
+            isAuto: false,
+            fireAtUtc: null,
+            firedAt: null,
+            createdAt: remNow,
+            updatedAt: remNow,
+          })
+          .run()
+      } else {
+        db.insert(reminders)
+          .values({
+            id: newId(),
+            userId,
+            taskId: row.id,
+            type: 'recurring',
+            minuteOffset: null,
+            dueJson: JSON.stringify(draft.due),
+            isAuto: false,
+            fireAtUtc: null,
+            firedAt: null,
+            createdAt: remNow,
+            updatedAt: remNow,
+          })
+          .run()
+      }
+    }
+    await syncTaskReminders(db, row.id)
 
     const dto = tasksToDtos(db, [row])[0]
     if (dto === undefined) return problem(c, 404, 'not found')
@@ -302,6 +368,8 @@ export const taskActionsRoutes = () => {
         bumpDayStat(db, userId, todayTz, 1)
         bus.publish({ userId, type: 'task.completed', entity: 'task', ids: [task.id] })
         bus.publish({ userId, type: 'task.updated', entity: 'task', ids: [task.id] })
+        // phase 6: the advanced due re-arms this task's reminders around the next occurrence.
+        await syncTaskReminders(db, task.id)
         const dto = currentDto(db, userId, task.id)
         if (dto === undefined) return problem(c, 404, 'not found')
         return c.json(dto, 200)
@@ -334,13 +402,15 @@ export const taskActionsRoutes = () => {
     }
     bumpDayStat(db, userId, todayTz, 1)
     bus.publish({ userId, type: 'task.completed', entity: 'task', ids: closedIds })
+    // phase 6: completing a non-recurring task unarms its relative/auto reminders.
+    await syncTaskReminders(db, task.id)
 
     const dto = currentDto(db, userId, task.id)
     if (dto === undefined) return problem(c, 404, 'not found')
     return c.json(dto, 200)
   })
 
-  app.openapi(reopenRoute, (c) => {
+  app.openapi(reopenRoute, async (c) => {
     const auth = c.get('auth')
     if (!auth) return problem(c, 401, 'unauthorized')
     const { db, bus } = c.get('deps')
@@ -387,6 +457,8 @@ export const taskActionsRoutes = () => {
       projectId: task.projectId,
     })
     bus.publish({ userId, type: 'task.uncompleted', entity: 'task', ids: reopenedIds })
+    // phase 6: reopening a task re-arms its relative/auto reminders around the (unchanged) due.
+    await syncTaskReminders(db, task.id)
 
     const dto = currentDto(db, userId, task.id)
     if (dto === undefined) return problem(c, 404, 'not found')

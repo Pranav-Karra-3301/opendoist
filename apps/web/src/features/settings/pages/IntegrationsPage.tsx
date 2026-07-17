@@ -1,10 +1,9 @@
 /**
- * Integrations settings (plan Task V) — API tokens, Developer links, and a calendar-feed
- * placeholder. Tokens are listed from GET /api/v1/tokens (the secret is never returned by
- * the list; only the create response reveals it once — see TokenCreateDialog). Revoke is a
- * confirmed DELETE that refreshes the list. The calendar feed is a phase-6 placeholder:
- * AS-BUILT (verified in apps/server/src) there is no /api/v1/ical-token route yet, so the
- * URL field and Rotate button are disabled with an explanatory value.
+ * Integrations settings (plan Task V) — API tokens, Developer links, and the calendar feed.
+ * Tokens are listed from GET /api/v1/tokens (the secret is never returned by the list; only
+ * the create response reveals it once — see TokenCreateDialog). Revoke is a confirmed DELETE
+ * that refreshes the list. The calendar feed lives in <CalendarFeedCard /> (phase 6 Task M;
+ * mounted here by phase 6 Task A).
  */
 import type { ApiToken } from '@opendoist/core'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -20,10 +19,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { listTokens, revokeToken } from '@/lib/api/phase5'
 import { cn } from '@/lib/utils'
 import { toast } from '@/stores/toasts'
+import CalendarFeedCard from '../CalendarFeedCard'
 import { SettingRow, SettingsSection } from '../ui'
 import {
   BEARER_EXAMPLE,
@@ -130,23 +129,7 @@ export default function IntegrationsPage() {
         />
       </SettingsSection>
 
-      <SettingsSection
-        title="Calendar feed"
-        description="Subscribe to your tasks from Apple Calendar, Google Calendar, or Outlook."
-      >
-        <div className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center">
-          <Input
-            readOnly
-            disabled
-            aria-label="Calendar feed URL"
-            value="webcal://… — available when the iCal feed ships (phase 6)"
-            className="font-mono text-caption"
-          />
-          <Button variant="outline" disabled className="shrink-0">
-            Rotate URL
-          </Button>
-        </div>
-      </SettingsSection>
+      <CalendarFeedCard />
 
       <TokenCreateDialog
         open={createOpen}

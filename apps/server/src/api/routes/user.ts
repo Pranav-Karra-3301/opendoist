@@ -15,6 +15,14 @@ import { IdSchema, type Settings, SettingsSchema } from '../schemas'
  */
 const TIMEZONES = new Set<string>([...Intl.supportedValuesOf('timeZone'), 'UTC'])
 
+/**
+ * Allowed `autoReminderMinutes` values (phase 6, Settings > Reminders select).
+ * Core's `UserSettingsSchema` only bounds the range (0–10080 | null); the PATCH
+ * boundary constrains it to the exact option set — `null` = auto-reminders off,
+ * `0` = at task time.
+ */
+const AUTO_REMINDER_MINUTES = new Set<number | null>([null, 0, 5, 10, 15, 30, 45, 60, 120])
+
 const security: Record<string, string[]>[] = [{ cookieAuth: [] }, { bearerAuth: [] }]
 
 const UserDtoSchema = z.object({
@@ -114,7 +122,8 @@ const patchSettingsRoute = createRoute({
   tags: ['User'],
   summary: 'Update client preferences',
   description:
-    'Shallow top-level merge onto the stored document; only the keys present in the request body are changed. `viewPrefs` merges per view key (provided keys replace, others are kept).',
+    'Shallow top-level merge onto the stored document; only the keys present in the request body are changed. `viewPrefs` merges per view key (provided keys replace, others are kept). ' +
+    '`autoReminderMinutes` accepts exactly null, 0, 5, 10, 15, 30, 45, 60, or 120 (null = no automatic reminder, 0 = at task time).',
   security,
   request: {
     body: { content: { 'application/json': { schema: SettingsSchema.partial() } } },
@@ -184,6 +193,18 @@ export const userRoutes = () => {
       const tz = validated.timezone
       if (typeof tz !== 'string' || !TIMEZONES.has(tz)) {
         return problem(c, 400, 'invalid timezone', `Unknown time zone: ${String(tz)}`)
+      }
+    }
+
+    if (providedKeys.has('autoReminderMinutes')) {
+      const minutes = validated.autoReminderMinutes ?? null
+      if (!AUTO_REMINDER_MINUTES.has(minutes)) {
+        return problem(
+          c,
+          400,
+          'invalid autoReminderMinutes',
+          `Allowed values: null, 0, 5, 10, 15, 30, 45, 60, 120 — got ${String(minutes)}`,
+        )
       }
     }
 

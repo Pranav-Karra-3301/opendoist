@@ -25,7 +25,10 @@
     "pino": "catalog:",
     "nanoid": "catalog:",
     "zod": "catalog:",
-    "tsx": "catalog:"
+    "tsx": "catalog:",
+    "croner": "catalog:",
+    "web-push": "catalog:",
+    "ical-generator": "catalog:"
   },
   "devDependencies": {
     "typescript": "catalog:",
@@ -33,6 +36,7 @@
     "drizzle-kit": "catalog:",
     "@types/better-sqlite3": "catalog:",
     "@types/node": "catalog:",
+    "@types/web-push": "catalog:",
     "pino-pretty": "catalog:"
   }
 }

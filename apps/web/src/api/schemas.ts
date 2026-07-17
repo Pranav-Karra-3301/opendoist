@@ -123,10 +123,21 @@ export type Info = z.infer<typeof InfoSchema>
 
 export const SseEventSchema = z.object({
   type: z.string(),
-  /** MUST mirror phase 3's ServerEvent entity union (apps/server/src/events/bus.ts) — events whose
-   *  entity is outside this enum fail safeParse and are silently dropped. Phase 6 widens BOTH lists
-   *  with 'reminders' | 'push_subscriptions' | 'notification_channels'. */
-  entity: z.enum(['task', 'project', 'section', 'label', 'filter', 'comment', 'settings']),
+  /** MUST mirror the server's ServerEvent entity union (apps/server/src/events/bus.ts) — events
+   *  whose entity is outside this enum fail safeParse and are silently dropped. Phase 6 widened
+   *  BOTH lists with 'reminders' | 'push_subscriptions' | 'notification_channels'. */
+  entity: z.enum([
+    'task',
+    'project',
+    'section',
+    'label',
+    'filter',
+    'comment',
+    'settings',
+    'reminders',
+    'push_subscriptions',
+    'notification_channels',
+  ]),
   ids: z.array(z.string()),
 })
 export type SseEvent = z.infer<typeof SseEventSchema>

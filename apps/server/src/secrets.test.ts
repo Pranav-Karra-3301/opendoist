@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, test } from 'vitest'
-import { ensureDataDirAndSecrets, type Secrets } from './secrets'
+import { ensureDataDirAndSecrets, getOrCreateVapidKeys, type Secrets } from './secrets'
 
 const dirs: string[] = []
 function tmp(): string {
@@ -60,5 +60,45 @@ describe('ensureDataDirAndSecrets', () => {
     expect(secrets.encryptionKey.length).toBeGreaterThanOrEqual(32)
     expect(secrets.vapidPublicKey).not.toHaveLength(0)
     expect(secrets.vapidPrivateKey).not.toHaveLength(0)
+  })
+})
+
+describe('getOrCreateVapidKeys', () => {
+  test('returns the persisted flat vapid fields and never regenerates them', () => {
+    const dir = tmp()
+    const first = ensureDataDirAndSecrets(dir)
+    const bytesBefore = readFileSync(join(dir, 'secrets.json'), 'utf8')
+
+    const a = getOrCreateVapidKeys({ dataDir: dir, publicUrl: null })
+    const b = getOrCreateVapidKeys({ dataDir: dir, publicUrl: null })
+    expect(a.publicKey).toBe(first.vapidPublicKey)
+    expect(a.privateKey).toBe(first.vapidPrivateKey)
+    expect(b.publicKey).toBe(a.publicKey)
+    expect(b.privateKey).toBe(a.privateKey)
+    // secrets.json is byte-identical — the key fields were not rewritten with new values
+    expect(readFileSync(join(dir, 'secrets.json'), 'utf8')).toBe(bytesBefore)
+  })
+
+  test('subject is publicUrl when https, mailto fallback otherwise (never persisted)', () => {
+    const dir = tmp()
+    expect(
+      getOrCreateVapidKeys({ dataDir: dir, publicUrl: 'https://tasks.example.com' }).subject,
+    ).toBe('https://tasks.example.com')
+    expect(getOrCreateVapidKeys({ dataDir: dir, publicUrl: 'http://localhost:7968' }).subject).toBe(
+      'mailto:admin@opendoist.local',
+    )
+    expect(getOrCreateVapidKeys({ dataDir: dir, publicUrl: null }).subject).toBe(
+      'mailto:admin@opendoist.local',
+    )
+    const onDisk = JSON.parse(readFileSync(join(dir, 'secrets.json'), 'utf8')) as Record<
+      string,
+      string
+    >
+    expect(Object.keys(onDisk).sort()).toEqual([
+      'encryptionKey',
+      'sessionSecret',
+      'vapidPrivateKey',
+      'vapidPublicKey',
+    ])
   })
 })

@@ -1,4 +1,5 @@
 import { Outlet } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import { useSseInvalidation } from '@/api/sse'
 import { CommandPalette } from '@/components/palette/command-palette'
 import { QuickAddDialog } from '@/components/quick-add/quick-add-dialog'
@@ -9,6 +10,7 @@ import DialogHost from '@/features/dialogs/DialogHost'
 import UndoHost from '@/features/undo/UndoHost'
 import { GlobalHotkeys } from '@/keyboard'
 import { useThemeSync } from '@/lib/theme'
+import { initPushOnBoot, PushPrompts } from '@/push'
 import { Sidebar } from './sidebar'
 import { Topbar } from './topbar'
 
@@ -21,6 +23,10 @@ import { Topbar } from './topbar'
 export function AppLayout() {
   useSseInvalidation()
   useThemeSync()
+  // phase 6: re-sync any existing push subscription once per app boot (Task K implements)
+  useEffect(() => {
+    initPushOnBoot()
+  }, [])
 
   return (
     <div className="relative h-screen overflow-hidden bg-bg font-sans text-body text-text-primary antialiased">
@@ -42,6 +48,8 @@ export function AppLayout() {
       {/* phase-5 hosts (Task A): dialogs (Tasks E/F) + single-slot undo toast (Task W) */}
       <DialogHost />
       <UndoHost />
+      {/* phase-6 host (Task A wiring): push permission pre-prompt + iOS install screen (Task K) */}
+      <PushPrompts />
     </div>
   )
 }

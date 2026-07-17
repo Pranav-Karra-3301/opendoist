@@ -4,7 +4,19 @@ export interface ServerEvent {
   userId: string
   /** `${entity}.${verb}` e.g. 'task.completed' */
   type: string
-  entity: 'task' | 'project' | 'section' | 'label' | 'filter' | 'comment' | 'settings'
+  /** MUST mirror the web client's SseEventSchema entity enum (apps/web/src/api/schemas.ts) —
+   *  the client drops events whose entity it does not know. Phase 6 widened both lists. */
+  entity:
+    | 'task'
+    | 'project'
+    | 'section'
+    | 'label'
+    | 'filter'
+    | 'comment'
+    | 'settings'
+    | 'reminders'
+    | 'push_subscriptions'
+    | 'notification_channels'
   ids: string[]
   at: string
 }

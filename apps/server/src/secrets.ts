@@ -2,6 +2,7 @@ import { generateKeyPairSync, randomBytes } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { z } from 'zod'
+import { loadConfig } from './config'
 
 export const SecretsSchema = z.object({
   sessionSecret: z.string().min(32),
@@ -47,4 +48,35 @@ export function ensureDataDirAndSecrets(dataDir: string): Secrets {
   })
   writeFileSync(file, `${JSON.stringify(secrets, null, 2)}\n`, { mode: 0o600 })
   return secrets
+}
+
+export interface VapidKeys {
+  publicKey: string
+  privateKey: string
+  subject: string
+}
+
+/**
+ * Web-push VAPID material (phase 6 Task A Step 4). Reads the EXISTING flat
+ * `vapidPublicKey`/`vapidPrivateKey` fields via `ensureDataDirAndSecrets` — the sole
+ * generation path, which only mints a pair when both are absent — and NEVER regenerates
+ * or rewrites them (push subscriptions bind to the public key). `subject` is computed at
+ * call time from config and never persisted: `publicUrl` when it is https, else a mailto
+ * fallback (the VAPID subject must be an https: or mailto: URI).
+ *
+ * `config` is optional: omit it to read `loadConfig()` from the environment (boot path);
+ * pass the request-scoped `deps.config` values in route handlers/tests.
+ */
+export function getOrCreateVapidKeys(config?: {
+  dataDir: string
+  publicUrl: string | null
+}): VapidKeys {
+  const { dataDir, publicUrl } = config ?? loadConfig()
+  const secrets = ensureDataDirAndSecrets(dataDir)
+  const subject = publicUrl?.startsWith('https://') ? publicUrl : 'mailto:admin@opendoist.local'
+  return {
+    publicKey: secrets.vapidPublicKey,
+    privateKey: secrets.vapidPrivateKey,
+    subject,
+  }
 }

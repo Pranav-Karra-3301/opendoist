@@ -121,6 +121,38 @@ describe('user router', () => {
     }
   })
 
+  it('PATCH /user/settings round-trips autoReminderMinutes for every allowed value', async () => {
+    const t = await createTestApp()
+    try {
+      for (const minutes of [0, 5, 10, 15, 30, 45, 60, 120, null]) {
+        const res = await t.patch('/api/v1/user/settings', { autoReminderMinutes: minutes })
+        expect(res.status).toBe(200)
+        expect((await json<Settings>(res)).autoReminderMinutes).toBe(minutes)
+        const g = await json<Settings>(await t.get('/api/v1/user/settings'))
+        expect(g.autoReminderMinutes).toBe(minutes)
+      }
+    } finally {
+      t.close()
+    }
+  })
+
+  it('PATCH /user/settings rejects autoReminderMinutes outside the allowed set (400 problem)', async () => {
+    const t = await createTestApp()
+    try {
+      for (const minutes of [7, 90, 10080]) {
+        const res = await t.patch('/api/v1/user/settings', { autoReminderMinutes: minutes })
+        expect(res.status).toBe(400)
+        expect(res.headers.get('content-type')).toContain('application/problem+json')
+        expect((await json<{ title: string }>(res)).title).toBe('invalid autoReminderMinutes')
+      }
+      // stored value untouched by the rejected PATCHes
+      const g = await json<Settings>(await t.get('/api/v1/user/settings'))
+      expect(g.autoReminderMinutes).toBe(30)
+    } finally {
+      t.close()
+    }
+  })
+
   it('PATCH /user/settings publishes settings.updated on the bus', async () => {
     const t = await createTestApp()
     try {
