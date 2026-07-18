@@ -72,3 +72,20 @@ Then fixer (if findings) → final gate (`pnpm verify` + e2e + hygiene).
 ## Self-Review (done)
 - All six feedback items map: dialog position (D), caret popups (D), calendar+presets (E), deadline understandable + date-and-time (A/B/C/F), reminder discoverability (F), duration intuitiveness (F, kept text-first per owner's "typing makes sense").
 - Text-as-source-of-truth preserved; MonthCalendar stub in A resolves the E↔F parallel dependency; deadline change is additive on the wire; spec updated in-plan.
+
+---
+
+## Addendum (owner feedback, same day): Task H — entry-point semantics
+
+**Rule:** list-anchored triggers open an INLINE composer; global triggers open the centered dialog.
+
+**Files:** `apps/web/src/components/quick-add/inline-composer.tsx` (new — QuickAddInput + chip row in a 5px-radius card, sized to the list row grid), the view files owning "+ Add task" rows (Inbox/Today/Upcoming day/Project section — as-built survey first), `apps/web/src/app/keyboard/index.tsx` (Space + a/Shift+A rebind), `apps/web/e2e/quickadd-entrypoints.spec.ts` (new).
+
+- **Space** opens the centered dialog when: no dialog/overlay is open, and the event target is the body or a non-interactive element (NOT input/textarea/contenteditable/select, NOT button/checkbox/link/menuitem — Space must keep activating those, and must not hijack page-scroll while an interactive element is focused). `q` and the sidebar Add Task button keep opening the centered dialog.
+- **Inline composer:** clicking any in-list "+ Add task" row replaces it with the composer, prefilled with that context (#project + /section, or the day's date in Upcoming/Today); Enter saves and keeps the composer open with the context re-applied (Todoist save-and-new); Esc (or blur with empty text) restores the row. Reuses the caret-anchored autocomplete and chip pickers as-is.
+- **`a` / `Shift+A`** in a list view: inline composer at bottom / top of the focused list (restoring Todoist semantics; the phase-4 scoped-dialog simplification is retired). In non-list contexts they fall back to the centered dialog.
+- e2e: Space-from-body opens dialog; Space on a focused checkbox toggles the checkbox and does NOT open the dialog; typing in any input never triggers it; inline composer appears in-place with context chips; Enter chains adds; a/Shift+A land inline at the right end.
+
+**Review shard r3 (entry-points):** Playwright walk of every trigger → asserts WHERE the composer appeared (dialog rect vs in-list rect), Space safety cases (input focused, button focused, dialog already open), and save-and-new chaining. Runs with the same fixer/gate chain.
+
+Execution: launched as a follow-up run after the main pass gates (it edits view files no current builder owns, but depends on D's dialog store API and F's pickers).
