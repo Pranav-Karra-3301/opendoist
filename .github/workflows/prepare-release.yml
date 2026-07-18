@@ -7,6 +7,7 @@ on:
         required: true
 permissions:
   contents: write
+  actions: write
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -42,3 +43,8 @@ jobs:
             --generate-notes \
             --title "v${{ inputs.version }}" \
             deploy/docker-compose.yml deploy/.env.example
+      - name: Publish versioned images
+        env: { GH_TOKEN: '${{ github.token }}' }
+        # A release created with GITHUB_TOKEN cannot cascade into docker.yml's `release:`
+        # trigger (GitHub's recursion guard), but explicit dispatch API calls are exempt.
+        run: gh workflow run docker.yml -f version="${{ inputs.version }}"
