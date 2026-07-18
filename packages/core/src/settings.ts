@@ -106,7 +106,7 @@ export const UserSettingsSchema = z.object({
   vacationMode: z.boolean().default(false),
   karmaEnabled: z.boolean().default(true),
   /** minutes before a timed due for the automatic reminder; 0 = at due time; null = off */
-  autoReminderMinutes: z.number().int().min(0).max(10080).nullable().default(30),
+  autoReminderMinutes: z.number().int().min(0).max(10080).nullable().default(0),
   notifications: NotificationTogglesSchema.default({
     push: true,
     ntfy: false,

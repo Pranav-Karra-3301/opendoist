@@ -147,7 +147,7 @@ describe('user router', () => {
       }
       // stored value untouched by the rejected PATCHes
       const g = await json<Settings>(await t.get('/api/v1/user/settings'))
-      expect(g.autoReminderMinutes).toBe(30)
+      expect(g.autoReminderMinutes).toBe(0)
     } finally {
       t.close()
     }

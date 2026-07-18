@@ -29,7 +29,7 @@ describe('reminderSelectValue', () => {
     expect(reminderSelectValue(0)).toBe('0')
   })
 
-  it('maps the default 30 to its option', () => {
+  it('maps 30 to its option', () => {
     expect(reminderSelectValue(30)).toBe('30')
   })
 
