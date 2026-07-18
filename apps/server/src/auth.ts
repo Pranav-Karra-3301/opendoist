@@ -35,6 +35,17 @@ export function createAuth(db: Db, config: Config, sessionSecret: string) {
     secret: sessionSecret,
     trustedOrigins: [baseURL, ...devOrigins],
     database: drizzleAdapter(db, { provider: 'sqlite', schema: authSchema }),
+    account: {
+      accountLinking: {
+        enabled: true,
+        // Auto-link an OIDC sign-in to the existing email-matched account. Safe on this
+        // instance shape: single-user, registration-locked, and the IdP (e.g. Pocket ID)
+        // is self-hosted by the same person — whoever controls the IdP already controls
+        // SSO identity. Without this, a login-screen OIDC tap before manually connecting
+        // in Settings → Account dead-ends on better-auth's untrusted-provider default.
+        trustedProviders: ['oidc'],
+      },
+    },
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: false,

@@ -258,3 +258,22 @@ it('advertises the env-configured OIDC provider through /api/v1/info', async () 
   const info = await json<{ auth_providers: { oidc: { name: string } | null } }>(res)
   expect(info.auth_providers.oidc?.name).toBe('Example')
 })
+
+it('trusts the oidc provider for email-matched account linking', async () => {
+  // Regression pin for the login-screen OIDC flow on an instance whose owner registered
+  // with a password first: without trustedProviders ['oidc'], better-auth refuses to
+  // auto-link the email-matched account and the sign-in dead-ends. Full link behavior is
+  // exercised against a real IdP at deployment; this pins the config that enables it.
+  const t = await make({
+    signup: false,
+    env: {
+      OPENDOIST_OIDC_ISSUER: 'https://id.example.com',
+      OPENDOIST_OIDC_CLIENT_ID: 'x',
+      OPENDOIST_OIDC_CLIENT_SECRET: 'y',
+      OPENDOIST_OIDC_NAME: 'Example',
+    },
+  })
+  const linking = t.deps.auth.options.account?.accountLinking
+  expect(linking?.enabled).toBe(true)
+  expect(linking?.trustedProviders).toContain('oidc')
+})
