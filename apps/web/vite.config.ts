@@ -28,6 +28,13 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
+  build: {
+    rollupOptions: {
+      // Second entry (desktop Task A): the Tauri Quick Add popover window loads
+      // quickadd.html; the web deployment simply never links to it.
+      input: { main: 'index.html', quickadd: 'quickadd.html' },
+    },
+  },
   server: {
     proxy: { '/api': 'http://localhost:7968' },
     // phase 9: What's New imports the repo-root CHANGELOG.md via `?raw`

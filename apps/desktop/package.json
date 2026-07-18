@@ -1,0 +1,25 @@
+{
+  "name": "@opendoist/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build": "node -e \"console.log('desktop: app bundles are built by build:app / desktop-release.yml (needs TAURI_SIGNING_PRIVATE_KEY)')\"",
+    "build:app": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "catalog:"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "catalog:",
+    "@tauri-apps/plugin-http": "catalog:",
+    "@tauri-apps/plugin-global-shortcut": "catalog:",
+    "@tauri-apps/plugin-positioner": "catalog:",
+    "@tauri-apps/plugin-notification": "catalog:",
+    "@tauri-apps/plugin-store": "catalog:",
+    "@tauri-apps/plugin-autostart": "catalog:",
+    "@tauri-apps/plugin-updater": "catalog:",
+    "@tauri-apps/plugin-process": "catalog:"
+  }
+}

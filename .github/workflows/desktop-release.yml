@@ -1,0 +1,113 @@
+name: Desktop Release
+
+# Builds, ad-hoc-signs, and publishes the OpenDoist macOS app (Tauri 2) to a GitHub Release,
+# together with the minisign-signed updater artifacts (latest.json + *.app.tar.gz.sig) that the
+# in-app updater consumes.
+#
+# Deliberately SEPARATE from the server pipelines: docker.yml ships the container image and
+# prepare-release.yml cuts the `vX.Y.Z` server releases (docker-compose files). This one only
+# ever fires on `desktop-v*` tags, so the two streams never collide.
+#
+# Distribution model: ad-hoc signed (bundle.macOS.signingIdentity "-"), NOT notarized. That
+# needs NO Apple Developer account and NO Apple secrets — the only secrets are the Tauri
+# minisign updater key and its password (separate from Apple code signing).
+
+on:
+  push:
+    tags:
+      - 'desktop-v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to build & publish (e.g. desktop-v0.1.0). Created at the current commit if it does not already exist.'
+        required: true
+
+permissions:
+  contents: write # create the Release and upload the .dmg / .app.tar.gz / .sig / latest.json
+
+concurrency:
+  group: desktop-release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    # A single Apple-Silicon runner builds one UNIVERSAL (arm64 + x86_64) bundle. tauri-action
+    # then writes ONE latest.json whose `darwin-aarch64` and `darwin-x86_64` keys both point at
+    # the universal artifact (verified in tauri-action's upload-version-json.ts) — so the
+    # updater's single `/releases/latest/` endpoint serves both Mac architectures with no
+    # cross-job latest.json race.
+    runs-on: macos-14
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      # pnpm must be set up before setup-node so `cache: pnpm` can find it. Version comes from
+      # the root package.json `packageManager` pin (same as ci.yml / prepare-release.yml).
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build, ad-hoc sign, minisign & upload
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Minisign UPDATER key (not Apple code signing). Set locally with
+          #   gh secret set TAURI_SIGNING_PRIVATE_KEY < ~/.tauri/opendoist_updater.key
+          #   gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD < ~/.tauri/opendoist_updater.password.txt
+          # The matching public key lives in apps/desktop/src-tauri/tauri.conf.json.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          projectPath: apps/desktop
+          # `tauri build` runs beforeBuildCommand (pnpm --filter @opendoist/web build) itself,
+          # so the SPA + quickadd bundles are produced before the Rust shell is packaged.
+          tagName: ${{ github.event.inputs.tag || github.ref_name }}
+          releaseName: 'OpenDoist Desktop v__VERSION__'
+          releaseBody: |
+            Native macOS build of OpenDoist — universal (Apple Silicon + Intel), ~5–10 MB.
+
+            **Install**
+            1. Download the `.dmg` below and drag **OpenDoist** into Applications.
+            2. First launch is blocked because the app is ad-hoc signed, not notarized by Apple.
+               Open **System Settings → Privacy & Security**, scroll to the OpenDoist notice,
+               click **Open Anyway**, and authenticate.
+               Fallback: `xattr -dr com.apple.quarantine /Applications/OpenDoist.app`
+            3. **Pair**: enter your instance URL (`https://…`) and an `od_` API token minted in
+               your instance's *Settings → Integrations*.
+
+            Updates after this install are automatic via the in-app updater.
+            Full docs: `apps/desktop/README.md`.
+          # Create as a draft, upload every artifact, THEN publish (next step) so the updater's
+          # `/releases/latest/` endpoint never resolves to a half-uploaded release.
+          releaseDraft: true
+          prerelease: false
+          # uploadUpdaterJson / uploadUpdaterSignatures default to true — latest.json and the
+          # *.sig files are generated and attached automatically.
+          args: --target universal-apple-darwin
+
+      - name: Publish the release and mark it latest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # `--latest` makes `/releases/latest/download/latest.json` resolve here — the endpoint
+        # pinned in tauri.conf.json. (The server's `vX.Y.Z` releases are distributed via Docker,
+        # not this download URL; if a future server release also claims "Latest", revisit the
+        # updater endpoint — see apps/desktop/README.md → Releasing.)
+        run: |
+          gh release edit "${{ github.event.inputs.tag || github.ref_name }}" \
+            --repo "${{ github.repository }}" \
+            --draft=false \
+            --latest

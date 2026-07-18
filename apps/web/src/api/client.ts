@@ -5,7 +5,9 @@
  * mutation call sites can hand over full `Due` objects untouched.
  */
 import type { z } from 'zod'
+import { getDesktopSession } from './desktop-session'
 import { type DueInput, paginated, toDueInput } from './schemas'
+import { type ApiSession, isTauri, resolveTransport, WEB_SESSION } from './transport'
 
 export class ApiError extends Error {
   constructor(
@@ -32,12 +34,24 @@ function serializeBody(body: unknown): unknown {
   return wire === undefined ? rest : { ...rest, due: wire }
 }
 
+/** Desktop (Tauri) uses the paired instance's session; web — and a not-yet-paired desktop,
+ *  which renders only the pairing screen — keeps the same-origin cookie session. */
+async function resolveSession(): Promise<ApiSession> {
+  if (!isTauri()) return WEB_SESSION
+  return (await getDesktopSession()) ?? WEB_SESSION
+}
+
 async function request(path: string, opts: { method?: string; body?: unknown }): Promise<Response> {
   const body = serializeBody(opts.body)
-  const res = await fetch(BASE + path, {
+  const session = await resolveSession()
+  const transport = await resolveTransport()
+  const res = await transport(session.baseUrl + BASE + path, {
     method: opts.method ?? 'GET',
-    credentials: 'include',
-    headers: body === undefined ? {} : { 'content-type': 'application/json' },
+    credentials: session.credentials,
+    headers: {
+      ...session.authHeaders(),
+      ...(body === undefined ? {} : { 'content-type': 'application/json' }),
+    },
     body: body === undefined ? undefined : JSON.stringify(body),
   })
   if (!res.ok) {

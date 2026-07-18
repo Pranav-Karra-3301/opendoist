@@ -1,0 +1,29 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Default capability for the main window and the Quick Add popover. The http scope is intentionally broad (http/https **): the instance URL is user-supplied at pairing time and the scope is static.",
+  "windows": ["main", "quickadd"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-set-focus",
+    "positioner:default",
+    "global-shortcut:allow-register",
+    "global-shortcut:allow-unregister",
+    "notification:default",
+    "store:default",
+    "autostart:default",
+    "process:allow-restart",
+    "updater:default",
+    {
+      "identifier": "http:default",
+      "allow": [
+        { "url": "http://**" },
+        { "url": "https://**" },
+        { "url": "http://**:*" },
+        { "url": "https://**:*" }
+      ]
+    }
+  ]
+}

@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { DesktopSettings } from '@/desktop/AutostartToggle'
 import { cn } from '@/lib/utils'
 import { SettingRow, SettingsSection } from '../ui'
 import { useUserSettings } from '../useSettings'
@@ -376,6 +377,10 @@ export default function GeneralPage() {
           }
         />
       </SettingsSection>
+
+      {/* Desktop-only (Tauri) section: launch-at-login + notification permission.
+          Renders null in the browser, so the web page is unchanged. */}
+      <DesktopSettings />
     </div>
   )
 }

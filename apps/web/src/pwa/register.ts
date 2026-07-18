@@ -12,6 +12,7 @@
  * No-ops in dev: `devOptions.enabled` is false, so vite-plugin-pwa emits no worker there.
  */
 import { Workbox } from 'workbox-window'
+import { isTauri } from '@/api/transport'
 
 export interface SWRegistration {
   /** Apply the waiting worker: skip-waiting, then reload when it takes control. */
@@ -21,7 +22,16 @@ export interface SWRegistration {
 const NOOP: SWRegistration = { update: () => {} }
 
 export function registerSW(onNeedRefresh: () => void): SWRegistration {
-  if (import.meta.env.DEV || typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
+  // Desktop (Tauri): WKWebView exposes `navigator.serviceWorker` on the tauri:// scheme but
+  // `register()` always rejects there (custom schemes can't host workers) — an unhandled
+  // rejection every boot for a worker the desktop shell doesn't want anyway (assets are
+  // bundled; offline caching is the instance's concern). Web builds are untouched.
+  if (
+    import.meta.env.DEV ||
+    isTauri() ||
+    typeof navigator === 'undefined' ||
+    !('serviceWorker' in navigator)
+  ) {
     return NOOP
   }
 

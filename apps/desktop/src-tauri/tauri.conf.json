@@ -1,0 +1,58 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "OpenDoist",
+  "version": "0.1.0",
+  "identifier": "com.opendoist.desktop",
+  "build": {
+    "beforeDevCommand": "pnpm --filter @opendoist/web dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "pnpm --filter @opendoist/web build",
+    "frontendDist": "../../web/dist"
+  },
+  "app": {
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "OpenDoist",
+        "width": 1040,
+        "height": 720,
+        "minWidth": 720,
+        "minHeight": 480,
+        "visible": true
+      },
+      {
+        "label": "quickadd",
+        "url": "quickadd.html",
+        "width": 400,
+        "height": 460,
+        "resizable": false,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "visible": false,
+        "skipTaskbar": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg"],
+    "icon": ["icons/128x128.png", "icons/icon.icns"],
+    "macOS": {
+      "signingIdentity": "-"
+    },
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDhCODA3NzJEMkFDRDA4MkQKUldRdENNMHFMWGVBaThQa2F0Wkx6SHhhbnRHZGZQWUdlajVva3FTaVV3czJLQ0xzbUF2dDEwZUMK",
+      "endpoints": [
+        "https://github.com/Pranav-Karra-3301/opendoist/releases/latest/download/latest.json"
+      ]
+    }
+  }
+}

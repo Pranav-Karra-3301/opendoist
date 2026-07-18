@@ -90,6 +90,19 @@ catalog:
   workbox-expiration: ^7.3.0
   workbox-window: ^7.3.0
   '@tanstack/react-virtual': ^3.13.0
+  # macOS desktop app (Tauri 2). Pinned to the July-2026 verified set (tilde: patch drift
+  # only) — keep each JS binding's minor in lockstep with its Rust crate in
+  # apps/desktop/src-tauri/Cargo.toml.
+  '@tauri-apps/cli': ~2.11.4
+  '@tauri-apps/api': ~2.11.1
+  '@tauri-apps/plugin-http': ~2.5.9
+  '@tauri-apps/plugin-global-shortcut': ~2.3.2
+  '@tauri-apps/plugin-positioner': ~2.3.3
+  '@tauri-apps/plugin-notification': ~2.3.3
+  '@tauri-apps/plugin-store': ~2.4.3
+  '@tauri-apps/plugin-autostart': ~2.5.1
+  '@tauri-apps/plugin-updater': ~2.10.1
+  '@tauri-apps/plugin-process': ^2.0.0
 
 minimumReleaseAgeExclude:
   - '@biomejs/biome@2.5.4'
