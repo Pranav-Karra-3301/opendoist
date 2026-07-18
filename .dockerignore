@@ -7,4 +7,6 @@ data
 docs
 assets
 *.md
+# What's New imports the repo-root changelog via ?raw at web build time
+!CHANGELOG.md
 .github
