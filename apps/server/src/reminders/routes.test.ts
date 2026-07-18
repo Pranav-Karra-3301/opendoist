@@ -117,7 +117,7 @@ describe('reminder routes — lifecycle & hooks', () => {
   })
 
   it('persists a quick-add `!` reminder alongside the auto-reminder, correctly ordered', async () => {
-    const t = await make() // default autoReminderMinutes = 30, timezone UTC
+    const t = await make() // default autoReminderMinutes = 0 (at task time), timezone UTC
     const task = await json<TaskDto>(
       await t.post('/api/v1/tasks/quick', { text: 'Pay rent tomorrow 5pm !45 min before' }),
     )
@@ -126,16 +126,17 @@ describe('reminder routes — lifecycle & hooks', () => {
 
     const auto = rows.find((r) => r.is_auto)
     const manual = rows.find((r) => !r.is_auto)
-    expect(auto?.minute_offset).toBe(30)
+    expect(auto?.minute_offset).toBe(0)
     expect(manual?.minute_offset).toBe(45)
     expect(auto?.fire_at_utc).not.toBeNull()
     expect(manual?.fire_at_utc).not.toBeNull()
-    // 45 minutes before fires earlier than 30 minutes before the same due time.
+    // 45 minutes before fires earlier than the at-due-time auto reminder.
     expect(String(manual?.fire_at_utc).localeCompare(String(auto?.fire_at_utc))).toBeLessThan(0)
   })
 
   it('dedupes a quick-add reminder whose offset equals the auto-reminder offset', async () => {
-    const t = await make() // autoReminderMinutes = 30
+    const t = await make()
+    await t.patch('/api/v1/user/settings', { autoReminderMinutes: 30 })
     const task = await json<TaskDto>(
       await t.post('/api/v1/tasks/quick', { text: 'Pay rent tomorrow 5pm !30 min before' }),
     )

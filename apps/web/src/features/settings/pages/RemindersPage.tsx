@@ -35,7 +35,7 @@ export interface ReminderOption {
 }
 
 /** Offset menu — the exact value set the server accepts (Task A constrained the PATCH boundary to
- *  null, 0, 5, 10, 15, 30, 45, 60, 120). Default = 30 min before. */
+ *  null, 0, 5, 10, 15, 30, 45, 60, 120). Default = at time of task. */
 export const REMINDER_OPTIONS: readonly ReminderOption[] = [
   { value: 'none', label: 'No automatic reminder', minutes: null },
   { value: '0', label: 'At time of task', minutes: 0 },

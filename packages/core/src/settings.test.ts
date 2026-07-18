@@ -27,7 +27,7 @@ describe('UserSettingsSchema', () => {
     expect(DEFAULT_USER_SETTINGS.dateFormat).toBe('MDY')
     expect(DEFAULT_USER_SETTINGS.autoDark).toBe(true)
     expect(DEFAULT_USER_SETTINGS.daysOff).toEqual([6, 7])
-    expect(DEFAULT_USER_SETTINGS.autoReminderMinutes).toBe(30)
+    expect(DEFAULT_USER_SETTINGS.autoReminderMinutes).toBe(0)
     expect(DEFAULT_USER_SETTINGS.viewPrefs).toEqual({})
   })
 
