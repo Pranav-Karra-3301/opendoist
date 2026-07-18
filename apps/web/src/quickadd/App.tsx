@@ -39,20 +39,9 @@ const CONFIRM_MS = 650
  * the user's server-side week/smart-date settings (that would mean loading the whole SPA), so
  * these fallbacks drive highlighting — the authoritative re-parse happens server-side.
  */
-export function desktopParseContext(now: Date = new Date()): ParseContext {
-  return {
-    now: now.toISOString(),
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    ...DEFAULT_PARSE_CONTEXT_SETTINGS,
-  }
-}
+import { desktopParseContext, submitQuickAdd } from './logic'
 
-/** Submit raw Quick Add text to the instance. Rides the shared `api` client, so on desktop it
- *  goes through the paired `ApiSession` (bearer token, tauri-plugin-http, no CORS). The server
- *  re-parses the text and auto-creates any referenced #project/@label. */
-export function submitQuickAdd(text: string): Promise<unknown> {
-  return api(endpoints.quick, { method: 'POST', body: { text }, schema: z.unknown() })
-}
+export { desktopParseContext, submitQuickAdd } from './logic'
 
 /** Hide the popover window. No-op off-desktop (e.g. the node test env). */
 async function hidePopover(): Promise<void> {

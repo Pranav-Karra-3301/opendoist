@@ -52,7 +52,7 @@ vi.mock('@/api/client', async (importOriginal) => {
 
 describe('desktopParseContext', () => {
   it('builds a ParseContext from Intl + core defaults', async () => {
-    const { desktopParseContext } = await import('./App')
+    const { desktopParseContext } = await import('./logic')
     const ctx = desktopParseContext(new Date('2026-07-15T21:00:00Z'))
     expect(ctx.now).toBe('2026-07-15T21:00:00.000Z')
     expect(ctx.timezone).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone)
@@ -61,7 +61,9 @@ describe('desktopParseContext', () => {
   })
 })
 
-describe('App rendering', () => {
+// The App import legitimately pays the whole component-graph transform on a cold CI runner;
+// budget for it instead of flaking at the 5s default (a real hang still fails at 20s).
+describe('App rendering', { timeout: 20_000 }, () => {
   it('renders the capture card with the labelled input and key hints', async () => {
     const { App } = await import('./App')
     const html = renderToStaticMarkup(<App />)
