@@ -30,8 +30,11 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add package.json CHANGELOG.md
           git commit -m "chore(release): v${{ inputs.version }}"
-          git tag "v${{ inputs.version }}"
-          git push origin HEAD:main --follow-tags
+          # Annotated tag + explicit tag push: --follow-tags ignores lightweight tags,
+          # which left v-tags stranded on the runner while the release step looked for them.
+          git tag -a "v${{ inputs.version }}" -m "v${{ inputs.version }}"
+          git push origin HEAD:main
+          git push origin "v${{ inputs.version }}"
       - name: Create GitHub Release
         env: { GH_TOKEN: '${{ github.token }}' }
         run: |
