@@ -9,6 +9,7 @@ All notable changes to OpenDoist.
 - *(ci)* Strip corepack integrity hash from packageManager field
 - *(docker)* Keep CHANGELOG.md in the build context
 - *(web)* Hoist quickadd pure helpers out of the component graph
+- *(release)* Annotate and explicitly push the version tag
 
 ### Documentation
 - Add design spec, research dossier, and brand assets
@@ -35,3 +36,4 @@ All notable changes to OpenDoist.
 - Scaffold pnpm monorepo, CI, and repo meta
 - *(release)* Prepare v0.1.0
 - Gitignore nested dev data dir (apps/server/data)
+- *(release)* V0.1.0
