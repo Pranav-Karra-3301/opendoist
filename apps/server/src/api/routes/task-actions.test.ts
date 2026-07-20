@@ -79,6 +79,7 @@ it('quick-add: full grammar resolves project, section, label, priority, due, dea
   expect(dto.priority).toBe(1)
   expect(dto.description).toBe('context')
   expect(dto.deadline_date).toMatch(/-07-30$/)
+  expect(dto.deadline_time).toBeNull() // a date-only `{july 30}` brace stays date-only
   expect(dto.due?.time).toBe('16:00')
   expect(dto.due?.is_recurring).toBe(false)
   expect([addDaysIso(before, 1), addDaysIso(after, 1)]).toContain(dto.due?.date)
@@ -100,6 +101,18 @@ it('quick-add: full grammar resolves project, section, label, priority, due, dea
   expect(admin).toBeDefined()
   expect(dto.section_id).toBe(admin?.id)
   expect(admin?.projectId).toBe(work?.id)
+})
+
+it('quick-add: a timed `{…}` deadline persists and returns both date and wall-clock time', async () => {
+  const t = await make()
+  // `{july 30 5pm}` — a brace phrase with a time is no longer an error (owner divergence
+  // 2026-07-18): the parser resolves the time and quick-add persists it alongside the date.
+  const res = await t.post('/api/v1/tasks/quick', { text: 'wire retainer {july 30 5pm}' })
+  expect(res.status).toBe(201)
+  const dto = await json<TaskDto>(res)
+  expect(dto.content).toBe('wire retainer')
+  expect(dto.deadline_date).toMatch(/-07-30$/)
+  expect(dto.deadline_time).toBe('17:00')
 })
 
 it('quick-add: reuses an existing project case-insensitively', async () => {

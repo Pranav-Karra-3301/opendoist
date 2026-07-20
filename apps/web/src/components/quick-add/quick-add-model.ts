@@ -171,7 +171,12 @@ export function toCreatePayload(
   const payload: TaskCreate = { content: parsed.title, priority: parsed.priority }
   if (parsed.description !== null) payload.description = parsed.description
   if (parsed.due !== null) payload.due = parsed.due
-  if (parsed.deadline !== null) payload.deadline_date = parsed.deadline
+  // A `{…}` deadline may carry a wall-clock time (`{next friday 5pm}`); send both to the
+  // create route (structured-submit path used when a token was detokenized).
+  if (parsed.deadline !== null) {
+    payload.deadline_date = parsed.deadline.date
+    payload.deadline_time = parsed.deadline.time
+  }
   if (parsed.durationMin !== null) payload.duration_min = parsed.durationMin
   if (parsed.labels.length > 0) payload.labels = parsed.labels
   if (parsed.uncompletable) payload.uncompletable = true

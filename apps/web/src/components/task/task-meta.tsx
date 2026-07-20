@@ -62,7 +62,10 @@ export function TaskMeta({ task, showProject }: TaskMetaProps) {
       {task.deadline_date !== null && (
         <span className="flex items-center gap-1" style={{ color: 'var(--od-date-overdue)' }}>
           <Flag size={16} strokeWidth={2} />
-          {formatDueChip({ date: task.deadline_date, time: null }, today).label}
+          {
+            formatDueChip({ date: task.deadline_date, time: task.deadline_time ?? null }, today)
+              .label
+          }
         </span>
       )}
       {task.duration_min !== null && (

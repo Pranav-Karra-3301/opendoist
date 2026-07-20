@@ -207,7 +207,10 @@ export const taskActionsRoutes = () => {
       // persist the raw due token text so a recurring due can always be re-parsed
       dueString: parsed.due?.string ?? null,
       recurrence: parsed.due?.recurrence ?? null,
-      deadlineDate: parsed.deadline,
+      // A `{…}` deadline may carry a wall-clock time (`{next friday 5pm}`); persist both. The
+      // parser resolves the time (Task B); createTask drops the time if there is no date.
+      deadlineDate: parsed.deadline?.date ?? null,
+      deadlineTime: parsed.deadline?.time ?? null,
       durationMin: parsed.durationMin,
       labels: parsed.labels,
       uncompletable: parsed.uncompletable,

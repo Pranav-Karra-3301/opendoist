@@ -17,7 +17,7 @@ export type SigilCandidate =
   | (BaseCandidate & { kind: 'section'; name: string })
   | (BaseCandidate & { kind: 'label'; name: string })
   | (BaseCandidate & { kind: 'priority'; priority: Priority })
-  | (BaseCandidate & { kind: 'deadline'; date: string })
+  | (BaseCandidate & { kind: 'deadline'; date: string; time: string | null })
   | (BaseCandidate & { kind: 'reminder'; draft: ReminderDraft })
 
 export interface SigilScanResult {
@@ -166,13 +166,16 @@ export function scanSigils(text: string, ctx: ParseContext): SigilScanResult {
       if (close !== -1) {
         const end = close + 1
         const resolved = resolveNaturalDate(text.slice(i + 1, close), ctx)
-        if (resolved && resolved.time === null) {
+        if (resolved) {
+          // deadlines carry an optional resolved time ({next friday 5pm} → { date, time });
+          // only an unresolvable phrase falls through to a masked dead zone
           candidates.push({
             kind: 'deadline',
             start: i,
             end,
             text: text.slice(i, end),
             date: resolved.date,
+            time: resolved.time,
           })
         } else {
           deadZones.push({ start: i, end })

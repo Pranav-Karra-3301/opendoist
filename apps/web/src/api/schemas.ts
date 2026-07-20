@@ -20,6 +20,9 @@ export const TaskSchema = z.object({
   priority: PrioritySchema,
   due: DueSchema.nullable(),
   deadline_date: z.string().nullable(),
+  /** HH:mm wall-clock deadline time, null = date-only. Additive sibling of deadline_date
+   *  (quick-add UX pass); optional so pre-field fixtures/responses parse unchanged. */
+  deadline_time: z.string().nullable().optional(),
   duration_min: z.number().int().nullable(),
   labels: z.array(z.string()),
   is_collapsed: z.boolean(),
@@ -155,6 +158,7 @@ export interface TaskCreate {
   priority?: Priority
   due?: Due | null
   deadline_date?: string | null
+  deadline_time?: string | null
   duration_min?: number | null
   labels?: string[]
   uncompletable?: boolean

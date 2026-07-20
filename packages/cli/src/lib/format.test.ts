@@ -159,6 +159,21 @@ describe('dueLabel', () => {
   })
 })
 
+describe('deadline chip', () => {
+  it('renders a date-only deadline as {Mon D}', () => {
+    expect(taskLine(task({ deadline_date: '2026-07-30' }), plain)).toContain('{Jul 30}')
+  })
+  it('appends the wall-clock time when the deadline is timed', () => {
+    const line = taskLine(task({ deadline_date: '2026-08-01', deadline_time: '17:00' }), plain)
+    expect(line).toContain('{Aug 1 17:00}')
+  })
+  it('colors a today-or-past deadline red', () => {
+    const out = taskLine(task({ deadline_date: '2026-07-15', deadline_time: '09:00' }), color)
+    expect(out).toContain(RED)
+    expect(out).toContain('{Jul 15 09:00}')
+  })
+})
+
 describe('taskLine', () => {
   it('shows id, checkbox, content, and labels but never the project', () => {
     const line = taskLine(task({ labels: ['home'] }), plain)

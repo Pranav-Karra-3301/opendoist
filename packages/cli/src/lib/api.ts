@@ -19,6 +19,8 @@ export interface TaskDto {
   priority: Priority
   due: DueDto | null
   deadline_date: string | null
+  /** HH:mm wall-clock deadline time; null/absent = date-only (quick-add UX pass). */
+  deadline_time?: string | null
   duration_min: number | null
   labels: string[]
   child_order: number

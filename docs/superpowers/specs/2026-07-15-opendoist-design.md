@@ -34,7 +34,7 @@ Priority note: Todoist's API stores 4=p1; we store **1=p1** and the importer map
 ### 2.2 Due vs Deadline vs Reminder (Todoist semantics, dossier §1.4)
 
 - **Due** — when you plan to work on it. Shapes: date-only; date+time (stored as wall-clock + user tz); optional duration. Recurring: original `due_string` is stored and re-parsed to compute occurrences (Todoist's own model). `every` advances from schedule; `every!` from completion. Full grammar per dossier §1.2–1.3 (intervals, positional `every 3rd friday`, `every workday`, multiple days, `starting/until/for` bounds, holiday words). Not supported (as Todoist): per-day different times, exclusion rules.
-- **Deadline** — hard cutoff. **Date-only**, no recurrence. Quick Add `{march 30}`. Filter `deadline:` operators. Red chip in UI.
+- **Deadline** — hard cutoff. **Date + optional time**, no recurrence — a deliberate divergence from Todoist's date-only deadlines (owner decision, 2026-07-18). Quick Add `{march 30}` or `{next friday 5pm}` → `deadline: { date, time | null }`. A deadline time never creates reminders and never affects Today/Upcoming placement (deadlines never do); filter `deadline:` operators stay date-granular. Red chip in UI (shows the time when present).
 - **Reminder** — notification only. Automatic (user default offset, default 30 min before, only for timed dues; "0" = at time; disable-able), relative `!30 min before`, absolute `!tomorrow 9am`, recurring `!every day 5pm`. Fires through enabled channels.
 
 Recurrence engine (core): NL grammar → internal RecurrenceSpec → next-occurrence math on Temporal (rrule-temporal where RFC-5545-mappable; `every!`/workday/positional handled natively). Completing a recurring task advances due + logs completion; Shift+click completes the series. Property-tested across DST.
@@ -47,7 +47,7 @@ Live token highlighting (chrono-node match offsets + rich-textarea overlay); cli
 |---|---|---|
 | Due | natural language, no prefix | `tom 4pm`, `every other tue starting mar 3`, bare `6pm` → today-or-tomorrow |
 | Duration | `for 45min` after a time | max 24h |
-| Deadline | `{natural date}` | date-only |
+| Deadline | `{natural date, optionally with time}` | `{march 30}`, `{next friday 5pm}`; time optional (Todoist divergence, owner 2026-07-18) |
 | Reminder | `!time` / `!30 min before` | repeatable |
 | Project / Section | `#Project` `/Section` | autocomplete, create-new inline |
 | Label | `@label` | repeatable, create-new inline |

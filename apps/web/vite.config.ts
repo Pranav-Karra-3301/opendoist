@@ -36,7 +36,7 @@ export default defineConfig({
     },
   },
   server: {
-    proxy: { '/api': 'http://localhost:7968' },
+    proxy: { '/api': 'http://127.0.0.1:7968' },
     // phase 9: What's New imports the repo-root CHANGELOG.md via `?raw`
     fs: { allow: ['../..'] },
   },

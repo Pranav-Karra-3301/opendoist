@@ -24,6 +24,15 @@ afterEach(() => {
   pluginFetch.mockReset()
 })
 
+// Pre-warm this file's module registry during the unbounded import phase. Under the full
+// parallel suite the shared vite transform/eval queue can starve a first `await import(...)`
+// inside a test window past any timeout budget (and a starved first api() call cascades into
+// the next test's mocked Response — "Body has already been read"). Importing here is
+// behavior-identical: the first in-test import already ran with no globals stubbed, and both
+// modules read `window`/fetch at call time, not import time.
+await import('./transport')
+await import('./client')
+
 describe('isTauri', () => {
   it('is false outside a Tauri webview (no window at all in node)', async () => {
     const { isTauri } = await import('./transport')

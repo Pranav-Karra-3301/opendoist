@@ -12,7 +12,13 @@ function parsedSummary(created: TaskDto, preview: ParsedQuickAdd): string {
   const parts: string[] = []
   if (created.priority !== 4) parts.push(`p${created.priority}`)
   if (created.due !== null) parts.push(`due ${created.due.string}`)
-  if (created.deadline_date !== null) parts.push(`deadline {${created.deadline_date}}`)
+  if (created.deadline_date !== null) {
+    const deadline =
+      created.deadline_time == null
+        ? created.deadline_date
+        : `${created.deadline_date} ${created.deadline_time}`
+    parts.push(`deadline {${deadline}}`)
+  }
   if (preview.project !== null) parts.push(`#${preview.project}`)
   if (preview.section !== null) parts.push(`/${preview.section}`)
   if (created.labels.length > 0) parts.push(created.labels.map((label) => `@${label}`).join(' '))

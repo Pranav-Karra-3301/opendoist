@@ -165,7 +165,9 @@ export function parseQuickAdd(input: string, ctx: ParseContext): ParsedQuickAdd 
     tokens: finalTokens,
     due,
     durationMin,
-    deadline: deadline?.date ?? null,
+    // brace deadlines carry an optional resolved wall-clock time ({next friday 5pm} → { date, time });
+    // date-only phrases ({march 30}) keep time null (Task B)
+    deadline: deadline ? { date: deadline.date, time: deadline.time } : null,
     priority: priority?.priority ?? 4,
     labels,
     project: project?.name ?? null,

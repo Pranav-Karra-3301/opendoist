@@ -63,6 +63,10 @@ function OpenRowPopover({ taskId, kind }: { taskId: string; kind: RowPopoverKind
       case 'schedule':
         content = (
           <SchedulerPanel
+            // Seeds the calendar highlight AND supplies the wall-clock time a calendar-day
+            // pick preserves (plan Task E: "picking a day preserves an existing time from the
+            // current due") — without it a day pick silently drops the task's due time.
+            current={task.due}
             onPick={(due) => {
               update.mutate({ id: task.id, patch: { due } })
               closeRowPopover()

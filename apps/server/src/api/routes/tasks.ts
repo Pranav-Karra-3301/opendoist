@@ -485,6 +485,7 @@ export const tasksRoutes = () => {
       dueString: due.dueString,
       recurrence: due.recurrence,
       deadlineDate: body.deadline_date ?? null,
+      deadlineTime: body.deadline_time ?? null,
       durationMin: body.duration_min ?? null,
       labels: body.labels,
       uncompletable: body.uncompletable ?? null,
@@ -587,7 +588,20 @@ export const tasksRoutes = () => {
     if (has('section_id')) updates.sectionId = body.section_id ?? null
     if (has('parent_id')) updates.parentId = body.parent_id ?? null
     if (has('child_order')) updates.childOrder = body.child_order
-    if (has('deadline_date')) updates.deadlineDate = body.deadline_date ?? null
+    if (has('deadline_date')) {
+      updates.deadlineDate = body.deadline_date ?? null
+      // Clearing the date clears any time with it (a deadline time never outlives its date);
+      // an explicit deadline_time below still wins when the date is being set.
+      if (body.deadline_date == null) updates.deadlineTime = null
+    }
+    if (has('deadline_time')) {
+      // Parity with createTask: a time is only stored when the task will have a deadline date
+      // after this patch — a time-only patch on a dateless task coerces to null, never an orphan.
+      const dateAfterPatch = has('deadline_date')
+        ? (body.deadline_date ?? null)
+        : existing.deadlineDate
+      updates.deadlineTime = dateAfterPatch === null ? null : (body.deadline_time ?? null)
+    }
     if (has('duration_min')) updates.durationMin = body.duration_min ?? null
     if (has('uncompletable')) updates.uncompletable = body.uncompletable
     if (has('day_order')) updates.dayOrder = body.day_order

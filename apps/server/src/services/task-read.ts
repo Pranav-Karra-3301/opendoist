@@ -30,6 +30,7 @@ export function taskToDto(row: TaskRow, labels: string[]): TaskDto {
             recurrence,
           },
     deadline_date: row.deadlineDate,
+    deadline_time: row.deadlineTime,
     duration_min: row.durationMin,
     day_order: row.dayOrder,
     labels,

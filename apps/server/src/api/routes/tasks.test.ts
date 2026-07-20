@@ -162,6 +162,101 @@ it('clears all due fields when due is set to null', async () => {
   expect(updated.due).toBeNull()
 })
 
+it('persists an explicit deadline date + time and round-trips a PATCH that retimes then clears it', async () => {
+  const t = await make()
+  const dto = await json<TaskDto>(
+    await t.post('/api/v1/tasks', {
+      content: 'file 1099',
+      deadline_date: '2026-08-01',
+      deadline_time: '09:00',
+    }),
+  )
+  expect(dto.deadline_date).toBe('2026-08-01')
+  expect(dto.deadline_time).toBe('09:00')
+
+  // Retime only: the date is untouched, the time updates.
+  const retimed = await json<TaskDto>(
+    await t.patch(`/api/v1/tasks/${dto.id}`, { deadline_time: '17:30' }),
+  )
+  expect(retimed.deadline_date).toBe('2026-08-01')
+  expect(retimed.deadline_time).toBe('17:30')
+
+  // Clearing the date clears the time with it (a deadline time never outlives its date).
+  const cleared = await json<TaskDto>(
+    await t.patch(`/api/v1/tasks/${dto.id}`, { deadline_date: null }),
+  )
+  expect(cleared.deadline_date).toBeNull()
+  expect(cleared.deadline_time).toBeNull()
+})
+
+it('keeps a date-only deadline unchanged (no time), preserving pre-time behavior', async () => {
+  const t = await make()
+  const dto = await json<TaskDto>(
+    await t.post('/api/v1/tasks', { content: 'taxes', deadline_date: '2026-08-01' }),
+  )
+  expect(dto.deadline_date).toBe('2026-08-01')
+  expect(dto.deadline_time).toBeNull()
+})
+
+it('PATCH never persists an orphaned deadline_time (a time never outlives its date)', async () => {
+  const t = await make()
+  const dto = await json<TaskDto>(await t.post('/api/v1/tasks', { content: 'no deadline yet' }))
+  expect(dto.deadline_date).toBeNull()
+
+  // Time-only patch on a dateless task: coerced to null, matching createTask's invariant.
+  const patched = await json<TaskDto>(
+    await t.patch(`/api/v1/tasks/${dto.id}`, { deadline_time: '13:00' }),
+  )
+  expect(patched.deadline_date).toBeNull()
+  expect(patched.deadline_time).toBeNull()
+  const fetched = await json<TaskDto>(await t.get(`/api/v1/tasks/${dto.id}`))
+  expect(fetched.deadline_time).toBeNull()
+
+  // Date + time arriving in the same patch is the supported way to add a timed deadline …
+  const timed = await json<TaskDto>(
+    await t.patch(`/api/v1/tasks/${dto.id}`, {
+      deadline_date: '2026-08-01',
+      deadline_time: '13:00',
+    }),
+  )
+  expect(timed.deadline_date).toBe('2026-08-01')
+  expect(timed.deadline_time).toBe('13:00')
+
+  // … and clearing the date wins over a time sent in the same body (never an orphan).
+  const cleared = await json<TaskDto>(
+    await t.patch(`/api/v1/tasks/${dto.id}`, { deadline_date: null, deadline_time: '09:00' }),
+  )
+  expect(cleared.deadline_date).toBeNull()
+  expect(cleared.deadline_time).toBeNull()
+})
+
+it('rejects malformed deadline_time with 400 on create and patch (HH:mm only)', async () => {
+  const t = await make()
+  const bad = await t.post('/api/v1/tasks', {
+    content: 'garbage time',
+    deadline_date: '2026-08-01',
+    deadline_time: 'banana',
+  })
+  expect(bad.status).toBe(400)
+
+  const dto = await json<TaskDto>(
+    await t.post('/api/v1/tasks', {
+      content: 'ok',
+      deadline_date: '2026-08-01',
+      deadline_time: '23:59',
+    }),
+  )
+  expect(dto.deadline_time).toBe('23:59')
+
+  for (const invalid of ['24:00', '9:00', '13:5', '1pm']) {
+    const res = await t.patch(`/api/v1/tasks/${dto.id}`, { deadline_time: invalid })
+    expect(res.status).toBe(400)
+  }
+  // The rejected patches persisted nothing.
+  const fetched = await json<TaskDto>(await t.get(`/api/v1/tasks/${dto.id}`))
+  expect(fetched.deadline_time).toBe('23:59')
+})
+
 it('soft-deletes a task and cascades to its subtasks', async () => {
   const t = await make()
   const parent = await json<TaskDto>(await t.post('/api/v1/tasks', { content: 'parent' }))

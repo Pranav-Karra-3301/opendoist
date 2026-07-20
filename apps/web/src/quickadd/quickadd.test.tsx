@@ -50,9 +50,15 @@ vi.mock('@/api/client', async (importOriginal) => {
   return { ...actual, api: apiMock }
 })
 
+// Loaded via top-level await AFTER the mock declarations above: a static import would hoist
+// past them (the '@/api/client' factory closes over `apiMock` — TDZ), while a dynamic import
+// inside a test window flakes under the full parallel suite, where the shared vite
+// transform/eval queue can exceed any per-test budget. Here the cost lands in the unbounded
+// import phase, like every statically-imported graph.
+const { desktopParseContext } = await import('./logic')
+
 describe('desktopParseContext', () => {
-  it('builds a ParseContext from Intl + core defaults', async () => {
-    const { desktopParseContext } = await import('./logic')
+  it('builds a ParseContext from Intl + core defaults', () => {
     const ctx = desktopParseContext(new Date('2026-07-15T21:00:00Z'))
     expect(ctx.now).toBe('2026-07-15T21:00:00.000Z')
     expect(ctx.timezone).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone)

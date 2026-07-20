@@ -85,6 +85,8 @@ export const tasks = sqliteTable(
     /** JSON RecurrenceSpec */
     recurrence: text('recurrence'),
     deadlineDate: text('deadline_date'),
+    /** HH:mm wall-clock; null = date-only deadline (quick-add UX pass, migration 0006) */
+    deadlineTime: text('deadline_time'),
     durationMin: integer('duration_min'),
     dayOrder: integer('day_order').notNull().default(0),
     isCollapsed: integer('is_collapsed', { mode: 'boolean' }).notNull().default(false),

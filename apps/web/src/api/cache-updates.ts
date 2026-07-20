@@ -35,6 +35,7 @@ function mergePatch(task: Task, patch: TaskPatch): Task {
   if (patch.priority !== undefined) next.priority = patch.priority
   if (patch.due !== undefined) next.due = patch.due
   if (patch.deadline_date !== undefined) next.deadline_date = patch.deadline_date
+  if (patch.deadline_time !== undefined) next.deadline_time = patch.deadline_time
   if (patch.duration_min !== undefined) next.duration_min = patch.duration_min
   if (patch.labels !== undefined) next.labels = patch.labels
   if (patch.uncompletable !== undefined) next.uncompletable = patch.uncompletable
@@ -127,6 +128,7 @@ export function optimisticTaskFromCreate(
     priority,
     due: input.due ?? null,
     deadline_date: input.deadline_date ?? null,
+    deadline_time: input.deadline_time ?? null,
     duration_min: input.duration_min ?? null,
     labels: input.labels ?? [],
     is_collapsed: false,
@@ -148,6 +150,7 @@ export function taskToCreate(task: Task): TaskCreate {
     priority: task.priority,
     due: task.due,
     deadline_date: task.deadline_date,
+    deadline_time: task.deadline_time ?? null,
     duration_min: task.duration_min,
     labels: task.labels,
     uncompletable: task.uncompletable,

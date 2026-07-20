@@ -19,6 +19,9 @@ export interface CreateTaskInput {
   dueString: string | null
   recurrence: RecurrenceSpec | null
   deadlineDate: string | null
+  /** HH:mm wall-clock deadline time; omitted/undefined = date-only. Only persisted when
+   *  `deadlineDate` is non-null (a time never outlives its date). */
+  deadlineTime?: string | null
   durationMin: number | null
   labels: string[]
   /** null = not explicitly set → derived from a leading `* ` in content */
@@ -122,6 +125,8 @@ export function createTask(
       dueString: input.dueString,
       recurrence: input.recurrence === null ? null : JSON.stringify(input.recurrence),
       deadlineDate: input.deadlineDate,
+      // Invariant: a deadline time never outlives its date (and defaults to null when unset).
+      deadlineTime: input.deadlineDate === null ? null : (input.deadlineTime ?? null),
       durationMin: input.durationMin,
       uncompletable: input.uncompletable ?? input.content.startsWith('* '),
       completedAt: null,

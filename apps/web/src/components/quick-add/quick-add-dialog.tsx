@@ -152,12 +152,26 @@ export function QuickAddDialog() {
         }
         // Escape is owned by the input (menu-first, then discard-confirm); focus-out never closes.
         if (details.reason === 'escape-key' || details.reason === 'focus-out') return
+        // The caret-anchored autocomplete menu is portaled to <body> to escape this popup's
+        // transform, so base-ui reports a click on it as an outside press — never let selecting
+        // a suggestion close the dialog.
+        if (
+          details.reason === 'outside-press' &&
+          details.event.target instanceof Element &&
+          details.event.target.closest('[data-quickadd-popover]') !== null
+        ) {
+          return
+        }
         requestClose()
       }}
     >
       <DialogContent
         showCloseButton={false}
-        className="top-24 max-w-[560px] translate-y-0 gap-0 p-0"
+        // Top-centered from every entry point (global Q, list a/A, palette): horizontally centred
+        // by the primitive (left-1/2 -translate-x-1/2), pinned near the top at 18vh (min 48px so it
+        // never hugs the very edge), and translate-y-0 so a growing chip row expands downward
+        // without the dialog jumping.
+        className="top-[max(48px,18vh)] max-w-[560px] translate-y-0 gap-0 p-0"
       >
         <DialogTitle className="sr-only">Quick add task</DialogTitle>
         <DialogDescription className="sr-only">

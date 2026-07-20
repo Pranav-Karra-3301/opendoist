@@ -323,7 +323,7 @@ function DeadlineField({ task }: { task: Task }) {
   const today = dateInTz(ctx.now, ctx.timezone)
   const [open, setOpen] = useState(false)
   const label = task.deadline_date
-    ? formatDueChip({ date: task.deadline_date, time: null }, today).label
+    ? formatDueChip({ date: task.deadline_date, time: task.deadline_time ?? null }, today).label
     : null
 
   return (

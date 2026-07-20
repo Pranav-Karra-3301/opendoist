@@ -81,9 +81,10 @@ export function dueLabel(task: TaskDto, fmt: FmtOpts): string {
   return is_recurring ? `${colored} ${paint(fmt, 'dim', '(recurring)')}` : colored
 }
 
-/** `{Mon D}` deadline chip, red when the deadline is today or already past. */
-function deadlineChip(deadlineDate: string, fmt: FmtOpts): string {
-  const chip = `{${monthDay(deadlineDate, parseYmd(fmt.today).y)}}`
+/** `{Mon D}` deadline chip (`{Mon D HH:mm}` when timed), red when the deadline is today or past. */
+function deadlineChip(deadlineDate: string, deadlineTime: string | null, fmt: FmtOpts): string {
+  const label = monthDay(deadlineDate, parseYmd(fmt.today).y)
+  const chip = deadlineTime === null ? `{${label}}` : `{${label} ${deadlineTime}}`
   return deadlineDate <= fmt.today ? paint(fmt, 'red', chip) : chip
 }
 
@@ -96,7 +97,8 @@ function taskBody(task: TaskDto, fmt: FmtOpts): string {
   const meta: string[] = []
   if (task.priority !== 4) meta.push(priorityLabel(task.priority, fmt))
   if (task.due !== null) meta.push(dueLabel(task, fmt))
-  if (task.deadline_date !== null) meta.push(deadlineChip(task.deadline_date, fmt))
+  if (task.deadline_date !== null)
+    meta.push(deadlineChip(task.deadline_date, task.deadline_time ?? null, fmt))
   for (const name of task.labels) meta.push(`@${name}`)
   const suffix = meta.length > 0 ? ` ${meta.join(' ')}` : ''
   return `${checkbox(task.priority, fmt)} ${task.content}${suffix}`

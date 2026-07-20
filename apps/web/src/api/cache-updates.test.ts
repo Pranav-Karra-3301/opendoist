@@ -204,6 +204,7 @@ describe('taskToCreate', () => {
       priority: 2,
       due,
       deadline_date: null,
+      deadline_time: null,
       duration_min: null,
       labels: ['l'],
       uncompletable: false,

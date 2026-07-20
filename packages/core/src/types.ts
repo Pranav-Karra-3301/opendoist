@@ -100,13 +100,24 @@ export const ReminderDraftSchema = z.discriminatedUnion('kind', [
 ])
 export type ReminderDraft = z.infer<typeof ReminderDraftSchema>
 
+/** Hard-cutoff deadline: `{natural date}` with an OPTIONAL wall-clock time (`{next friday 5pm}`).
+ *  Date + time is a deliberate divergence from Todoist's date-only deadlines (owner decision
+ *  2026-07-18). `time` never creates reminders and never affects Today/Upcoming placement;
+ *  `deadline:` filter operators stay date-granular. */
+export const DeadlineSchema = z.object({
+  date: IsoDateSchema,
+  /** wall-clock time; null = date-only */
+  time: HmTimeSchema.nullable(),
+})
+export type Deadline = z.infer<typeof DeadlineSchema>
+
 export const ParsedQuickAddSchema = z.object({
   /** input with consumed tokens removed, whitespace collapsed, trimmed */
   title: z.string(),
   tokens: z.array(QuickAddTokenSchema),
   due: DueSchema.nullable(),
   durationMin: z.number().int().min(1).max(1440).nullable(),
-  deadline: IsoDateSchema.nullable(),
+  deadline: DeadlineSchema.nullable(),
   priority: PrioritySchema,
   labels: z.array(z.string()),
   project: z.string().nullable(),

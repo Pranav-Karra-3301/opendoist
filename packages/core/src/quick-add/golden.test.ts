@@ -47,7 +47,7 @@ test('deadline in braces + relative reminder + duration', () => {
   const r = parseQuickAdd('Team meeting today 4pm for 45min {july 30} !30 min before', ctx)
   expect(r.due).toMatchObject({ date: '2026-07-15', time: '16:00' })
   expect(r.durationMin).toBe(45)
-  expect(r.deadline).toBe('2026-07-30')
+  expect(r.deadline).toEqual({ date: '2026-07-30', time: null })
   expect(r.reminders).toEqual([{ kind: 'relative', minutesBefore: 30 }])
 })
 
@@ -97,7 +97,10 @@ interface GoldenRow {
   /** expected due time (null = all-day) */
   time?: string | null
   dur?: number | null
+  /** expected deadline date; null asserts no deadline at all */
   deadline?: string | null
+  /** expected deadline wall-clock time (null = date-only) */
+  deadlineTime?: string | null
   priority?: Priority
   labels?: string[]
   project?: string | null
@@ -118,7 +121,8 @@ function checkRow(row: GoldenRow, rowCtx: ParseContext = ctx): void {
   }
   if (row.time !== undefined) expect(r.due?.time ?? null).toBe(row.time)
   if (row.dur !== undefined) expect(r.durationMin).toBe(row.dur)
-  if (row.deadline !== undefined) expect(r.deadline).toBe(row.deadline)
+  if (row.deadline !== undefined) expect(r.deadline?.date ?? null).toBe(row.deadline)
+  if (row.deadlineTime !== undefined) expect(r.deadline?.time ?? null).toBe(row.deadlineTime)
   if (row.priority !== undefined) expect(r.priority).toBe(row.priority)
   if (row.labels !== undefined) expect(r.labels).toEqual(row.labels)
   if (row.project !== undefined) expect(r.project).toBe(row.project)
@@ -254,15 +258,76 @@ describe('golden table — deadlines (dossier §1.1, `{natural date}`)', () => {
       deadline: '2026-07-31',
       kinds: ['deadline', 'due'],
     },
-    // a time inside braces is an error: no token, and the braced text is never a due
+    // deadline time (owner divergence 2026-07-18): a time inside braces is NO LONGER an error —
+    // `{…}` carries an optional wall-clock time end-to-end (12h/24h, single or with minutes)
     {
       input: 'standup {tomorrow 4pm}',
-      title: 'standup {tomorrow 4pm}',
+      title: 'standup',
+      deadline: '2026-07-16',
+      deadlineTime: '16:00',
+      date: null,
+      kinds: ['deadline'],
+    },
+    {
+      input: 'wire retainer {next friday 5pm}',
+      title: 'wire retainer',
+      deadline: '2026-07-24',
+      deadlineTime: '17:00',
+      kinds: ['deadline'],
+    },
+    {
+      input: 'demo prep {next friday 5:30pm}',
+      title: 'demo prep',
+      deadline: '2026-07-24',
+      deadlineTime: '17:30',
+    },
+    {
+      input: 'dentist {sat 10am}',
+      title: 'dentist',
+      deadline: '2026-07-18',
+      deadlineTime: '10:00',
+    },
+    {
+      input: 'file 1099 {aug 1 09:00}',
+      title: 'file 1099',
+      deadline: '2026-08-01',
+      deadlineTime: '09:00',
+    },
+    {
+      input: 'cutover {fri 19:00}',
+      title: 'cutover',
+      deadline: '2026-07-17',
+      deadlineTime: '19:00',
+    },
+    // date-only phrases keep time null
+    {
+      input: 'renew visa {tomorrow}',
+      title: 'renew visa',
+      deadline: '2026-07-16',
+      deadlineTime: null,
+      kinds: ['deadline'],
+    },
+    { input: 'taxes {mar 30}', title: 'taxes', deadline: '2027-03-30', deadlineTime: null },
+    // a timed deadline coexists with a timed due + duration without interfering
+    {
+      input: 'launch tom 9am for 1h {next friday 5pm}',
+      title: 'launch',
+      date: '2026-07-16',
+      time: '09:00',
+      dur: 60,
+      deadline: '2026-07-24',
+      deadlineTime: '17:00',
+      kinds: ['deadline', 'due', 'duration'],
+    },
+    // unresolvable phrases stay literal text with no deadline (never date-scanned)
+    { input: 'groceries {whenever}', title: 'groceries {whenever}', deadline: null, kinds: [] },
+    {
+      input: 'ship notes {sometime next week}',
+      title: 'ship notes {sometime next week}',
       deadline: null,
       date: null,
       kinds: [],
     },
-    { input: 'groceries {whenever}', title: 'groceries {whenever}', deadline: null, kinds: [] },
     // duplicate deadline: last one wins, earlier stays plain text
     {
       input: 'submit thesis {july 30} {aug 2}',
@@ -420,7 +485,7 @@ describe('golden table — context settings', () => {
       smartDate: false,
     })
     expect(r.due).toBeNull()
-    expect(r.deadline).toBe('2026-07-30')
+    expect(r.deadline).toEqual({ date: '2026-07-30', time: null })
     expect(r.reminders).toEqual([{ kind: 'absolute', date: '2026-07-16', time: '14:00' }])
     expect(r.priority).toBe(1)
     expect(r.project).toBe('Work')

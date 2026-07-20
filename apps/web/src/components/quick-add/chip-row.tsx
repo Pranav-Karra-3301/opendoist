@@ -31,13 +31,16 @@ import {
   Target,
   Timer,
 } from 'lucide-react'
-import { Fragment, type ReactNode } from 'react'
+import { Fragment, type ReactNode, useState } from 'react'
 import { priorityOptionLabel } from '@/components/task/priority-menu'
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useUserSettings } from '@/features/settings/useSettings'
 import { DUE_TONE_VAR, formatDueChip } from '@/lib/format-date'
 import { cn } from '@/lib/utils'
 import { normalizeChips, partitionChips } from './chip-prefs'
+import { DeadlinePicker } from './pickers/deadline-picker'
+import { DurationMenu } from './pickers/duration-menu'
+import { ReminderPicker } from './pickers/reminder-picker'
 import { setDueText, setPriorityText } from './quick-add-model'
 
 export interface ChipRowProps {
@@ -140,6 +143,7 @@ interface RenderCtx {
   text: string
   parsed: ParsedQuickAdd
   activeTokens: QuickAddToken[]
+  ctx: ParseContext
   today: string
   labeled: boolean
   insert: (snippet: string, caretBack?: number) => void
@@ -220,20 +224,124 @@ function PriorityChip({ rc }: { rc: RenderCtx }) {
   )
 }
 
+/**
+ * Deadline chip → a real picker (plan Task F): month calendar + optional time compose the `{…}`
+ * token instead of dropping bare braces into the input. Controlled so a calendar pick can close
+ * it. A `{…}` deadline may carry a wall-clock time, rendered the Todoist way (`Aug 1`, `Aug 1 5pm`)
+ * so a timed deadline reads its hour, not a raw ISO date.
+ */
+function DeadlineChip({ rc }: { rc: RenderCtx }) {
+  const [open, setOpen] = useState(false)
+  const value = rc.parsed.deadline
+    ? formatDueChip({ date: rc.parsed.deadline.date, time: rc.parsed.deadline.time }, rc.today)
+        .label
+    : null
+  const label = chipText(rc.labeled, value, 'Deadline')
+  return (
+    <Popover open={open} onOpenChange={(next) => setOpen(next)}>
+      <PopoverTrigger
+        data-chip="deadline"
+        aria-label={chipAria(value, 'Deadline')}
+        className={cn(chipBase, value ? 'text-text-primary' : 'text-text-secondary')}
+        style={value ? { color: 'var(--od-date-overdue)' } : undefined}
+      >
+        <Target size={12} aria-hidden />
+        {label ? <span>{label}</span> : null}
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        aria-label="Deadline picker"
+        className="max-h-[70vh] w-[280px] overflow-y-auto p-2"
+      >
+        <DeadlinePicker
+          text={rc.text}
+          activeTokens={rc.activeTokens}
+          deadline={rc.parsed.deadline}
+          today={rc.today}
+          weekStart={rc.ctx.weekStart}
+          commit={rc.rewrite}
+          close={() => setOpen(false)}
+        />
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+/** Reminders chip → a real picker (plan Task F): current reminders, presets, absolute date+time. */
+function RemindersChip({ rc }: { rc: RenderCtx }) {
+  const [open, setOpen] = useState(false)
+  const count = rc.parsed.reminders.length
+  const value = count > 0 ? `Reminder ×${count}` : null
+  const label = chipText(rc.labeled, value, 'Reminders')
+  return (
+    <Popover open={open} onOpenChange={(next) => setOpen(next)}>
+      <PopoverTrigger
+        data-chip="reminders"
+        aria-label={chipAria(value, 'Reminders')}
+        className={cn(chipBase, count > 0 ? 'text-text-primary' : 'text-text-secondary')}
+      >
+        <Bell size={12} aria-hidden />
+        {label ? <span>{label}</span> : null}
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        aria-label="Reminders picker"
+        className="max-h-[70vh] w-[280px] overflow-y-auto p-2"
+      >
+        <ReminderPicker
+          text={rc.text}
+          activeTokens={rc.activeTokens}
+          reminders={rc.parsed.reminders}
+          due={rc.parsed.due}
+          today={rc.today}
+          weekStart={rc.ctx.weekStart}
+          commit={rc.rewrite}
+          close={() => setOpen(false)}
+        />
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+/** Duration chip → a real menu (plan Task F): presets + custom minutes; hint when no timed due. */
+function DurationChip({ rc }: { rc: RenderCtx }) {
+  const [open, setOpen] = useState(false)
+  const value = rc.parsed.durationMin !== null ? formatDuration(rc.parsed.durationMin) : null
+  const label = chipText(rc.labeled, value, 'Duration')
+  return (
+    <Popover open={open} onOpenChange={(next) => setOpen(next)}>
+      <PopoverTrigger
+        data-chip="duration"
+        aria-label={chipAria(value, 'Duration')}
+        className={cn(chipBase, value ? 'text-text-primary' : 'text-text-secondary')}
+        style={value ? { color: 'var(--od-date-today)' } : undefined}
+      >
+        <Timer size={12} aria-hidden />
+        {label ? <span>{label}</span> : null}
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        aria-label="Duration options"
+        className="w-56 border border-black/10 p-1 dark:border-border [box-shadow:var(--shadow-menu)]"
+      >
+        <DurationMenu
+          text={rc.text}
+          activeTokens={rc.activeTokens}
+          durationMin={rc.parsed.durationMin}
+          due={rc.parsed.due}
+          commit={rc.rewrite}
+          close={() => setOpen(false)}
+        />
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 /** Renderers for the seven customizable chips, keyed by id (exhaustive by construction). */
 const CHIP_RENDERERS: Record<QuickAddChipId, (rc: RenderCtx) => ReactNode> = {
   date: (rc) => <DateChip rc={rc} />,
   priority: (rc) => <PriorityChip rc={rc} />,
-  reminders: (rc) => (
-    <Chip
-      icon={<Bell size={12} aria-hidden />}
-      name="Reminders"
-      value={rc.parsed.reminders.length > 0 ? `Reminder ×${rc.parsed.reminders.length}` : null}
-      labeled={rc.labeled}
-      active={rc.parsed.reminders.length > 0}
-      onClick={() => rc.insert('!')}
-    />
-  ),
+  reminders: (rc) => <RemindersChip rc={rc} />,
   labels: (rc) => (
     <Chip
       icon={<Tag size={12} aria-hidden />}
@@ -244,28 +352,8 @@ const CHIP_RENDERERS: Record<QuickAddChipId, (rc: RenderCtx) => ReactNode> = {
       onClick={() => rc.insert('@')}
     />
   ),
-  deadline: (rc) => (
-    <Chip
-      icon={<Target size={12} aria-hidden />}
-      name="Deadline"
-      value={rc.parsed.deadline}
-      labeled={rc.labeled}
-      active={rc.parsed.deadline !== null}
-      tone="var(--od-date-overdue)"
-      onClick={() => rc.insert('{}', 1)}
-    />
-  ),
-  duration: (rc) => (
-    <Chip
-      icon={<Timer size={12} aria-hidden />}
-      name="Duration"
-      value={rc.parsed.durationMin !== null ? formatDuration(rc.parsed.durationMin) : null}
-      labeled={rc.labeled}
-      active={rc.parsed.durationMin !== null}
-      tone="var(--od-date-today)"
-      onClick={() => rc.insert('for ')}
-    />
-  ),
+  deadline: (rc) => <DeadlineChip rc={rc} />,
+  duration: (rc) => <DurationChip rc={rc} />,
   description: (rc) => (
     <Chip
       icon={<AlignLeft size={12} aria-hidden />}
@@ -307,6 +395,7 @@ export function ChipRow({ text, parsed, activeTokens, ctx, onEdit }: ChipRowProp
     text,
     parsed,
     activeTokens,
+    ctx,
     today,
     labeled: settings.quickAdd.labeled,
     insert,
@@ -314,30 +403,37 @@ export function ChipRow({ text, parsed, activeTokens, ctx, onEdit }: ChipRowProp
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {visible.map((chip) => (
-        <Fragment key={chip.id}>{CHIP_RENDERERS[chip.id](rc)}</Fragment>
-      ))}
-      <ProjectChip rc={rc} />
-      {hidden.length > 0 && (
-        <Popover>
-          <PopoverTrigger
-            aria-label="More Quick Add options"
-            className={cn(chipBase, 'text-text-secondary')}
-          >
-            <Ellipsis size={12} aria-hidden />
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-auto max-w-xs p-2">
-            <div className="flex flex-wrap items-center gap-2">
-              {hidden.map((chip) => (
-                <Fragment key={chip.id}>
-                  {CHIP_RENDERERS[chip.id]({ ...rc, labeled: true })}
-                </Fragment>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-      )}
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        {visible.map((chip) => (
+          <Fragment key={chip.id}>{CHIP_RENDERERS[chip.id](rc)}</Fragment>
+        ))}
+        <ProjectChip rc={rc} />
+        {hidden.length > 0 && (
+          <Popover>
+            <PopoverTrigger
+              aria-label="More Quick Add options"
+              className={cn(chipBase, 'text-text-secondary')}
+            >
+              <Ellipsis size={12} aria-hidden />
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-auto max-w-xs p-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {hidden.map((chip) => (
+                  <Fragment key={chip.id}>
+                    {CHIP_RENDERERS[chip.id]({ ...rc, labeled: true })}
+                  </Fragment>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
+      {/* One-line syntax hint (plan Task F): teaches the raw tokens under the composer instead of
+          dumping sigils into the input. The chip row only renders inside the open/focused composer. */}
+      <p className="text-caption text-text-tertiary">
+        {'# project · @ label · p1–p4 · {deadline} · !reminder · for 45min'}
+      </p>
     </div>
   )
 }

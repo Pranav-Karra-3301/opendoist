@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import {
+  DeadlineSchema,
   DueSchema,
   HmTimeSchema,
   IsoDateSchema,
@@ -116,6 +117,25 @@ describe('DueSchema', () => {
   })
 })
 
+describe('DeadlineSchema', () => {
+  test('accepts date-only and timed deadlines', () => {
+    expect(DeadlineSchema.parse({ date: '2026-07-30', time: null })).toEqual({
+      date: '2026-07-30',
+      time: null,
+    })
+    expect(DeadlineSchema.parse({ date: '2026-07-30', time: '17:00' })).toEqual({
+      date: '2026-07-30',
+      time: '17:00',
+    })
+  })
+  test('rejects malformed dates/times and the old bare-string shape', () => {
+    expect(DeadlineSchema.safeParse({ date: '2026-7-30', time: null }).success).toBe(false)
+    expect(DeadlineSchema.safeParse({ date: '2026-07-30', time: '5pm' }).success).toBe(false)
+    expect(DeadlineSchema.safeParse({ date: '2026-07-30' }).success).toBe(false)
+    expect(DeadlineSchema.safeParse('2026-07-30').success).toBe(false)
+  })
+})
+
 describe('ParsedQuickAddSchema', () => {
   test('round-trips a representative object', () => {
     const parsed = {
@@ -131,7 +151,7 @@ describe('ParsedQuickAddSchema', () => {
         recurrence: null,
       },
       durationMin: 45,
-      deadline: '2026-07-30',
+      deadline: { date: '2026-07-30', time: null },
       priority: 1 as const,
       labels: ['email'],
       project: 'Work',

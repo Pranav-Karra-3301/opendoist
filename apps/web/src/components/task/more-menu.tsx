@@ -21,6 +21,7 @@ export function taskToCreate(task: Task): TaskCreate {
     priority: task.priority,
     due: task.due,
     deadline_date: task.deadline_date,
+    deadline_time: task.deadline_time ?? null,
     duration_min: task.duration_min,
     labels: task.labels,
     uncompletable: task.uncompletable,

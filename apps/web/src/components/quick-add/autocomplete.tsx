@@ -7,10 +7,12 @@
 import { FolderPlus, Plus, Slash, Tag } from 'lucide-react'
 import type { KeyboardEvent, ReactNode } from 'react'
 import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useLabelMutations, useLabels } from '@/api/hooks/labels'
 import { useProjectMutations, useProjects } from '@/api/hooks/projects'
 import { useSectionMutations, useSections } from '@/api/hooks/sections'
 import type { Label, Project, Section } from '@/api/schemas'
+import { type AnchorRect, placePopover } from '@/components/ui/anchored'
 import { cn } from '@/lib/utils'
 
 type Sigil = '#' | '@' | '/'
@@ -76,6 +78,17 @@ interface Trigger {
 }
 
 const MAX_ITEMS = 8
+
+/**
+ * Menu box geometry, fed to `placePopover` so the caret-anchored menu can flip + clamp into the
+ * viewport before it paints. Mirrors the Tailwind classes on the menu container: `w-64` (256px),
+ * `max-h-64` (256px), each option `h-8` (32px), container `p-1` (4px top + 4px bottom). Options
+ * never wrap (`truncate`), so `count * item + padding` is the exact rendered height.
+ */
+const MENU_WIDTH = 256
+const MENU_MAX_HEIGHT = 256
+const MENU_ITEM_HEIGHT = 32
+const MENU_VERTICAL_PADDING = 8
 
 function paletteVar(color: string): string {
   return `var(--od-palette-${color.replaceAll('_', '-')})`
@@ -260,12 +273,33 @@ export function useAutocomplete(args: UseAutocompleteArgs): AutocompleteControll
     return false
   }
 
-  const node =
-    open && caretCoords ? (
+  let node: ReactNode = null
+  if (open && caretCoords) {
+    // rich-textarea reports the caret in VIEWPORT space (a Range's getBoundingClientRect).
+    // Portal the menu to <body> and place it `position: fixed` so it escapes the Quick Add
+    // popup's transform: a transformed ancestor becomes the containing block for fixed
+    // descendants and reintroduces the "menu in the screen corner" bug this replaces. anchored.ts
+    // then flips the menu above near the viewport bottom and clamps it fully on-screen.
+    const anchor: AnchorRect = {
+      top: caretCoords.top,
+      left: caretCoords.left,
+      width: 0,
+      height: caretCoords.height,
+    }
+    const height = Math.min(
+      items.length * MENU_ITEM_HEIGHT + MENU_VERTICAL_PADDING,
+      MENU_MAX_HEIGHT,
+    )
+    const { top, left } = placePopover(anchor, { width: MENU_WIDTH, height })
+    node = createPortal(
       <div
+        // Marks this menu as logically part of the dialog: it lives under <body>, so base-ui
+        // reports a click on it as an outside press — the dialog's onOpenChange whitelists this
+        // attribute so selecting an item never dismisses the dialog.
+        data-quickadd-popover=""
         onMouseDown={(e) => e.preventDefault()}
-        className="absolute z-[var(--z-popover)] max-h-64 w-64 overflow-y-auto rounded-lg border border-border bg-surface-raised p-1 [box-shadow:var(--shadow-menu)]"
-        style={{ top: caretCoords.top + caretCoords.height + 4, left: caretCoords.left }}
+        className="fixed z-[var(--z-popover)] max-h-64 w-64 overflow-y-auto rounded-lg border border-border bg-surface-raised p-1 [box-shadow:var(--shadow-menu)]"
+        style={{ top, left }}
         role="listbox"
         aria-label="Autocomplete suggestions"
       >
@@ -286,8 +320,10 @@ export function useAutocomplete(args: UseAutocompleteArgs): AutocompleteControll
             <span className="truncate">{item.label}</span>
           </button>
         ))}
-      </div>
-    ) : null
+      </div>,
+      document.body,
+    )
+  }
 
   return { open, node, handleKeyDown }
 }

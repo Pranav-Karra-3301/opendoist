@@ -93,9 +93,9 @@ describe('parseQuickAdd round-trip (CLI preview pinned to core goldens)', () => 
     expect(parsed.due?.time ?? null).toBe(row.dueTime)
   })
 
-  test('row 4 carries a deadline, not a due', () => {
+  test('row 4 carries a date-only deadline, not a due', () => {
     const parsed = parseQuickAdd('pay rent {aug 1} p2', ctx)
-    expect(parsed.deadline).toBe('2026-08-01')
+    expect(parsed.deadline).toEqual({ date: '2026-08-01', time: null })
     expect(parsed.due).toBeNull()
   })
 

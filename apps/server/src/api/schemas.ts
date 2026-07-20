@@ -1,4 +1,5 @@
 import { z } from '@hono/zod-openapi'
+import { HmTimeSchema } from '@opendoist/core'
 
 export const PALETTE = [
   'berry_red',
@@ -42,6 +43,9 @@ export const TaskDtoSchema = z.object({
   priority: z.number().int().min(1).max(4),
   due: DueDtoSchema.nullable(),
   deadline_date: z.string().nullable(),
+  /** HH:mm wall-clock, null = date-only. Additive sibling of deadline_date (quick-add UX pass;
+   *  deadline date+time is a deliberate Todoist divergence, owner decision 2026-07-18). */
+  deadline_time: z.string().nullable(),
   duration_min: z.number().int().nullable(),
   day_order: z.number().int(),
   labels: z.array(z.string()),
@@ -156,6 +160,10 @@ export const CreateTaskSchema = z.object({
   priority: z.number().int().min(1).max(4).default(4),
   due: DueInputSchema.optional(),
   deadline_date: z.string().nullable().optional(),
+  /** HH:mm wall-clock deadline time, null/absent = date-only. Additive sibling of deadline_date
+   *  (quick-add UX pass). Persisted only alongside a deadline_date; clearing the date clears it.
+   *  Validated against core's HmTimeSchema — the same contract /tasks/quick's parser emits. */
+  deadline_time: HmTimeSchema.nullable().optional(),
   duration_min: z.number().int().min(1).max(1440).nullable().optional(),
   labels: z.array(z.string()).default([]),
   uncompletable: z.boolean().optional(),

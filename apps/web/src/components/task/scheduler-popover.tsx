@@ -1,8 +1,13 @@
 /**
- * Scheduler surface (Task F). `SchedulerPanel` is the uncontained content reused by the
- * row popover, the multi-select toolbar, and Today's Reschedule action (frozen export —
- * Tasks J and H import it). It only reports the chosen due through `onPick`; the caller
- * owns the mutation(s) and decides whether to dismiss the container.
+ * Scheduler surface (Task F; month calendar added by Task E). `SchedulerPanel` is the
+ * uncontained content reused by the row popover, the multi-select toolbar, and Today's
+ * Reschedule action (frozen export — Tasks J and H import it). It only reports the chosen
+ * due through `onPick`; the caller owns the mutation(s) and decides whether to dismiss the
+ * container.
+ *
+ * A day picked in the embedded `MonthCalendar` keeps whatever wall-clock time is currently in
+ * play — the free-text box's parsed time if one is typed, else (when the box is empty) the
+ * `current` due's time — so scheduling a new day never silently drops an existing due time.
  */
 import {
   type Due,
@@ -14,12 +19,21 @@ import {
 } from '@opendoist/core'
 import { CalendarClock, CalendarDays, CalendarRange, CalendarX2, Sun } from 'lucide-react'
 import { type ComponentType, type ReactElement, useEffect, useMemo, useRef, useState } from 'react'
+import { MonthCalendar } from '@/components/ui/month-calendar'
 import { DUE_TONE_VAR, formatDueChip } from '@/lib/format-date'
 import { useParseCtx } from '@/lib/parse-context'
 
 export interface SchedulerPanelProps {
   /** Chosen due (null clears the date). Caller performs the update and closes the surface. */
   onPick: (due: Due | null) => void
+  /** The task's existing due, when the surface schedules a single task — seeds the calendar
+   *  highlight and supplies the time preserved by a calendar-day pick. Optional/additive. */
+  current?: Due | null
+}
+
+/** Re-parseable canonical string for a calendar-picked due (ISO date, optional wall time). */
+function isoDueString(date: string, time: string | null): string {
+  return time === null ? date : `${date} ${time}`
 }
 
 const SHORT_DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
@@ -50,7 +64,7 @@ interface PresetRow {
   due: Due | null
 }
 
-export function SchedulerPanel({ onPick }: SchedulerPanelProps): ReactElement {
+export function SchedulerPanel({ onPick, current }: SchedulerPanelProps): ReactElement {
   const ctx = useParseCtx()
   const [text, setText] = useState('')
   const today = dateInTz(ctx.now, ctx.timezone)
@@ -83,6 +97,14 @@ export function SchedulerPanel({ onPick }: SchedulerPanelProps): ReactElement {
   const previewChip = preview
     ? formatDueChip({ date: preview.date, time: preview.time }, today)
     : null
+
+  // A day picked in the calendar is date-only; it keeps whatever wall-clock time is in play — the
+  // free-text box's parsed time when one is typed, else the existing due's time — so scheduling a
+  // new day never silently drops a due time. `current` also seeds the highlighted day.
+  const timeInPlay = preview?.time ?? current?.time ?? null
+  const pickDay = (date: string): void => {
+    onPick({ date, time: timeInPlay, string: isoDueString(date, timeInPlay), recurrence: null })
+  }
 
   return (
     <div className="flex flex-col gap-2">
@@ -138,6 +160,9 @@ export function SchedulerPanel({ onPick }: SchedulerPanelProps): ReactElement {
           <CalendarX2 size={16} className="shrink-0 text-text-secondary" aria-hidden />
           <span>No date</span>
         </button>
+      </div>
+      <div className="border-border-subtle border-t pt-2">
+        <MonthCalendar value={current?.date ?? null} onPick={pickDay} weekStart={ctx.weekStart} />
       </div>
     </div>
   )

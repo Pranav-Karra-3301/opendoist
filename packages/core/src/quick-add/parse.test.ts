@@ -103,16 +103,23 @@ describe('project / section / label names', () => {
 })
 
 describe('deadline braces', () => {
-  test('inner text must resolve to a date without a time', () => {
-    expect(parseQuickAdd('x {july 30}', ctx).deadline).toBe('2026-07-30')
-    expect(parseQuickAdd('x {tomorrow 4pm}', ctx).deadline).toBeNull()
+  test('inner text resolves to a date, optionally carrying a time', () => {
+    // date-only phrase → time null; a phrase with a time is NO LONGER an error (owner divergence)
+    expect(parseQuickAdd('x {july 30}', ctx).deadline).toEqual({ date: '2026-07-30', time: null })
+    expect(parseQuickAdd('x {tomorrow 4pm}', ctx).deadline).toEqual({
+      date: '2026-07-16',
+      time: '16:00',
+    })
     expect(parseQuickAdd('x {nonsense}', ctx).deadline).toBeNull()
   })
 
   test('failed braces stay literal and are never date-scanned', () => {
-    const r = parseQuickAdd('x {tomorrow 4pm}', ctx)
+    // a phrase that does not resolve as a whole (date + trailing junk) yields no deadline,
+    // and its interior date is masked so it never leaks into the due
+    const r = parseQuickAdd('x {by tomorrow please}', ctx)
+    expect(r.deadline).toBeNull()
     expect(r.due).toBeNull()
-    expect(r.title).toBe('x {tomorrow 4pm}')
+    expect(r.title).toBe('x {by tomorrow please}')
   })
 
   test('an unclosed brace is plain text; the inner date still parses as due', () => {
@@ -123,7 +130,7 @@ describe('deadline braces', () => {
   })
 
   test('padded inner text resolves', () => {
-    expect(parseQuickAdd('x { july 30 }', ctx).deadline).toBe('2026-07-30')
+    expect(parseQuickAdd('x { july 30 }', ctx).deadline).toEqual({ date: '2026-07-30', time: null })
   })
 })
 
@@ -217,7 +224,7 @@ describe('token integrity', () => {
     expect(r.uncompletable).toBe(true)
     expect(r.due).toMatchObject({ date: '2026-07-16', time: '16:00', recurrence: null })
     expect(r.durationMin).toBe(30)
-    expect(r.deadline).toBe('2026-07-30')
+    expect(r.deadline).toEqual({ date: '2026-07-30', time: null })
     expect(r.reminders).toEqual([{ kind: 'relative', minutesBefore: 15 }])
     expect(r.priority).toBe(1)
     expect(r.project).toBe('Work')
