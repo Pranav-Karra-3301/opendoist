@@ -5,8 +5,10 @@
  * dnd-kit droppable (`day-<date>`) so drops on empty space still land on the day; the
  * heading pins just below the week strip via the measured `--od-strip-h` offset.
  */
+import { Plus } from 'lucide-react'
+import { useState } from 'react'
 import type { Task } from '@/api/schemas'
-import { InlineAdd } from '@/components/quick-add/inline-add'
+import { InlineComposer, type InlineComposerContext } from '@/components/quick-add/inline-composer'
 import { TaskList } from '@/components/task/task-list'
 import { useDroppable } from '@/lib/dnd'
 import { cn } from '@/lib/utils'
@@ -18,6 +20,29 @@ export interface DaySectionProps {
   today: string
   /** false while Display prefs deviate (sorted/filtered) — disables per-day drag reorder. */
   sortable?: boolean
+}
+
+/**
+ * The per-day "+ Add task" row (Task H). List-anchored, so clicking it swaps the row for the
+ * inline {@link InlineComposer} seeded with this day's due date (never the centered dialog);
+ * `onClose` (Esc, Cancel, or blur while empty) restores the row. Mirrors the exported `AddTaskRow`
+ * in the project view — kept local here to avoid a cross-view import.
+ */
+function AddTaskRow({ context }: { context: InlineComposerContext }) {
+  const [open, setOpen] = useState(false)
+  if (open) {
+    return <InlineComposer context={context} onClose={() => setOpen(false)} />
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => setOpen(true)}
+      className="group flex h-9 w-full items-center gap-2 rounded-sm px-[5px] text-left text-body text-text-secondary transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+    >
+      <Plus size={18} className="text-accent" aria-hidden />
+      Add task
+    </button>
+  )
 }
 
 export function DaySection({ date, tasks, today, sortable = true }: DaySectionProps) {
@@ -48,10 +73,7 @@ export function DaySection({ date, tasks, today, sortable = true }: DaySectionPr
         ) : (
           <p className="px-[5px] pt-1 text-caption text-text-tertiary">Nothing scheduled</p>
         )}
-        <InlineAdd
-          defaults={{ due: { date, time: null, string: date, recurrence: null } }}
-          placement="bottom"
-        />
+        <AddTaskRow context={{ dueDate: date }} />
       </div>
     </section>
   )

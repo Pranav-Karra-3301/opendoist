@@ -36,6 +36,7 @@ import { useUiStore } from '@/stores/ui'
 // `useProjectViewStore`/`indentTask`/`outdentTask`. Route-scoped shortcuts drive them.
 import { indentTask, outdentTask, useProjectViewStore } from '@/views/project/use-project-dnd'
 import { useUpcomingStore } from '@/views/upcoming/use-upcoming-days'
+import { openListComposer } from './list-composer'
 import { SHORTCUTS, shortcutKeys } from './map'
 import { ShortcutOverlay } from './shortcut-overlay'
 import { useFocusNav } from './use-focus-nav'
@@ -91,6 +92,30 @@ function inSequence(): boolean {
   return continuesSequence
 }
 
+// --- Space → Quick Add (Task H) --------------------------------------------------------
+// Elements for which Space must keep its native behavior (activate the control / toggle the
+// checkbox / scroll) rather than open Quick Add. `enableOnFormTags: false` already excludes
+// input / textarea / select / textbox / menuitem / radio / option and contenteditable; this list
+// adds the interactive roles react-hotkeys-hook does NOT count as form tags — buttons (incl. the
+// task checkbox `role="checkbox"`), links, tabs, switches, summaries.
+const SPACE_INTERACTIVE =
+  'a[href], button, summary, input, textarea, select, [role="button"], [role="checkbox"], [role="switch"], [role="tab"], [role="link"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="option"], [role="radio"], [contenteditable="true"], [contenteditable=""]'
+
+/**
+ * Space opens the centered Quick Add dialog ONLY from a neutral focus: no overlay open, not mid
+ * `g`-sequence, and the focused element is the body or a non-interactive element. When an
+ * interactive control is focused this returns false, so react-hotkeys-hook neither fires the handler
+ * nor prevents the default — Space still activates the button/checkbox and still scrolls the page.
+ * Passed as BOTH `enabled` and `preventDefault` so the two stay in lockstep (v5 evaluates
+ * preventDefault independently of enabled).
+ */
+function spaceOpensDialog(): boolean {
+  if (inSequence() || anyLayerOpen()) return false
+  const el = document.activeElement
+  if (!(el instanceof Element) || el === document.body) return true
+  return el.closest(SPACE_INTERACTIVE) === null
+}
+
 /** Ids the task verbs act on: the multi-selection if any, else the focused row. */
 function targetIds(): string[] {
   const { selectedIds, focusedId } = useSelectionStore.getState()
@@ -130,6 +155,13 @@ function handleEscape(): void {
 
 const GLOBAL_OPTS = { enableOnFormTags: false, preventDefault: true } as const
 const ESC_OPTS = { enableOnFormTags: true, preventDefault: false } as const
+// Space is gated per-keypress on the focus target (see spaceOpensDialog): it fires and blocks the
+// page-scroll default only from a neutral focus, and stays inert on interactive controls.
+const SPACE_OPTS = {
+  enableOnFormTags: false,
+  enabled: spaceOpensDialog,
+  preventDefault: spaceOpensDialog,
+} as const
 
 export function GlobalHotkeys(): ReactElement {
   const navigate = useNavigate()
@@ -177,11 +209,15 @@ export function GlobalHotkeys(): ReactElement {
   const upcomingOpts = { enableOnFormTags: false, enabled: inUpcoming, preventDefault: inUpcoming }
 
   // ---- General ----
-  useHotkeys(
-    shortcutKeys('quick-add'),
-    () => useUiStore.getState().setQuickAddOpen(true),
-    toggleOpts,
-  )
+  // `q` opens Quick Add unconditionally (outside a modal / sequence); Space opens it only from a
+  // neutral focus (SPACE_OPTS) so it keeps activating a focused button/checkbox and scrolling. Both
+  // chords come from the map's `quick-add` entry — split here because they need different guards.
+  const openQuickAdd = () => useUiStore.getState().setQuickAddOpen(true)
+  const [quickAddChord = 'q', quickAddSpaceChord = 'space'] = shortcutKeys('quick-add')
+    .split(',')
+    .map((chord) => chord.trim())
+  useHotkeys(quickAddChord, openQuickAdd, toggleOpts)
+  useHotkeys(quickAddSpaceChord, openQuickAdd, SPACE_OPTS)
   useHotkeys(shortcutKeys('search'), () => useUiStore.getState().setPaletteOpen(true), toggleOpts)
   useHotkeys(shortcutKeys('palette'), () => useUiStore.getState().setPaletteOpen(true), GLOBAL_OPTS)
   useHotkeys(shortcutKeys('sidebar'), () => useUiStore.getState().toggleSidebar(), toggleOpts)
@@ -237,9 +273,23 @@ export function GlobalHotkeys(): ReactElement {
   useHotkeys(shortcutKeys('focus-down'), focusDown, rowOpts)
   useHotkeys(shortcutKeys('focus-up'), focusUp, rowOpts)
 
-  // ---- Add tasks (v1: both open the Quick Add dialog; in-list composer arrives phase 5) ----
-  useHotkeys(shortcutKeys('add-bottom'), () => useUiStore.getState().setQuickAddOpen(true), rowOpts)
-  useHotkeys(shortcutKeys('add-top'), () => useUiStore.getState().setQuickAddOpen(true), rowOpts)
+  // ---- Add tasks (Task H) ----
+  // List-anchored: `a` / `Shift+A` open the inline composer at the bottom / top of the focused list
+  // view; in a non-list view (no "+ Add task" rows) they fall back to the centered Quick Add dialog.
+  useHotkeys(
+    shortcutKeys('add-bottom'),
+    () => {
+      if (!openListComposer('bottom')) useUiStore.getState().setQuickAddOpen(true)
+    },
+    rowOpts,
+  )
+  useHotkeys(
+    shortcutKeys('add-top'),
+    () => {
+      if (!openListComposer('top')) useUiStore.getState().setQuickAddOpen(true)
+    },
+    rowOpts,
+  )
 
   // ---- Manage tasks ----
   useHotkeys(

@@ -1,13 +1,17 @@
 /**
  * A single project section: collapse chevron, inline-editable name, task count, more-menu
  * (rename / delete), and — when expanded — a droppable `tree`+`sortable` TaskList plus an
- * inline "+ Add task" scoped to the section.
+ * inline "+ Add task" row scoped to the section.
+ *
+ * Task H: the "+ Add task" row is list-anchored, so it swaps in the inline {@link InlineComposer}
+ * (never the centered dialog). The swap lives in {@link AddTaskRow}, exported here and reused by
+ * the project root rows in `./index` (as `EditableText` already is).
  */
-import { ChevronDown, ChevronRight, Ellipsis, Pencil, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronRight, Ellipsis, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useSectionMutations } from '@/api/hooks/sections'
 import type { Section, Task } from '@/api/schemas'
-import { InlineAdd } from '@/components/quick-add/inline-add'
+import { InlineComposer, type InlineComposerContext } from '@/components/quick-add/inline-composer'
 import { TaskList } from '@/components/task/task-list'
 import { buttonVariants } from '@/components/ui/button'
 import {
@@ -99,6 +103,29 @@ export function EditableText({
   )
 }
 
+/**
+ * The in-list "+ Add task" row (Task H). Collapsed it is the accent affordance; clicking it swaps
+ * the row for the list-anchored {@link InlineComposer} seeded with this row's context (project /
+ * section / due date), and `onClose` (Esc, Cancel, or blur while empty) restores the row. Enter
+ * inside the composer saves and keeps it open for the next task (Todoist save-and-new).
+ */
+export function AddTaskRow({ context }: { context: InlineComposerContext }) {
+  const [open, setOpen] = useState(false)
+  if (open) {
+    return <InlineComposer context={context} onClose={() => setOpen(false)} />
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => setOpen(true)}
+      className="group flex h-9 w-full items-center gap-2 rounded-sm px-[5px] text-left text-body text-text-secondary transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+    >
+      <Plus size={18} className="text-accent" aria-hidden />
+      Add task
+    </button>
+  )
+}
+
 export interface SectionBlockProps {
   projectId: string
   section: Section
@@ -178,10 +205,7 @@ export function SectionBlock({ projectId, section, tasks }: SectionBlockProps) {
       {!collapsed && (
         <div ref={setNodeRef}>
           <TaskList tasks={tasks} groupId={sectionDropId(section.id)} tree sortable />
-          <InlineAdd
-            defaults={{ project_id: projectId, section_id: section.id }}
-            placement="bottom"
-          />
+          <AddTaskRow context={{ projectId, sectionId: section.id }} />
         </div>
       )}
     </section>

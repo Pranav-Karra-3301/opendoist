@@ -14,7 +14,6 @@ import { useSections } from '@/api/hooks/sections'
 import { useActiveTasks } from '@/api/hooks/tasks'
 import type { Task } from '@/api/schemas'
 import { EmptyState, ODErrorBoundary } from '@/components/feedback'
-import { InlineAdd } from '@/components/quick-add/inline-add'
 import { TaskList } from '@/components/task/task-list'
 import { buttonVariants } from '@/components/ui/button'
 import {
@@ -34,7 +33,7 @@ import { activeTasks, subtreeOf, tasksInProject } from '@/lib/derive'
 import { closestCenter, DndContext, useDroppable } from '@/lib/dnd'
 import { cn } from '@/lib/utils'
 import { AddSection } from './add-section'
-import { EditableText, SectionBlock } from './section-block'
+import { AddTaskRow, EditableText, SectionBlock } from './section-block'
 import { ROOT_DROP_ID, useProjectDnd, useProjectViewStore } from './use-project-dnd'
 
 const CONTENT = 'mx-auto max-w-[var(--content-max)] px-6 pb-24'
@@ -204,7 +203,7 @@ function ProjectViewInner() {
             groups={pipelineGroups(active, prefs, filterCtx, filterCtx.projects)}
             emptyText="No tasks"
           />
-          <InlineAdd defaults={{ project_id: projectId }} placement="bottom" />
+          <AddTaskRow context={{ projectId }} />
         </>
       ) : (
         <DndContext
@@ -223,7 +222,7 @@ function ProjectViewInner() {
                 description="Add one with A, or press Q from anywhere."
               />
             )}
-            <InlineAdd defaults={{ project_id: projectId }} placement="bottom" />
+            <AddTaskRow context={{ projectId }} />
           </DroppableRegion>
 
           {sections.map((section, i) => {

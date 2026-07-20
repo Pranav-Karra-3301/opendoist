@@ -13,10 +13,11 @@
  * and `showCompleted` appends recently completed tasks.
  */
 import { dateInTz, viewKey } from '@opendoist/core'
-import { Sun } from 'lucide-react'
+import { Plus, Sun } from 'lucide-react'
+import { useState } from 'react'
 import { useActiveTasks } from '@/api/hooks/tasks'
 import { EmptyState, ODErrorBoundary, TaskListSkeleton } from '@/components/feedback'
-import { InlineAdd } from '@/components/quick-add/inline-add'
+import { InlineComposer, type InlineComposerContext } from '@/components/quick-add/inline-composer'
 import { TaskList } from '@/components/task/task-list'
 import { ViewHeader } from '@/components/view-header'
 import { CompletedSection } from '@/features/display/CompletedSection'
@@ -51,6 +52,29 @@ function formatTodayLine(iso: string): string {
   const month = MONTH_ABBREV[d.getUTCMonth()] ?? ''
   const weekday = WEEKDAY_FULL[d.getUTCDay()] ?? ''
   return `${month} ${d.getUTCDate()} · Today · ${weekday}`
+}
+
+/**
+ * The in-list "+ Add task" row (Task H). List-anchored, so clicking it swaps the row for the
+ * inline {@link InlineComposer} seeded with this row's context (the day's due date, never the
+ * centered dialog); `onClose` (Esc, Cancel, or blur while empty) restores the row. Mirrors the
+ * exported `AddTaskRow` in the project view — kept local here to avoid a cross-view import.
+ */
+function AddTaskRow({ context }: { context: InlineComposerContext }) {
+  const [open, setOpen] = useState(false)
+  if (open) {
+    return <InlineComposer context={context} onClose={() => setOpen(false)} />
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => setOpen(true)}
+      className="group flex h-9 w-full items-center gap-2 rounded-sm px-[5px] text-left text-body text-text-secondary transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+    >
+      <Plus size={18} className="text-accent" aria-hidden />
+      Add task
+    </button>
+  )
 }
 
 export function TodayView() {
@@ -100,10 +124,7 @@ export function TodayView() {
               ) : (
                 <TaskList tasks={todayTasks} groupId="today" showProject />
               )}
-              <InlineAdd
-                defaults={{ due: { date: today, time: null, string: today, recurrence: null } }}
-                placement="bottom"
-              />
+              <AddTaskRow context={{ dueDate: today }} />
             </section>
             {prefs.showCompleted && <CompletedSection />}
           </>

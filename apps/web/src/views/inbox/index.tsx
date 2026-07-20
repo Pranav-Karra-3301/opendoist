@@ -13,11 +13,12 @@
  * pipeline, and `showCompleted` appends the inbox's completed tasks.
  */
 import { viewKey } from '@opendoist/core'
-import { Inbox } from 'lucide-react'
+import { Inbox, Plus } from 'lucide-react'
+import { useState } from 'react'
 import { useProjects } from '@/api/hooks/projects'
 import { useActiveTasks } from '@/api/hooks/tasks'
 import { EmptyState, ODErrorBoundary, TaskListSkeleton } from '@/components/feedback'
-import { InlineAdd } from '@/components/quick-add/inline-add'
+import { InlineComposer, type InlineComposerContext } from '@/components/quick-add/inline-composer'
 import { TaskList } from '@/components/task/task-list'
 import { ViewHeader } from '@/components/view-header'
 import { CompletedSection } from '@/features/display/CompletedSection'
@@ -27,6 +28,29 @@ import { useViewPrefs } from '@/features/display/useViewPrefs'
 import { activeTasks, byChildOrder, tasksInProject } from '@/lib/derive'
 
 const INBOX_KEY = viewKey('inbox')
+
+/**
+ * The in-list "+ Add task" row (Task H). List-anchored, so clicking it swaps the row for the
+ * inline {@link InlineComposer} seeded with this row's context (never the centered dialog);
+ * `onClose` (Esc, Cancel, or blur while empty) restores the row. Mirrors the exported `AddTaskRow`
+ * in the project view — kept local here to avoid a cross-view import.
+ */
+function AddTaskRow({ context }: { context: InlineComposerContext }) {
+  const [open, setOpen] = useState(false)
+  if (open) {
+    return <InlineComposer context={context} onClose={() => setOpen(false)} />
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => setOpen(true)}
+      className="group flex h-9 w-full items-center gap-2 rounded-sm px-[5px] text-left text-body text-text-secondary transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+    >
+      <Plus size={18} className="text-accent" aria-hidden />
+      Add task
+    </button>
+  )
+}
 
 export function InboxView() {
   const projectsQuery = useProjects()
@@ -66,7 +90,7 @@ export function InboxView() {
             ) : (
               <TaskList tasks={tasks} groupId="inbox" tree />
             )}
-            {inbox && <InlineAdd defaults={{ project_id: inbox.id }} placement="bottom" />}
+            {inbox && <AddTaskRow context={{ projectId: inbox.id }} />}
             {inbox && prefs.showCompleted && <CompletedSection projectId={inbox.id} />}
           </>
         )}

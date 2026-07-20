@@ -43,7 +43,10 @@ export interface Shortcut {
 
 export const SHORTCUTS = [
   // ---- General ----
-  { id: 'quick-add', keys: 'q', display: 'Q', group: 'General', desc: 'Quick Add' },
+  // `q` and Space both open the centered dialog; they bind separately (index.tsx) because Space is
+  // gated on the focus target (it must keep activating a focused button/checkbox and scrolling the
+  // page while an interactive element is focused — Task H entry-point semantics).
+  { id: 'quick-add', keys: 'q, space', display: 'Q or Space', group: 'General', desc: 'Quick Add' },
   { id: 'search', keys: 'slash, f', display: '/ or F', group: 'General', desc: 'Search' },
   { id: 'palette', keys: 'mod+k', display: 'Mod K', group: 'General', desc: 'Command menu' },
   { id: 'sidebar', keys: 'm', display: 'M', group: 'General', desc: 'Toggle sidebar' },
