@@ -1,6 +1,18 @@
 # Changelog
 
 All notable changes to OpenDoist.
+## [0.1.1] - 2026-07-20
+
+### Bug Fixes
+- *(release)* Dispatch versioned image publish explicitly
+
+### Documentation
+- Plan the Quick Add UX pass (owner feedback)
+- Plan addendum — Quick Add entry-point semantics (Space, inline composers)
+
+### Features
+- *(web)* Quick Add UX pass — positioning, calendar, deadline time, chip pickers
+- *(web)* Quick Add entry-point semantics — Space opener + inline composers
 ## [0.1.0] - 2026-07-18
 
 ### Bug Fixes
@@ -36,4 +48,5 @@ All notable changes to OpenDoist.
 - Scaffold pnpm monorepo, CI, and repo meta
 - *(release)* Prepare v0.1.0
 - Gitignore nested dev data dir (apps/server/data)
+- *(release)* V0.1.0
 - *(release)* V0.1.0
