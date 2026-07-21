@@ -12,24 +12,47 @@
     <meta name="apple-mobile-web-app-title" content="OpenDoist" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <script>
-      // Pre-hydration theme paint. Resolves the account-settings theme mirrored to localStorage
-      // by lib/theme.ts (`od-theme` = base theme, `od-auto-dark` = 'true'|'false'): Auto Dark maps
-      // to Dark only under a dark OS. `kale` is the :root default, so it clears `data-theme`.
-      // Back-compat: the phase-4 quick-toggle wrote `od-theme` = 'system' to mean "follow the OS
-      // from Kale"; treat that (and an unset value) as Kale + Auto Dark.
+      // Pre-hydration theme paint (appearance × accent). Reads the two axes mirrored to
+      // localStorage by lib/theme.ts: `od-appearance` = 'light'|'dark'|'system', `od-accent` =
+      // the palette name. `data-accent` applies the accent in both light and dark; `data-mode`
+      // ('light'|'dark') or `.system-dark` (system → follows the OS) applies the appearance.
+      // Back-compat: a pre-appearance install still has `od-theme`/`od-auto-dark` (and an old
+      // 'system' meant "follow the OS from Kale") — migrate those to appearance/accent inline.
       ;(() => {
         var root = document.documentElement
-        var theme = localStorage.getItem('od-theme')
-        var autoDark = localStorage.getItem('od-auto-dark') === 'true'
-        if (theme === null || theme === 'system') {
-          theme = 'kale'
-          autoDark = true
+        var ACCENTS = ['kale', 'todoist', 'moonstone', 'tangerine', 'blueberry', 'lavender', 'raspberry']
+        var appearance = localStorage.getItem('od-appearance')
+        var accent = localStorage.getItem('od-accent')
+        var theme, autoDark, baseAccent
+        if (!appearance || !accent) {
+          theme = localStorage.getItem('od-theme')
+          autoDark = localStorage.getItem('od-auto-dark') === 'true'
+          if (theme === null || theme === 'system') {
+            theme = 'kale'
+            autoDark = true
+          }
+          baseAccent = theme === 'dark' ? 'kale' : theme
+          if (autoDark) {
+            appearance = appearance || 'system'
+            accent = accent || baseAccent
+          } else if (theme === 'dark') {
+            appearance = appearance || 'dark'
+            accent = accent || 'kale'
+          } else {
+            appearance = appearance || 'light'
+            accent = accent || theme
+          }
         }
-        var osDark = matchMedia('(prefers-color-scheme: dark)').matches
-        var resolved = autoDark && osDark ? 'dark' : theme
+        if (ACCENTS.indexOf(accent) === -1) accent = 'kale'
+        if (appearance !== 'light' && appearance !== 'dark') appearance = 'system'
+        root.setAttribute('data-accent', accent)
         root.classList.remove('system-dark')
-        if (resolved === 'kale') root.removeAttribute('data-theme')
-        else root.setAttribute('data-theme', resolved)
+        if (appearance === 'dark') root.setAttribute('data-mode', 'dark')
+        else if (appearance === 'light') root.setAttribute('data-mode', 'light')
+        else {
+          root.removeAttribute('data-mode')
+          if (matchMedia('(prefers-color-scheme: dark)').matches) root.classList.add('system-dark')
+        }
       })()
     </script>
   </head>

@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import { LogOut, SwatchBook } from 'lucide-react'
+import { LogOut, Settings, SwatchBook } from 'lucide-react'
 import { useInfo } from '@/api/hooks/info'
 import { useUser } from '@/api/hooks/user'
 import type { User } from '@/api/schemas'
@@ -20,8 +20,9 @@ function accountInitial(user: User | undefined): string {
 }
 
 /**
- * Topbar account menu: avatar initial → name/email header, theme submenu, design
- * tokens, log out, and the instance version footer with a "Changelog" trigger.
+ * Account menu (sidebar header): avatar initial → name/email header, a Settings item
+ * (opens the /settings/account modal), theme submenu, design tokens, log out, and the
+ * instance version footer with a "Changelog" trigger.
  * Also mounts the What's New provider (auto-show-once-per-version dialog).
  *
  * The root menu is deliberately UNCONTROLLED: controlling `open` from component state
@@ -61,6 +62,12 @@ export function UserMenu() {
             )}
           </div>
           <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => void navigate({ to: '/settings/$page', params: { page: 'account' } })}
+          >
+            <Settings size={16} className="text-text-secondary" aria-hidden="true" />
+            Settings
+          </DropdownMenuItem>
           <ThemeMenu />
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => void navigate({ to: '/dev/tokens' })}>

@@ -79,7 +79,7 @@ const BackupListSchema = paginated(BackupInfoSchema)
 
 export default function BackupsPage() {
   return (
-    <div className="flex flex-col">
+    <div className="flex max-w-2xl flex-col">
       <SnapshotsSection />
       <BackupSettingsSection />
       <RestoreSection />

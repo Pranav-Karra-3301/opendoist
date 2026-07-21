@@ -46,35 +46,37 @@ export default function AboutPage() {
   const update: UpdateInfo = parsedUpdate.success ? parsedUpdate.data : null
 
   return (
-    <SettingsSection title="About" description="OpenDoist — self-hosted tasks, done properly.">
-      <SettingRow
-        label="Version"
-        control={
-          <span className="font-mono text-copy text-text-secondary">
-            {info ? `v${info.version}` : '…'}
-          </span>
-        }
-      />
-      <SettingRow
-        label="Updates"
-        description="Checked daily against GitHub releases."
-        control={
-          info ? (
-            <UpdateStatus update={update} />
-          ) : (
-            <span className="text-copy text-text-tertiary">…</span>
-          )
-        }
-      />
-      <SettingRow
-        label="What's New"
-        description="Release notes for this and earlier versions."
-        control={
-          <Button variant="outline" size="sm" onClick={() => show()}>
-            View changelog
-          </Button>
-        }
-      />
-    </SettingsSection>
+    <div className="max-w-2xl">
+      <SettingsSection title="About" description="OpenDoist — self-hosted tasks, done properly.">
+        <SettingRow
+          label="Version"
+          control={
+            <span className="font-mono text-copy text-text-secondary">
+              {info ? `v${info.version}` : '…'}
+            </span>
+          }
+        />
+        <SettingRow
+          label="Updates"
+          description="Checked daily against GitHub releases."
+          control={
+            info ? (
+              <UpdateStatus update={update} />
+            ) : (
+              <span className="text-copy text-text-tertiary">…</span>
+            )
+          }
+        />
+        <SettingRow
+          label="What's New"
+          description="Release notes for this and earlier versions."
+          control={
+            <Button variant="outline" size="sm" onClick={() => show()}>
+              View changelog
+            </Button>
+          }
+        />
+      </SettingsSection>
+    </div>
   )
 }

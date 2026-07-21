@@ -1,23 +1,39 @@
 /**
- * Theme settings — eight theme preview cards + Auto Dark Theme. Selecting a card or toggling
- * Auto Dark writes immediately through the optimistic `useUserSettings` PATCH; `useThemeSync`
- * (lib/theme.ts) then applies the resolved theme to <html> and mirrors localStorage so
- * index.html's head script paints correctly pre-hydration. Resolution law:
- * `autoDark && OS-dark ? 'dark' : theme`. Implements plan Task O.
+ * Theme settings (plan Task D) — two independent axes, no Pro gating (every accent is selectable):
+ *  - APPEARANCE: Light / Dark / System. Writes `settings.appearance`; `useThemeSync`/`applyAppearance`
+ *    (lib/theme.ts) stamp `data-mode="light|dark"` on <html>, or toggle `.system-dark` per the OS
+ *    when `system`.
+ *  - ACCENT: the seven palette accents. Writes `settings.accent`; drives `data-accent`, applied in
+ *    BOTH light and dark. Each accent's swatch sets `data-accent` on itself so it previews in the
+ *    CURRENT appearance (its light half in Light, its dark half in Dark) — a faithful live preview.
+ *
+ * Both write through the optimistic `useUserSettings` PATCH; `useThemeSync` then re-applies the
+ * resolved axes to <html> (whole-app live preview) and mirrors localStorage so index.html's head
+ * script paints correctly pre-hydration. Reads go through core's `resolveAppearance`/`resolveAccent`
+ * so a pre-migration row (legacy `theme`/`autoDark`) still resolves with no data loss.
  */
-import { THEME_NAMES, type ThemeName } from '@opendoist/core'
-import { Check } from 'lucide-react'
-import type { CSSProperties } from 'react'
-import { Switch } from '@/components/ui/switch'
+import {
+  ACCENT_NAMES,
+  type AccentName,
+  type Appearance,
+  resolveAccent,
+  resolveAppearance,
+} from '@opendoist/core'
+import { Check, type LucideIcon, Monitor, Moon, Sun } from 'lucide-react'
 import { useThemeSync } from '@/lib/theme'
 import { cn } from '@/lib/utils'
-import { SettingRow, SettingsSection } from '../ui'
+import { SettingsSection } from '../ui'
 import { useUserSettings } from '../useSettings'
 
-const THEME_LABELS: Record<ThemeName, string> = {
+const APPEARANCE_OPTIONS: { value: Appearance; label: string; Icon: LucideIcon }[] = [
+  { value: 'light', label: 'Light', Icon: Sun },
+  { value: 'dark', label: 'Dark', Icon: Moon },
+  { value: 'system', label: 'System', Icon: Monitor },
+]
+
+const ACCENT_LABELS: Record<AccentName, string> = {
   kale: 'Kale',
   todoist: 'Todoist',
-  dark: 'Dark',
   moonstone: 'Moonstone',
   tangerine: 'Tangerine',
   blueberry: 'Blueberry',
@@ -25,68 +41,96 @@ const THEME_LABELS: Record<ThemeName, string> = {
   raspberry: 'Raspberry',
 }
 
-/**
- * tokens.css paints each card via `data-theme`, but the light-accent `[data-theme]` blocks only
- * override accent/surface/selected — the base vars (bg/text/border) would inherit the ACTIVE app
- * theme, so under Dark the light previews would show a dark canvas. Re-assert a light baseline on
- * the light cards so previews stay faithful regardless of the current theme. `kale` has no block
- * at all (it IS :root), so assert its accent/surface here too. `dark`'s block is complete —
- * nothing to add. Values copied from tokens.css :root / accent blocks.
- */
-function cardVars(name: ThemeName): CSSProperties {
-  if (name === 'dark') return {}
-  const light = {
-    '--od-bg': '#ffffff',
-    '--od-surface-raised': '#ffffff',
-    '--od-text-primary': '#202020',
-    '--od-text-tertiary': '#999999',
-    '--od-border': '#eeeeee',
-  }
-  if (name === 'kale') {
-    return { ...light, '--od-surface': '#fcfcf8', '--od-accent': '#4c7a45' } as CSSProperties
-  }
-  return light as CSSProperties
+/** Light / Dark / System as a segmented radiogroup. Selected = accent-soft fill + accent icon +
+ *  selected-text (the app's active-choice language), legible in both appearances. */
+function AppearanceControl({
+  value,
+  onSelect,
+}: {
+  value: Appearance
+  onSelect: (next: Appearance) => void
+}) {
+  return (
+    <div
+      role="radiogroup"
+      aria-labelledby="theme-appearance-label"
+      className="grid grid-cols-3 gap-2"
+    >
+      {APPEARANCE_OPTIONS.map(({ value: v, label, Icon }) => {
+        const selected = value === v
+        return (
+          // biome-ignore lint/a11y/useSemanticElements: styled segmented radio (icon + label) inside role="radiogroup" — a native <input type="radio"> can't carry this content (matches ThemeCard/ColorPicker).
+          <button
+            key={v}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            aria-label={label}
+            onClick={() => onSelect(v)}
+            className={cn(
+              'flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-body outline-offset-2 transition-colors focus-visible:outline-2 focus-visible:outline-focus-ring',
+              selected
+                ? 'border-accent bg-accent-soft font-medium text-selected-text'
+                : 'border-border text-text-secondary hover:bg-hover hover:text-text-primary',
+            )}
+          >
+            <Icon
+              size={16}
+              aria-hidden="true"
+              className={selected ? 'text-accent' : 'text-text-tertiary'}
+            />
+            {label}
+          </button>
+        )
+      })}
+    </div>
+  )
 }
 
-function ThemeCard({
+/**
+ * A single accent choice rendered as a mini app-preview. Setting `data-accent` on the card
+ * redefines the accent family for its subtree while it inherits the app's current appearance
+ * (`data-mode`/`.system-dark` on <html>), so `--od-accent`/neutral tokens resolve to THIS accent in
+ * the CURRENT mode — the swatch previews exactly how the accent will look after selecting it.
+ */
+function AccentSwatch({
   name,
   selected,
   onSelect,
 }: {
-  name: ThemeName
+  name: AccentName
   selected: boolean
   onSelect: () => void
 }) {
   return (
-    // biome-ignore lint/a11y/useSemanticElements: styled theme-preview button inside role="radiogroup" — a native <input type="radio"> cannot render a mini app-preview card (same pattern as ColorPicker).
+    // biome-ignore lint/a11y/useSemanticElements: styled accent-preview button inside role="radiogroup" — a native <input type="radio"> cannot render a mini app-preview card (matches ThemeCard/ColorPicker).
     <button
       type="button"
       role="radio"
       aria-checked={selected}
-      aria-label={THEME_LABELS[name]}
+      aria-label={ACCENT_LABELS[name]}
       onClick={onSelect}
-      className="group flex flex-col items-center gap-2 rounded-lg outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--od-focus-ring)]"
+      className="group flex flex-col items-center gap-2 rounded-lg outline-offset-2 focus-visible:outline-2 focus-visible:outline-focus-ring"
     >
-      {/* Mini app preview — data-theme + cardVars set the --od-* palette this card reads. */}
       <div
-        data-theme={name}
-        style={{ ...cardVars(name), background: 'var(--od-bg)', borderColor: 'var(--od-border)' }}
+        data-accent={name}
+        style={{ background: 'var(--od-bg)', borderColor: 'var(--od-border)' }}
         className={cn(
-          'relative h-24 w-full overflow-hidden rounded-lg border',
-          selected && 'outline-2 outline-offset-2 outline-[var(--od-focus-ring)]',
+          'relative h-20 w-full overflow-hidden rounded-lg border',
+          selected && 'outline-2 outline-offset-2 outline-focus-ring',
         )}
       >
         <div className="absolute inset-0 flex">
           {/* sidebar strip */}
-          <div className="h-full w-[30%]" style={{ background: 'var(--od-surface)' }}>
-            <div className="mt-2.5 ml-2 flex flex-col gap-1.5">
-              <span className="h-1.5 w-8 rounded-full" style={{ background: 'var(--od-accent)' }} />
+          <div className="h-full w-[32%]" style={{ background: 'var(--od-surface)' }}>
+            <div className="mt-2 ml-1.5 flex flex-col gap-1.5">
+              <span className="h-1.5 w-7 rounded-full" style={{ background: 'var(--od-accent)' }} />
               <span
-                className="h-1.5 w-6 rounded-full opacity-40"
+                className="h-1.5 w-5 rounded-full opacity-40"
                 style={{ background: 'var(--od-text-tertiary)' }}
               />
               <span
-                className="h-1.5 w-7 rounded-full opacity-40"
+                className="h-1.5 w-6 rounded-full opacity-40"
                 style={{ background: 'var(--od-text-tertiary)' }}
               />
             </div>
@@ -94,13 +138,13 @@ function ThemeCard({
           {/* canvas with an accent pill + fake task rows */}
           <div className="flex-1 p-2">
             <span
-              className="mb-2 block h-2.5 w-10 rounded-full"
+              className="mb-2 block h-2 w-8 rounded-full"
               style={{ background: 'var(--od-accent)' }}
             />
             {[0, 1, 2].map((row) => (
               <div key={row} className="mb-1.5 flex items-center gap-1.5">
                 <span
-                  className="size-2.5 shrink-0 rounded-full border-2"
+                  className="size-2 shrink-0 rounded-full border-2"
                   style={{ borderColor: 'var(--od-accent)' }}
                 />
                 <span
@@ -116,7 +160,7 @@ function ThemeCard({
             className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full"
             style={{ background: 'var(--od-accent)' }}
           >
-            <Check size={11} className="text-white" aria-hidden="true" />
+            <Check size={11} style={{ color: 'var(--od-on-accent)' }} aria-hidden="true" />
           </span>
         ) : null}
       </div>
@@ -126,50 +170,48 @@ function ThemeCard({
           selected ? 'font-medium text-text-primary' : 'text-text-secondary',
         )}
       >
-        {THEME_LABELS[name]}
+        {ACCENT_LABELS[name]}
       </span>
     </button>
   )
 }
 
 export default function ThemePage() {
-  // Apply the resolved theme + react to settings/OS changes while this page is mounted.
+  // Apply the resolved appearance + accent, and react to settings/OS changes while mounted.
   useThemeSync()
   const { settings, update } = useUserSettings()
+  const appearance = resolveAppearance(settings)
+  const accent = resolveAccent(settings)
 
   return (
-    <div>
+    <div className="max-w-2xl">
       <SettingsSection title="Theme" description="Choose how OpenDoist looks.">
         <div className="p-4">
+          <div id="theme-appearance-label" className="mb-3 font-medium text-body text-text-primary">
+            Appearance
+          </div>
+          <AppearanceControl value={appearance} onSelect={(next) => update({ appearance: next })} />
+        </div>
+
+        <div className="p-4">
+          <div id="theme-accent-label" className="mb-3 font-medium text-body text-text-primary">
+            Accent
+          </div>
           <div
             role="radiogroup"
-            aria-label="Theme"
+            aria-labelledby="theme-accent-label"
             className="grid grid-cols-2 gap-3 sm:grid-cols-4"
           >
-            {THEME_NAMES.map((name) => (
-              <ThemeCard
+            {ACCENT_NAMES.map((name) => (
+              <AccentSwatch
                 key={name}
                 name={name}
-                selected={settings.theme === name}
-                onSelect={() => update({ theme: name })}
+                selected={accent === name}
+                onSelect={() => update({ accent: name })}
               />
             ))}
           </div>
         </div>
-      </SettingsSection>
-
-      <SettingsSection title="Appearance">
-        <SettingRow
-          label="Auto Dark Theme"
-          description="Follow the system and switch to Dark automatically"
-          control={
-            <Switch
-              checked={settings.autoDark}
-              onCheckedChange={(autoDark) => update({ autoDark })}
-              aria-label="Auto Dark Theme"
-            />
-          }
-        />
       </SettingsSection>
 
       <p className="text-copy text-text-secondary">

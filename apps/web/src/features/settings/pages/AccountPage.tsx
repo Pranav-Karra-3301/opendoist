@@ -779,7 +779,7 @@ export default function AccountPage() {
   const twoFactorAvailable = typeof twoFactorApi?.enable === 'function'
 
   return (
-    <>
+    <div className="max-w-2xl">
       <ProfileSection
         name={user.name}
         email={user.email}
@@ -796,6 +796,6 @@ export default function AccountPage() {
       />
       <ConnectedAccountsSection />
       <DangerZone email={user.email} />
-    </>
+    </div>
   )
 }

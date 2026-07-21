@@ -8,6 +8,26 @@ import { expect, test } from '@playwright/test'
  * they stay stable once Tasks M–V fill in the individual pages.
  */
 
+test('the account-menu Settings item opens the overlay dialog on the Account page', async ({
+  page,
+}) => {
+  await page.goto('/today')
+  await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible()
+
+  // The sidebar account menu carries a Settings item that navigates to /settings/account.
+  await page.getByRole('button', { name: 'Account menu' }).click()
+  await page.getByRole('menuitem', { name: 'Settings', exact: true }).click()
+
+  await expect(page).toHaveURL(/\/settings\/account$/)
+  const dialog = page.getByRole('dialog', { name: 'Settings' })
+  await expect(dialog).toBeVisible()
+  await expect(dialog.getByRole('heading', { name: 'Account', exact: true })).toBeVisible()
+
+  // Close back to the home view so sibling specs start clean.
+  await page.keyboard.press('Escape')
+  await expect(dialog).toBeHidden()
+})
+
 test('deep-links a page into the overlay dialog with the nav entry active', async ({ page }) => {
   await page.goto('/settings/theme')
 

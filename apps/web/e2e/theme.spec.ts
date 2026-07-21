@@ -8,27 +8,35 @@ async function pickTheme(page: Page, label: string): Promise<void> {
 }
 
 /**
- * Theme switching from the user menu. `applyTheme` (lib/theme.ts) stamps `data-theme` on <html>
- * for explicit themes, persists `od-theme`, and removes the attribute for System. The index.html
- * head script re-applies the persisted choice on reload.
+ * Theme switching from the user menu (appearance × accent model). The coarse menu choices map onto
+ * the two axes via `settingsPatchForChoice`: `Dark` → explicit dark on the Kale accent, a light
+ * accent (e.g. `Tangerine`) → explicit light on that accent, `System` → follow the OS from Kale.
+ * `applyAppearance`/`applyAccent` (lib/theme.ts) stamp `data-mode="light|dark"` + `data-accent` on
+ * <html> (removing `data-mode` for System) and mirror `od-appearance`/`od-accent` to localStorage;
+ * the index.html head script re-paints the persisted choice on reload.
  */
-test('applies, persists across reload, and clears the attribute for System', async ({ page }) => {
+test('applies, persists across reload, and clears the mode for System', async ({ page }) => {
   await page.goto('/today')
   // `exact` — the Today view also renders an h2 like "Jul 16 · Today · Thursday".
   await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible()
   const html = page.locator('html')
 
+  // Dark → explicit dark appearance on the Kale accent.
   await pickTheme(page, 'Dark')
-  await expect(html).toHaveAttribute('data-theme', 'dark')
+  await expect(html).toHaveAttribute('data-mode', 'dark')
+  await expect(html).toHaveAttribute('data-accent', 'kale')
 
-  // Persists across a reload (the head script reads od-theme before React mounts).
+  // Persists across a reload (the head script reads od-appearance/od-accent before React mounts).
   await page.reload()
-  await expect(html).toHaveAttribute('data-theme', 'dark')
+  await expect(html).toHaveAttribute('data-mode', 'dark')
+  await expect(html).toHaveAttribute('data-accent', 'kale')
 
+  // Tangerine → an explicit LIGHT accent: the mode flips to light, the accent to tangerine.
   await pickTheme(page, 'Tangerine')
-  await expect(html).toHaveAttribute('data-theme', 'tangerine')
+  await expect(html).toHaveAttribute('data-mode', 'light')
+  await expect(html).toHaveAttribute('data-accent', 'tangerine')
 
-  // System removes the explicit attribute.
+  // System removes the explicit mode (the OS then drives `.system-dark`).
   await pickTheme(page, 'System')
-  await expect(html).not.toHaveAttribute('data-theme')
+  await expect(html).not.toHaveAttribute('data-mode')
 })

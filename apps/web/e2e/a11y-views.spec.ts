@@ -12,8 +12,8 @@ import { expect, type Page, test } from '@playwright/test'
  * created through the real API with the authenticated session; `page.goto` performs a full reload
  * so every view mounts against fresh react-query caches that include the just-created entities.
  *
- * Dark mode is toggled by stamping `data-theme="dark"` on <html> (the same attribute
- * lib/theme.ts writes for the explicit Dark theme) — it re-computes every design token, so axe
+ * Dark mode is toggled by stamping `data-mode="dark"` on <html> (the same attribute
+ * lib/theme.ts writes for the explicit Dark appearance) — it re-computes every design token, so axe
  * re-evaluates the dark surface under the full rule set.
  */
 
@@ -40,15 +40,15 @@ async function createProject(page: Page, name: string, color = 'blue'): Promise<
  *      `--od-text-primary`, so every palette clears the AA 4.5:1 floor as 12px text in both
  *      themes (worst light case: grey 4.53:1 on --od-hover).
  *   3. Reporting inactive tabs/select values recompute ≥5.4:1 against the final tokens.css.
- * CSS transitions are killed before scanning: the `data-theme` flip crossfades colors for up
+ * CSS transitions are killed before scanning: the `data-mode` flip crossfades colors for up
  * to 300ms (`transition-colors`), and axe must never read mid-interpolation values.
  */
 async function axeStructural(page: Page): Promise<void> {
   await page.addStyleTag({ content: '*,*::before,*::after{transition:none !important}' })
   for (const theme of ['light', 'dark'] as const) {
     await page.evaluate((t) => {
-      if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark')
-      else document.documentElement.removeAttribute('data-theme')
+      if (t === 'dark') document.documentElement.setAttribute('data-mode', 'dark')
+      else document.documentElement.removeAttribute('data-mode')
     }, theme)
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
@@ -62,7 +62,7 @@ async function axeStructural(page: Page): Promise<void> {
       `${theme}-theme structural axe`,
     ).toEqual([])
   }
-  await page.evaluate(() => document.documentElement.removeAttribute('data-theme'))
+  await page.evaluate(() => document.documentElement.removeAttribute('data-mode'))
 }
 
 test('project view: an empty project announces a role=status empty state and is axe-clean', async ({

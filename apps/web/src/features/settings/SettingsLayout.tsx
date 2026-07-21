@@ -1,7 +1,8 @@
 /**
  * Settings shell (Task L). The `/settings/$page` route renders this Todoist-style centered
- * overlay dialog over the current view: a 200px left nav (SettingsSearch — search box + registry
- * list) beside a scrollable pane that lazy-loads the active registry page under `<Suspense>`.
+ * overlay dialog over the current view: a 230px icon nav rail (SettingsSearch — search box +
+ * icon-labelled registry list) beside a scrollable pane that lazy-loads the active registry page
+ * under `<Suspense>`.
  * Closing (built-in X / Esc / backdrop) navigates back to the user's home view; an unknown
  * `:page` param canonicalises to Account. Below `md` the nav is the first screen and picking a
  * page slides to it with a Back button.
@@ -79,7 +80,7 @@ export default function SettingsLayout() {
         if (!next) closeToHome()
       }}
     >
-      <DialogContent className="grid h-[min(720px,90vh)] w-[min(960px,94vw)] max-w-[min(960px,94vw)] grid-cols-1 grid-rows-1 gap-0 overflow-hidden p-0 md:grid-cols-[200px_1fr]">
+      <DialogContent className="grid h-[min(720px,85vh)] w-[min(1100px,90vw)] max-w-[min(1100px,90vw)] grid-cols-1 grid-rows-1 gap-0 overflow-hidden p-0 md:grid-cols-[230px_1fr]">
         <DialogTitle className="sr-only">Settings</DialogTitle>
 
         {/* Left nav — the first screen on mobile; hidden once a page is open there. */}

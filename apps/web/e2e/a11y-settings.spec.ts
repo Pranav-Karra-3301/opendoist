@@ -7,8 +7,8 @@ import { expectNoAxeViolations } from './helpers/a11y'
  *
  * Every registry page (features/settings/registry.ts → /settings/$page) and the logged-out
  * login screen must be axe-clean, carry exactly one <h1>, and expose the Settings navigation as
- * a labelled landmark. The Theme page additionally proves that changing the theme updates
- * `<html data-theme>` and survives a reload from the persisted account setting.
+ * a labelled landmark. The Theme page additionally proves that changing the appearance updates
+ * `<html data-mode>` and survives a reload from the persisted account setting.
  *
  * Settings renders as a Base UI dialog (SettingsLayout) portalled over the app, so page-level
  * assertions are scoped to `getByRole('dialog', { name: 'Settings' })` — the app chrome behind it
@@ -80,15 +80,15 @@ async function openSettings(page: Page, key: string) {
 
 async function setDark(page: Page, dark: boolean) {
   await page.evaluate((on) => {
-    if (on) document.documentElement.setAttribute('data-theme', 'dark')
-    else document.documentElement.removeAttribute('data-theme')
+    if (on) document.documentElement.setAttribute('data-mode', 'dark')
+    else document.documentElement.removeAttribute('data-mode')
   }, dark)
 }
 
 /**
  * Dark-theme gate: WCAG A+AA, zero serious/critical, `color-contrast` INCLUDED — Task O
  * landed the two dark token fixes (text-tertiary #a0a0a0, on-accent #1e1e1e) that this gate
- * originally had to exclude. Transitions are killed first so switching `data-theme` doesn't
+ * originally had to exclude. Transitions are killed first so switching `data-mode` doesn't
  * crossfade colours mid-scan.
  */
 async function expectNoDarkViolations(page: Page, include?: string) {
@@ -96,7 +96,7 @@ async function expectNoDarkViolations(page: Page, include?: string) {
     content: '*,*::before,*::after{transition:none !important;animation:none !important}',
   })
   await setDark(page, true)
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await expect(page.locator('html')).toHaveAttribute('data-mode', 'dark')
   let builder = new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
   if (include) builder = builder.include(include)
   const results = await builder.analyze()
@@ -116,7 +116,7 @@ test.describe('settings pages a11y', () => {
       // Exactly one <h1> (the page title) inside the settings pane.
       await expect(dialog.getByRole('heading', { level: 1 })).toHaveCount(1)
 
-      // Light (Kale baseline clears data-theme) — full axe including color-contrast.
+      // Light (Kale baseline clears data-mode) — full axe including color-contrast.
       await setDark(page, false)
       await expectNoAxeViolations(page, { include: DIALOG })
 
@@ -137,10 +137,12 @@ test.describe('settings pages a11y', () => {
     )
   })
 
-  test('theme change updates <html data-theme> and persists across a reload', async ({ page }) => {
+  test('appearance change updates <html data-mode> and persists across a reload', async ({
+    page,
+  }) => {
     await openSettings(page, 'theme')
 
-    // Selecting Dark writes through the account-settings PATCH; wait for it to land.
+    // Selecting the Dark appearance writes through the account-settings PATCH; wait for it to land.
     const [patch] = await Promise.all([
       page.waitForResponse(
         (r) => r.request().method() === 'PATCH' && r.url().includes('/user/settings'),
@@ -148,20 +150,31 @@ test.describe('settings pages a11y', () => {
       page.getByRole('radio', { name: 'Dark', exact: true }).click(),
     ])
     expect(patch.ok()).toBeTruthy()
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+    await expect(page.locator('html')).toHaveAttribute('data-mode', 'dark')
 
-    // Clear the pre-paint localStorage mirror so the reload can only get the theme from the
-    // persisted account setting — a genuine server-persistence check.
-    await page.evaluate(() => localStorage.removeItem('od-theme'))
+    // Clear the pre-paint localStorage mirror (both axes + the legacy key) so the reload can only
+    // get the appearance from the persisted account setting — a genuine server-persistence check.
+    await page.evaluate(() => {
+      localStorage.removeItem('od-appearance')
+      localStorage.removeItem('od-accent')
+      localStorage.removeItem('od-theme')
+    })
     await page.reload()
     const dialog = page.getByRole('dialog', { name: 'Settings' })
     await expect(dialog.getByRole('heading', { level: 1 })).toBeVisible()
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+    await expect(page.locator('html')).toHaveAttribute('data-mode', 'dark')
 
-    // Restore the Kale default so sibling specs observe the baseline (kale clears data-theme).
-    await page.getByRole('radio', { name: 'Kale', exact: true }).click()
+    // Restore the System default so sibling specs observe the light baseline (System + the
+    // untouched Kale accent → light under the pinned light OS). Wait for the restore PATCH so the
+    // shared account is clean server-side before the next spec loads.
+    await Promise.all([
+      page.waitForResponse(
+        (r) => r.request().method() === 'PATCH' && r.url().includes('/user/settings'),
+      ),
+      page.getByRole('radio', { name: 'System', exact: true }).click(),
+    ])
     await expect
-      .poll(() => page.evaluate(() => document.documentElement.hasAttribute('data-theme')))
+      .poll(() => page.evaluate(() => document.documentElement.hasAttribute('data-mode')))
       .toBe(false)
   })
 })

@@ -1,9 +1,9 @@
 /* app/tokens.css — OpenDoist design tokens (default: Kale) */
 @import "tailwindcss";
 
-/* dark utilities follow the resolved theme attribute OR OS when unset */
+/* dark utilities follow the resolved appearance (explicit dark) OR the OS (system) */
 @custom-variant dark (
-  &:where([data-theme="dark"], [data-theme="dark"] *, .system-dark, .system-dark *)
+  &:where([data-mode="dark"], [data-mode="dark"] *, .system-dark, .system-dark *)
 );
 
 /* ---------- static scales (generate utilities) ---------- */
@@ -66,20 +66,47 @@
 }
 
 /* ---------- semantic runtime tokens ---------- */
-/* LIGHT defaults (OpenDoist = Kale accent) */
+/* LIGHT defaults + Kale accent (also the :root fallback when no [data-accent] is set) */
 :root {
   color-scheme: light;
+
+  /* ===== accent families (light + dark values); default = Kale =====
+     Every [data-accent] block below redefines these; the mode blocks (:root vs
+     [data-mode="dark"]/.system-dark) select which half drives the --od-accent* + selection
+     tokens, so the accent applies in BOTH light and dark. */
+  --accent-light: #4c7a45;
+  --accent-light-hover: #3e6737;
+  --accent-light-disabled: #a5bca2;
+  --accent-light-soft: #e8f1d0;
+  --accent-light-selected: #f0f6df;
+  --accent-light-selected-text: #3e6737;
+  --accent-light-surface: #fcfcf8; /* accent-tinted sidebar/aside */
+  --accent-light-sidebar-hover: #f2f2e9;
+  --accent-dark: #80aa73; /* kale brightened; ≥4.5:1 as text on every dark surface incl. #363636 hover (4.55), #282828 raised (5.6), #1e1e1e bg (6.3) */
+  --accent-dark-hover: #8fb883;
+  --accent-dark-disabled: #3c4d38;
+  --accent-dark-soft: #26331f;
+  --accent-dark-selected: #2c3a28;
+  --accent-dark-selected-text: #a5cf99;
+
+  /* accent tokens — LIGHT mode selects the light half of the active accent */
+  --od-accent: var(--accent-light);
+  --od-accent-hover: var(--accent-light-hover);
+  --od-accent-disabled: var(--accent-light-disabled);
+  --od-on-accent: #ffffff;
+  --od-accent-soft: var(--accent-light-soft); /* soft chip/selection tint */
+  --od-selected: var(--accent-light-selected); /* selected row bg */
+  --od-selected-text: var(--accent-light-selected-text);
+
   /* canvas & surfaces */
   --od-bg: #ffffff; /* app canvas */
-  --od-surface: #fcfcf8; /* sidebar / aside (kale-tinted) */
+  --od-surface: var(--accent-light-surface); /* sidebar / aside (accent-tinted) */
   --od-surface-raised: #ffffff; /* cards, dropdowns, dialogs */
   --od-surface-overlay: #282828; /* tooltips/toasts (inverted) */
   --od-hover: #f3f3f3; /* generic option hover */
   --od-btn-secondary-bg: #f5f5f5; /* secondary button idle (dossier §2.7) */
   --od-btn-secondary-bg-hover: #e5e5e5;
-  --od-selected: #f0f6df; /* selected row bg (kale) */
-  --od-selected-text: #3e6737;
-  --od-sidebar-hover: #f2f2e9;
+  --od-sidebar-hover: var(--accent-light-sidebar-hover);
   /* borders */
   --od-border: #eeeeee; /* divider primary */
   --od-border-subtle: #f5f5f5; /* row dividers */
@@ -92,12 +119,6 @@
    * ≥4.5:1 on every light-theme surface INCLUDING --od-hover #f3f3f3 (4.66 worst case —
    * #707070 was 4.46:1 there, phase-10 a11y integration fix). */
   --od-text-tertiary: #6d6d6d;
-  /* accent (Kale) */
-  --od-accent: #4c7a45;
-  --od-accent-hover: #3e6737;
-  --od-accent-disabled: #a5bca2;
-  --od-on-accent: #ffffff;
-  --od-accent-soft: #e8f1d0; /* soft chip/selection tint */
   /* status */
   --od-danger: #d1453b; /* == P1 */
   --od-danger-hover: #b03d32;
@@ -149,10 +170,23 @@
   --od-palette-taupe: #8f7a69;
 }
 
-/* DARK (one block, reused for explicit dark + OS auto) */
-[data-theme="dark"],
+/* DARK appearance — explicit dark (`data-mode="dark"`) OR system+OS-dark (`.system-dark`).
+   Swaps the neutral tokens to dark and selects the active accent's DARK half; neutrals are
+   accent-independent, only --od-accent* / selection follow --accent-dark*. */
+[data-mode="dark"],
 .system-dark {
   color-scheme: dark;
+  /* accent tokens — DARK mode selects the dark half of the active accent */
+  --od-accent: var(--accent-dark);
+  --od-accent-hover: var(--accent-dark-hover);
+  --od-accent-disabled: var(--accent-dark-disabled);
+  /* dark text on the brightened accent (≥4.5:1); white was 2.7:1 on kale, under the AA floor
+   * for button labels (phase-10 a11y integration fix). */
+  --od-on-accent: #1e1e1e;
+  --od-accent-soft: var(--accent-dark-soft);
+  --od-selected: var(--accent-dark-selected);
+  --od-selected-text: var(--accent-dark-selected-text);
+  /* neutral dark surfaces (accent-independent) */
   --od-bg: #1e1e1e;
   --od-surface: #262626;
   --od-surface-raised: #282828;
@@ -160,8 +194,6 @@
   --od-hover: #363636;
   --od-btn-secondary-bg: #292929; /* dossier §2.9 Button row (dark) */
   --od-btn-secondary-bg-hover: #3d3d3d;
-  --od-selected: #2c3a28; /* (derived: kale-tinted; Todoist-red dark uses #472525) */
-  --od-selected-text: #a5cf99; /* (derived) */
   --od-sidebar-hover: #2b302a; /* (derived; Todoist dark: #322f2a) */
   --od-border: #3d3d3d;
   --od-border-subtle: #282828;
@@ -173,13 +205,6 @@
    * palette keycap hints render on (4.62 worst case; the derived #808080 was 3.7–4.2:1,
    * failing AA — phase-10 a11y integration fix). */
   --od-text-tertiary: #a0a0a0;
-  --od-accent: #7ca86f; /* (derived: kale brightened; 5.9:1 on #1e1e1e) */
-  --od-accent-hover: #8fb883; /* (derived) */
-  --od-accent-disabled: #3c4d38; /* (derived) */
-  /* dark text on the brightened accent (6.1:1); white was 2.7:1, under the AA floor for
-   * button labels (phase-10 a11y integration fix). */
-  --od-on-accent: #1e1e1e;
-  --od-accent-soft: #26331f; /* (derived; Todoist dark red soft: #6f2625) */
   --od-danger: #ff7066;
   --od-danger-hover: #e36564;
   --od-success: #25b84c;
@@ -220,77 +245,128 @@
   --od-palette-taupe: #ccae96;
 }
 
-/* SYSTEM AUTO-DARK: no @media block needed — index.html's head script toggles
-   `.system-dark` on <html> when no explicit theme is stored, and the combined
-   `[data-theme="dark"], .system-dark` block above covers both. Explicit
-   data-theme wins over the OS preference, both ways. */
+/* SYSTEM AUTO-DARK: no @media block needed — index.html's head script toggles `.system-dark`
+   on <html> when appearance is `system`, and the `[data-mode="dark"], .system-dark` block above
+   covers it. Explicit `data-mode` wins over the OS preference, both ways. */
 
-/* ---------- accent themes as [data-theme=X] (Todoist parity) ---------- */
-/* light schemes: todoist, moonstone, tangerine, kale(default), blueberry, lavender, raspberry */
-[data-theme="todoist"] {
-  --od-accent: #dc4c3e;
-  --od-accent-hover: #c3392c;
-  --od-accent-disabled: #eda59e;
-  --od-accent-soft: #fde7d8;
-  --od-surface: #fcfaf8;
-  --od-sidebar-hover: #f2efed;
-  --od-selected: #ffefe5;
-  --od-selected-text: #a81f00;
+/* ---------- accent palettes as [data-accent=X] ---------- */
+/* Each block defines the accent's LIGHT and DARK families; the mode blocks (:root vs
+   [data-mode="dark"]/.system-dark) select which half drives --od-accent* + the selection tokens,
+   so an accent shows in BOTH appearances. Light values are Todoist-verified (dossier §2.5); dark
+   values are brightened for ≥4.5:1 accent-as-text contrast on EVERY dark surface — the #363636
+   hover/selected row is the tightest (kale/todoist/raspberry are nudged a hair to clear it) — and
+   ≥4.5:1 selected-text on the dark selection bg. `kale` mirrors the :root default. */
+[data-accent="kale"] {
+  --accent-light: #4c7a45;
+  --accent-light-hover: #3e6737;
+  --accent-light-disabled: #a5bca2;
+  --accent-light-soft: #e8f1d0;
+  --accent-light-selected: #f0f6df;
+  --accent-light-selected-text: #3e6737;
+  --accent-light-surface: #fcfcf8;
+  --accent-light-sidebar-hover: #f2f2e9;
+  --accent-dark: #80aa73; /* ≥4.5:1 text on #363636 hover (mirrors :root default) */
+  --accent-dark-hover: #8fb883;
+  --accent-dark-disabled: #3c4d38;
+  --accent-dark-soft: #26331f;
+  --accent-dark-selected: #2c3a28;
+  --accent-dark-selected-text: #a5cf99;
 }
-[data-theme="moonstone"] {
-  --od-accent: #39485e;
-  --od-accent-hover: #323f51;
-  --od-accent-disabled: #a4a9b0;
-  --od-accent-soft: #e0e2e5;
-  --od-surface: #fafafa;
-  --od-sidebar-hover: #efeff1;
-  --od-selected: #e0e2e5;
-  --od-selected-text: #39485e;
+[data-accent="todoist"] {
+  --accent-light: #dc4c3e;
+  --accent-light-hover: #c3392c;
+  --accent-light-disabled: #eda59e;
+  --accent-light-soft: #fde7d8;
+  --accent-light-selected: #ffefe5;
+  --accent-light-selected-text: #a81f00;
+  --accent-light-surface: #fcfaf8;
+  --accent-light-sidebar-hover: #f2efed;
+  --accent-dark: #f37c70; /* ≥4.5:1 text on #363636 hover (4.56) */
+  --accent-dark-hover: #f59188;
+  --accent-dark-disabled: #6f3f3b;
+  --accent-dark-soft: #3c2a29;
+  --accent-dark-selected: #48302d;
+  --accent-dark-selected-text: #f7b0a9;
 }
-[data-theme="tangerine"] {
-  --od-accent: #d68400;
-  --od-accent-hover: #995e00;
-  --od-accent-disabled: #ebc180;
-  --od-accent-soft: #fdecdc;
-  --od-surface: #fcfcf8;
-  --od-sidebar-hover: #f4f1eb;
-  --od-selected: #fff3d6;
-  --od-selected-text: #995e00;
+[data-accent="moonstone"] {
+  --accent-light: #39485e;
+  --accent-light-hover: #323f51;
+  --accent-light-disabled: #a4a9b0;
+  --accent-light-soft: #e0e2e5;
+  --accent-light-selected: #e0e2e5;
+  --accent-light-selected-text: #39485e;
+  --accent-light-surface: #fafafa;
+  --accent-light-sidebar-hover: #efeff1;
+  --accent-dark: #93a6c6;
+  --accent-dark-hover: #a9b8d1;
+  --accent-dark-disabled: #4a525e;
+  --accent-dark-soft: #2e3136;
+  --accent-dark-selected: #353940;
+  --accent-dark-selected-text: #c0cbde;
 }
-[data-theme="blueberry"] {
-  --od-accent: #297abc;
-  --od-accent-hover: #246498;
-  --od-accent-disabled: #9ab4dd;
-  --od-accent-soft: #d6e5f3;
-  --od-surface: #f8fafb;
-  --od-sidebar-hover: #eef2f6;
-  --od-selected: #dfedfb;
-  --od-selected-text: #1e5480;
+[data-accent="tangerine"] {
+  --accent-light: #d68400;
+  --accent-light-hover: #995e00;
+  --accent-light-disabled: #ebc180;
+  --accent-light-soft: #fdecdc;
+  --accent-light-selected: #fff3d6;
+  --accent-light-selected-text: #995e00;
+  --accent-light-surface: #fcfcf8;
+  --accent-light-sidebar-hover: #f4f1eb;
+  --accent-dark: #e2921f;
+  --accent-dark-hover: #e8a84c;
+  --accent-dark-disabled: #684a1e;
+  --accent-dark-soft: #392e1e;
+  --accent-dark-selected: #45351e;
+  --accent-dark-selected-text: #eec07d;
 }
-[data-theme="lavender"] {
-  --od-accent: #766bbd;
-  --od-accent-hover: #51459f;
-  --od-accent-disabled: #bab5de;
-  --od-accent-soft: #e8e3f4;
-  --od-surface: #f9f9fa;
-  --od-sidebar-hover: #ededf2;
-  --od-selected: #e9e5f5;
-  --od-selected-text: #4d447e;
+[data-accent="blueberry"] {
+  --accent-light: #297abc;
+  --accent-light-hover: #246498;
+  --accent-light-disabled: #9ab4dd;
+  --accent-light-soft: #d6e5f3;
+  --accent-light-selected: #dfedfb;
+  --accent-light-selected-text: #1e5480;
+  --accent-light-surface: #f8fafb;
+  --accent-light-sidebar-hover: #eef2f6;
+  --accent-dark: #63a6da;
+  --accent-dark-hover: #82b8e1;
+  --accent-dark-disabled: #385265;
+  --accent-dark-soft: #283138;
+  --accent-dark-selected: #2c3944;
+  --accent-dark-selected-text: #a5cbea;
 }
-[data-theme="raspberry"] {
-  --od-accent: #c5496c;
-  --od-accent-hover: #8c213f;
-  --od-accent-disabled: #f4a0b7;
-  --od-accent-soft: #f8e2e7;
-  --od-surface: #fbf8f8;
-  --od-sidebar-hover: #f2ecf0;
-  --od-selected: #f8e2e7;
-  --od-selected-text: #8c213f;
+[data-accent="lavender"] {
+  --accent-light: #766bbd;
+  --accent-light-hover: #51459f;
+  --accent-light-disabled: #bab5de;
+  --accent-light-soft: #e8e3f4;
+  --accent-light-selected: #e9e5f5;
+  --accent-light-selected-text: #4d447e;
+  --accent-light-surface: #f9f9fa;
+  --accent-light-sidebar-hover: #ededf2;
+  --accent-dark: #a99ee6;
+  --accent-dark-hover: #bab1eb;
+  --accent-dark-disabled: #534f6a;
+  --accent-dark-soft: #31303a;
+  --accent-dark-selected: #3a3846;
+  --accent-dark-selected-text: #cdc7f1;
 }
-/* "kale" needs no block — it IS :root. Keep [data-theme="light"] as alias of :root. */
-/* alias: explicit light choice (beats OS dark) — inherits every :root (Kale) default */
-/* biome-ignore lint/suspicious/noEmptyBlock: intentionally empty alias of :root */
-[data-theme="light"] {
+[data-accent="raspberry"] {
+  --accent-light: #c5496c;
+  --accent-light-hover: #8c213f;
+  --accent-light-disabled: #f4a0b7;
+  --accent-light-soft: #f8e2e7;
+  --accent-light-selected: #f8e2e7;
+  --accent-light-selected-text: #8c213f;
+  --accent-light-surface: #fbf8f8;
+  --accent-light-sidebar-hover: #f2ecf0;
+  --accent-dark: #e1839f; /* ≥4.5:1 text on #363636 hover (4.57) */
+  --accent-dark-hover: #e699b0;
+  --accent-dark-disabled: #68434e;
+  --accent-dark-soft: #392c30;
+  --accent-dark-selected: #453137;
+  --accent-dark-selected-text: #edb5c6;
 }
 
 /* ---------- bridge semantic vars into Tailwind utilities ---------- */
@@ -371,9 +447,9 @@
 
 /* ---------- shadcn/ui bridge (phase 4 Task A) ---------- */
 /* Maps shadcn variable names onto the active OpenDoist theme so shadcn-flavored code
-   follows [data-theme] automatically. Bridge values only — the token blocks above are
-   the source of truth and are never edited here. There is deliberately NO `.dark`
-   block: dark values flow in through the --od-* indirection. */
+   follows the appearance (data-mode) × accent (data-accent) tokens automatically. Bridge
+   values only — the token blocks above are the source of truth and are never edited here.
+   There is deliberately NO `.dark` block: dark values flow in through the --od-* indirection. */
 :root {
   --background: var(--od-bg);
   --foreground: var(--od-text-primary);

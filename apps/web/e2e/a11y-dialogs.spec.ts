@@ -28,8 +28,9 @@ import { expectNoAxeViolations } from './helpers/a11y'
  * here (it would force a >10 s wait); the behaviour lives in UndoHost + is covered by review.
  */
 
-/** Force the app's dark theme by stamping <html data-theme="dark"> — useThemeSync only re-applies
- *  on a settings change, so the manual attribute is stable across the (render-free) axe scan.
+/** Force the app's dark appearance by stamping <html data-mode="dark"> — useThemeSync only
+ *  re-applies on a settings/OS change, so the manual attribute is stable across the (render-free)
+ *  axe scan. Removing `data-mode` returns to the app's resolved appearance (system → light here).
  *  CSS *transitions* are killed first (mirroring a11y-settings): themed surfaces crossfade
  *  colors for up to 300ms after a theme flip (`transition-colors`), and axe must never read
  *  mid-interpolation colors (Task O de-flake). Animations stay enabled — the checkbox
@@ -37,8 +38,8 @@ import { expectNoAxeViolations } from './helpers/a11y'
 async function setTheme(page: Page, theme: 'light' | 'dark'): Promise<void> {
   await page.addStyleTag({ content: '*,*::before,*::after{transition:none !important}' })
   await page.evaluate((t) => {
-    if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark')
-    else document.documentElement.removeAttribute('data-theme')
+    if (t === 'dark') document.documentElement.setAttribute('data-mode', 'dark')
+    else document.documentElement.removeAttribute('data-mode')
   }, theme)
 }
 

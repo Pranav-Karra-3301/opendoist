@@ -159,9 +159,9 @@ test('button secondary variant resolves the §2.9 law colors in light and dark',
       hover: getComputedStyle(btn).getPropertyValue('--od-btn-secondary-bg-hover').trim(),
     })
     const light = read()
-    document.documentElement.dataset.theme = 'dark'
+    document.documentElement.dataset.mode = 'dark'
     const dark = read()
-    document.documentElement.removeAttribute('data-theme')
+    document.documentElement.removeAttribute('data-mode')
     btn.remove()
     return { light, dark }
   })

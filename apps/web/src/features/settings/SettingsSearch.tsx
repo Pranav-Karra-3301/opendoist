@@ -109,6 +109,7 @@ export function SettingsSearch({
           <ul className="flex flex-col gap-px">
             {matches.map((page) => {
               const isActive = page.key === activeKey
+              const Icon = page.icon
               return (
                 <li key={page.key}>
                   <button
@@ -116,13 +117,19 @@ export function SettingsSearch({
                     onClick={() => onPick(page.key)}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
-                      'flex h-8 w-full items-center rounded-sm px-2 text-left text-body outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-solid focus-visible:outline-focus-ring',
+                      'flex h-8 w-full items-center gap-2 rounded-sm px-2 text-left text-body outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-solid focus-visible:outline-focus-ring',
                       isActive
                         ? 'bg-selected font-medium text-selected-text'
                         : 'text-text-primary hover:bg-hover',
                     )}
                   >
-                    <span className="truncate">
+                    <Icon
+                      size={18}
+                      strokeWidth={1.75}
+                      aria-hidden="true"
+                      className={cn('shrink-0', isActive ? 'text-accent' : 'text-text-secondary')}
+                    />
+                    <span className="min-w-0 flex-1 truncate">
                       {splitHighlight(page.title, query).map((segment) =>
                         segment.hit ? (
                           <mark

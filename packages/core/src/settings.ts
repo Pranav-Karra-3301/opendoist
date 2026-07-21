@@ -20,6 +20,47 @@ export const THEME_NAMES = [
 export const ThemeNameSchema = z.enum(THEME_NAMES)
 export type ThemeName = z.infer<typeof ThemeNameSchema>
 
+/** Independent light/dark/system control (the appearance×accent model, plan Task C). */
+export const APPEARANCE_VALUES = ['light', 'dark', 'system'] as const
+export const AppearanceSchema = z.enum(APPEARANCE_VALUES)
+export type Appearance = z.infer<typeof AppearanceSchema>
+
+/**
+ * Accent palette — the seven light-scheme accents. Each gains a dark variant in tokens.css so
+ * the accent applies in BOTH light and dark. This is exactly `THEME_NAMES` minus `dark` (which
+ * is now an appearance, not an accent).
+ */
+export const ACCENT_NAMES = [
+  'kale',
+  'todoist',
+  'moonstone',
+  'tangerine',
+  'blueberry',
+  'lavender',
+  'raspberry',
+] as const
+export const AccentSchema = z.enum(ACCENT_NAMES)
+export type AccentName = z.infer<typeof AccentSchema>
+
+/**
+ * Back-compat migration for the pre-appearance theme model. Old settings stored `theme`
+ * (one of eight, where `dark` WAS the dark scheme) + `autoDark`; the new model splits those
+ * into an independent `appearance` (light/dark/system) and `accent` (palette). Map:
+ *  - `autoDark: true` → appearance `system` (OS decides light/dark), accent = the base accent
+ *  - `theme: 'dark'`  → appearance `dark`,  accent `kale` (old Dark had no accent axis)
+ *  - a light accent   → appearance `light`, accent = that theme
+ * Pure — unit-tested; used at every settings-read boundary so old rows never lose data.
+ */
+export function migrateThemeToAppearance(
+  theme: ThemeName,
+  autoDark: boolean,
+): { appearance: Appearance; accent: AccentName } {
+  const accent: AccentName = theme === 'dark' ? 'kale' : theme
+  if (autoDark) return { appearance: 'system', accent }
+  if (theme === 'dark') return { appearance: 'dark', accent: 'kale' }
+  return { appearance: 'light', accent: theme }
+}
+
 export const ViewGroupBySchema = z.enum(['none', 'project', 'priority', 'label', 'date'])
 export type ViewGroupBy = z.infer<typeof ViewGroupBySchema>
 export const ViewSortBySchema = z.enum(['manual', 'date', 'added', 'priority', 'alphabetical'])
@@ -100,6 +141,11 @@ export const UserSettingsSchema = z.object({
   smartDate: z.boolean().default(true),
   theme: ThemeNameSchema.default('kale'),
   autoDark: z.boolean().default(true),
+  /** New appearance×accent model (plan Task C). Both are OPTIONAL so a pre-migration row
+   *  (only `theme`/`autoDark`) parses without loss — `resolveAppearance`/`resolveAccent`
+   *  derive them from `theme`/`autoDark` when absent. Once written, they are authoritative. */
+  appearance: AppearanceSchema.optional(),
+  accent: AccentSchema.optional(),
   dailyGoal: z.number().int().min(0).max(100).default(5),
   weeklyGoal: z.number().int().min(0).max(700).default(25),
   daysOff: z.array(WeekdaySchema).default([6, 7]),
@@ -132,3 +178,29 @@ export type UserSettings = z.infer<typeof UserSettingsSchema>
 export const DEFAULT_USER_SETTINGS: UserSettings = UserSettingsSchema.parse({})
 export const UserSettingsPatchSchema = UserSettingsSchema.partial()
 export type UserSettingsPatch = z.infer<typeof UserSettingsPatchSchema>
+
+/** The subset of a settings doc the appearance/accent resolvers read. `theme`/`autoDark` are
+ *  optional so a new-model patch (only `appearance`/`accent`) resolves too; they fall back to the
+ *  legacy defaults (`kale` + Auto Dark) when a doc carries neither axis. */
+export type ThemeReadable = {
+  appearance?: Appearance
+  accent?: AccentName
+  theme?: ThemeName
+  autoDark?: boolean
+}
+
+/**
+ * Effective appearance for a settings doc: the stored `appearance` when present, else migrated
+ * from the legacy `theme`/`autoDark` (old rows). Read this instead of `settings.appearance`.
+ */
+export function resolveAppearance(s: ThemeReadable): Appearance {
+  return s.appearance ?? migrateThemeToAppearance(s.theme ?? 'kale', s.autoDark ?? true).appearance
+}
+
+/**
+ * Effective accent for a settings doc: the stored `accent` when present, else migrated from the
+ * legacy `theme`/`autoDark` (old rows). Read this instead of `settings.accent`.
+ */
+export function resolveAccent(s: ThemeReadable): AccentName {
+  return s.accent ?? migrateThemeToAppearance(s.theme ?? 'kale', s.autoDark ?? true).accent
+}

@@ -5,7 +5,8 @@
  * bar / task switcher — in step with the app surface. index.html ships a static default;
  * this resolves the live `--od-surface` token (which changes with the light/dark and accent
  * themes) and rewrites the meta whenever the theme could have changed: the theme store
- * toggles `data-theme` / `class` on `<html>`, and the OS can flip `prefers-color-scheme`.
+ * toggles `data-mode` / `data-accent` / `class` on `<html>`, and the OS can flip
+ * `prefers-color-scheme`.
  *
  * Returns a disconnect callback so the provider can clean up (StrictMode-safe).
  */
@@ -34,15 +35,15 @@ export function syncThemeColor(): () => void {
   }
   apply()
 
-  // `data-theme` / `class` flip when the user changes theme; the computed token updates
-  // synchronously, but styles resolve a tick later, so re-read on the next frame too.
+  // `data-mode` / `data-accent` / `class` flip when the user changes theme; the computed token
+  // updates synchronously, but styles resolve a tick later, so re-read on the next frame too.
   const observer = new MutationObserver(() => {
     apply()
     requestAnimationFrame(apply)
   })
   observer.observe(document.documentElement, {
     attributes: true,
-    attributeFilter: ['data-theme', 'class'],
+    attributeFilter: ['data-mode', 'data-accent', 'class'],
   })
 
   const media = window.matchMedia('(prefers-color-scheme: dark)')

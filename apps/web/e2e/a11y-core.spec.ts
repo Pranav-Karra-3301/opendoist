@@ -57,7 +57,7 @@ async function gotoRendered(page: Page, route: string): Promise<void> {
 
 /**
  * Switch the theme through the real account-menu path (mirrors theme.spec) so the whole
- * `--od-*` cascade is applied exactly as in production — forcing `data-theme` from JS can
+ * `--od-*` cascade is applied exactly as in production — forcing `data-mode` from JS can
  * leave a half-applied frame that axe reads as spurious contrast failures. The choice is
  * persisted + mirrored to localStorage, so subsequent full navigations stay on it.
  */
@@ -90,12 +90,12 @@ test.describe('a11y — app chrome, Inbox, Today, Upcoming', () => {
     await ensureSeed(page)
     await gotoRendered(page, '/today')
     await setTheme(page, 'Dark')
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+    await expect(page.locator('html')).toHaveAttribute('data-mode', 'dark')
     try {
       for (const route of VIEWS) {
         await gotoRendered(page, route)
         // The head script re-applies the persisted choice before React mounts.
-        await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+        await expect(page.locator('html')).toHaveAttribute('data-mode', 'dark')
         await settle(page)
         // Full shared gate incl. colour-contrast: Task O lifted dark --od-text-tertiary to
         // #a0a0a0 and dark --od-on-accent to #1e1e1e, the two dark token shortfalls that
@@ -106,7 +106,7 @@ test.describe('a11y — app chrome, Inbox, Today, Upcoming', () => {
       // Never leave the shared user on dark — sibling specs assert light colours.
       await gotoRendered(page, '/today')
       await setTheme(page, 'System')
-      await expect(page.locator('html')).not.toHaveAttribute('data-theme')
+      await expect(page.locator('html')).not.toHaveAttribute('data-mode')
     }
   })
 
