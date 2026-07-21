@@ -113,6 +113,7 @@ export function TodayView() {
                 <GroupedTaskList
                   groups={pipelineGroups(todayTasks, prefs, filterCtx, filterCtx.projects)}
                   showProject
+                  hideDueChipWhen={today}
                   emptyText="No tasks due today."
                 />
               ) : todayTasks.length === 0 ? (
@@ -122,7 +123,7 @@ export function TodayView() {
                   description="Enjoy the calm, or press Q to plan something."
                 />
               ) : (
-                <TaskList tasks={todayTasks} groupId="today" showProject />
+                <TaskList tasks={todayTasks} groupId="today" showProject hideDueChipWhen={today} />
               )}
               <AddTaskRow context={{ dueDate: today }} />
             </section>

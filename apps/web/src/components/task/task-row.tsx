@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import { CalendarDays, ChevronDown, ChevronRight, Ellipsis, Pen } from 'lucide-react'
+import { CalendarDays, ChevronDown, ChevronRight, Ellipsis, GripVertical, Pen } from 'lucide-react'
 import { type CSSProperties, type MouseEvent, type ReactNode, useRef } from 'react'
 import { useTaskMutations } from '@/api/hooks/tasks'
 import type { Task } from '@/api/schemas'
@@ -16,6 +16,8 @@ export interface TaskRowProps {
   showProject?: boolean
   depth?: number
   sortable?: boolean
+  /** ISO date implied by the surrounding view — a matching due chip is suppressed (see TaskMeta). */
+  hideDueChipWhen?: string
   /**
    * Tree-mode collapse control. `undefined` = not in a tree (no chevron gutter);
    * `null` = a tree leaf (reserve the gutter so siblings stay aligned);
@@ -27,6 +29,7 @@ export interface TaskRowProps {
 type SortableReturn = ReturnType<typeof useSortable>
 interface RowDrag {
   setNodeRef: SortableReturn['setNodeRef']
+  attributes: SortableReturn['attributes']
   listeners: SortableReturn['listeners']
   style: CSSProperties
   isDragging: boolean
@@ -60,6 +63,7 @@ function RowView({
   task,
   showProject,
   depth = 0,
+  hideDueChipWhen,
   collapse,
   drag,
 }: TaskRowProps & { drag?: RowDrag }) {
@@ -114,7 +118,6 @@ function RowView({
       data-focused={focused || undefined}
       data-selected={selected || undefined}
       style={{ paddingLeft: 5 + depth * 24, ...(drag?.style ?? {}) }}
-      {...(drag?.listeners ?? {})}
       className={cn(
         'group/row relative flex min-h-[42px] items-start gap-1.5 rounded-sm border-border-subtle border-b py-2 pr-[38px]',
         focused && 'bg-[var(--od-row-focus-bg)] shadow-[inset_0_0_0_1px_var(--od-row-focus-ring)]',
@@ -122,6 +125,20 @@ function RowView({
         drag?.isDragging && 'z-10 opacity-60 shadow-drag',
       )}
     >
+      {/* 6-dot manual-reorder grip (dossier §2.9): only the handle carries the drag listeners,
+          so the row's own clicks/keyboard stay ordinary. Present only on sortable rows. */}
+      {drag !== undefined && (
+        <button
+          type="button"
+          aria-label="Reorder task"
+          className="-ml-1 mt-0.5 flex size-4 shrink-0 cursor-grab touch-none items-center justify-center rounded-sm text-text-tertiary opacity-0 transition-opacity hover:text-text-primary focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)] active:cursor-grabbing group-hover/row:opacity-100 group-focus-within/row:opacity-100"
+          {...drag.attributes}
+          {...drag.listeners}
+        >
+          <GripVertical size={16} aria-hidden="true" />
+        </button>
+      )}
+
       {collapse !== undefined &&
         (collapse ? (
           <button
@@ -169,7 +186,7 @@ function RowView({
         {description !== '' && (
           <p className="truncate text-copy text-text-secondary">{description}</p>
         )}
-        <TaskMeta task={task} showProject={showProject} />
+        <TaskMeta task={task} showProject={showProject} hideDueChipWhen={hideDueChipWhen} />
       </div>
 
       <div
@@ -197,11 +214,12 @@ function RowView({
 }
 
 function SortableRow(props: TaskRowProps) {
-  const { listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: props.task.id,
   })
   const drag: RowDrag = {
     setNodeRef,
+    attributes,
     listeners,
     style: { transform: CSS.Transform.toString(transform), transition },
     isDragging,

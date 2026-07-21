@@ -6,7 +6,7 @@ import { SEL, seedTasks } from '../helpers'
  *   1. Today group-by is persisted per `viewKey('today')` and survives a reload.
  *   2. Toggling "show completed" in a (project) view reveals its completed tasks.
  *
- * The menu trigger is `aria-label="Display options"`; each control carries a stable
+ * The menu trigger is the "Display" text button; each control carries a stable
  * aria-label (Group by / Sort by / Show completed tasks). Runs against the shared dev DB,
  * so each test resets the prefs it changed. Task X runs this suite.
  */
@@ -15,7 +15,7 @@ test.describe('Display menu', () => {
     await page.goto('/today')
     await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible()
 
-    await page.getByRole('button', { name: 'Display options' }).click()
+    await page.getByRole('button', { name: 'Display' }).click()
     await page.getByLabel('Group by').click()
     await page.getByRole('option', { name: 'Priority', exact: true }).click()
     // The trigger now reflects the choice and the "customized" dot appears.
@@ -23,7 +23,7 @@ test.describe('Display menu', () => {
 
     await page.reload()
     await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible()
-    await page.getByRole('button', { name: 'Display options' }).click()
+    await page.getByRole('button', { name: 'Display' }).click()
     await expect(page.getByLabel('Group by')).toContainText('Priority')
 
     // Leave defaults for the shared DB / other specs.
@@ -43,7 +43,7 @@ test.describe('Display menu', () => {
     // Completing removes it from the active list.
     await expect(row).toBeHidden()
 
-    await page.getByRole('button', { name: 'Display options' }).click()
+    await page.getByRole('button', { name: 'Display' }).click()
     await page.getByLabel('Show completed tasks').click()
     // Close the popover to inspect the view body.
     await page.keyboard.press('Escape')
@@ -52,7 +52,7 @@ test.describe('Display menu', () => {
     await expect(page.getByText(content)).toBeVisible()
 
     // Reset show-completed off.
-    await page.getByRole('button', { name: 'Display options' }).click()
+    await page.getByRole('button', { name: 'Display' }).click()
     await page.getByRole('button', { name: 'Reset to default' }).click()
   })
 })

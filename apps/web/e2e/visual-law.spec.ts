@@ -53,13 +53,15 @@ test('keyboard focus ring is a solid, instantly-blue 2px outline on outline-none
   expect((await outlineParts(search)).color).toBe(FOCUS_BLUE)
 
   // The three surfaces the review measured as broken ('2px none'): sidebar Add task,
-  // a sidebar nav link, and the topbar search button. Sampled immediately after Tab —
+  // the sidebar Search button, and a sidebar nav link. Sampled immediately after Tab —
   // width/style don't transition, and color is pre-pinned, so there is no settle window.
+  // Order matches the sidebar tab order (Add task → mic → Search → nav) so the forward-only
+  // tabTo walk reaches each in turn (Views & Chrome pass relocated Search into the sidebar).
   const sidebar = page.locator(SEL.sidebar)
   const surfaces: Locator[] = [
     sidebar.getByRole('button', { name: 'Add task' }),
-    page.locator('a[href="/inbox"]'),
     search,
+    page.locator('a[href="/inbox"]'),
   ]
   for (const surface of surfaces) {
     await tabTo(page, surface)

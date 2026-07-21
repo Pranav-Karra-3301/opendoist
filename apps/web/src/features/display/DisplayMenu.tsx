@@ -16,7 +16,15 @@ import {
   type ViewGroupBy,
   type ViewSortBy,
 } from '@opendoist/core'
-import { ArrowDownWideNarrow, ArrowUpNarrowWide, SlidersHorizontal } from 'lucide-react'
+import {
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
+  CalendarDays,
+  Columns3,
+  List,
+  type LucideIcon,
+  SlidersHorizontal,
+} from 'lucide-react'
 import { type ReactNode, useMemo } from 'react'
 import { useLabels } from '@/api/hooks/labels'
 import { useProjects } from '@/api/hooks/projects'
@@ -53,10 +61,13 @@ export function GroupedTaskList({
   groups,
   showProject,
   emptyText,
+  hideDueChipWhen,
 }: {
   groups: RenderGroup[]
   showProject?: boolean
   emptyText?: string
+  /** ISO date implied by the surrounding view — rows suppress a matching due chip (see TaskMeta). */
+  hideDueChipWhen?: string
 }) {
   const total = groups.reduce((n, g) => n + g.tasks.length, 0)
   if (total === 0) {
@@ -72,7 +83,12 @@ export function GroupedTaskList({
                 {g.label}
               </h3>
             )}
-            <TaskList tasks={g.tasks} groupId={`grp-${g.key}`} showProject={showProject} />
+            <TaskList
+              tasks={g.tasks}
+              groupId={`grp-${g.key}`}
+              showProject={showProject}
+              hideDueChipWhen={hideDueChipWhen}
+            />
           </section>
         ),
       )}
@@ -101,14 +117,55 @@ const PRIORITY_ITEMS: Record<string, string> = {
   '3': 'Priority 3',
   '4': 'Priority 4',
 }
-const DUE_ITEMS: Record<string, string> = {
-  any: 'Any',
-  'has-date': 'Has date',
-  'no-date': 'No date',
-  overdue: 'Overdue',
-}
 /** Sentinel for the "no label filter" option; distinct from any real (non-empty) label name. */
 const ANY_LABEL = '__all__'
+
+/**
+ * The three layouts shown in the reference Display popover. List is the only shipped layout;
+ * Board and Calendar are v1 non-goals, so they render disabled with a "Soon" affordance
+ * (Global Constraints — Board/Calendar are shown-but-disabled, List is the only active layout).
+ */
+const LAYOUTS: { key: string; label: string; icon: LucideIcon; soon: boolean }[] = [
+  { key: 'list', label: 'List', icon: List, soon: false },
+  { key: 'board', label: 'Board', icon: Columns3, soon: true },
+  { key: 'calendar', label: 'Calendar', icon: CalendarDays, soon: true },
+]
+
+/** One cell of the Layout segmented control. `active` = the current layout; `soon` = disabled. */
+function LayoutSegment({
+  icon: Icon,
+  label,
+  active,
+  soon,
+}: {
+  icon: LucideIcon
+  label: string
+  active: boolean
+  soon: boolean
+}) {
+  return (
+    <button
+      type="button"
+      disabled={soon}
+      aria-pressed={active}
+      className={cn(
+        'flex flex-col items-center gap-1 rounded-sm border px-1 py-2 text-caption transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]',
+        active
+          ? 'border-accent bg-accent-soft font-medium text-accent'
+          : 'border-border text-text-tertiary',
+        soon ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-hover',
+      )}
+    >
+      <Icon size={18} strokeWidth={1.75} aria-hidden />
+      <span>{label}</span>
+      {soon && (
+        <span className="rounded-xs bg-hover px-1 font-medium text-[10px] text-text-tertiary uppercase leading-4 tracking-wide">
+          Soon
+        </span>
+      )}
+    </button>
+  )
+}
 
 function MenuRow({ label, control }: { label: string; control: ReactNode }) {
   return (
@@ -138,23 +195,54 @@ export default function DisplayMenu({
 
   return (
     <Popover>
-      <PopoverTrigger
-        aria-label="Display options"
-        className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'relative')}
-      >
-        <SlidersHorizontal size={20} strokeWidth={1.75} aria-hidden />
+      <PopoverTrigger className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'relative')}>
+        <SlidersHorizontal size={16} strokeWidth={1.75} aria-hidden />
+        Display
         {customized && (
           <span
             aria-hidden
-            className="absolute top-1 right-1 size-1.5 rounded-full bg-accent"
+            className="absolute top-0.5 right-0.5 size-1.5 rounded-full bg-accent"
             data-testid="display-dot"
           />
         )}
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80">
+      <PopoverContent align="end" className="w-80" style={{ boxShadow: 'var(--shadow-menu)' }}>
         <div className="flex flex-col">
+          <fieldset className="min-w-0">
+            <legend className="pb-1.5 font-medium text-caption text-text-secondary">Layout</legend>
+            <div className="grid grid-cols-3 gap-1.5">
+              {LAYOUTS.map((l) => (
+                <LayoutSegment
+                  key={l.key}
+                  icon={l.icon}
+                  label={l.label}
+                  active={l.key === 'list'}
+                  soon={l.soon}
+                />
+              ))}
+            </div>
+          </fieldset>
+
+          {showCompletedAvailable && (
+            <>
+              <div className="my-2 h-px bg-border" />
+              <MenuRow
+                label="Show completed"
+                control={
+                  <Switch
+                    checked={prefs.showCompleted}
+                    onCheckedChange={(c) => setPrefs({ showCompleted: c })}
+                    aria-label="Show completed tasks"
+                  />
+                }
+              />
+            </>
+          )}
+
+          <div className="my-2 h-px bg-border" />
+
           <MenuRow
-            label="Group by"
+            label="Grouping"
             control={
               <Select
                 items={GROUP_ITEMS}
@@ -178,7 +266,7 @@ export default function DisplayMenu({
           />
 
           <MenuRow
-            label="Sort by"
+            label="Sorting"
             control={
               <div className="flex items-center gap-1">
                 <Select
@@ -272,51 +360,6 @@ export default function DisplayMenu({
               </Select>
             }
           />
-
-          <MenuRow
-            label="Due"
-            control={
-              <Select
-                items={DUE_ITEMS}
-                value={prefs.filterBy.due ?? 'any'}
-                onValueChange={(v) =>
-                  setPrefs({
-                    filterBy: {
-                      ...prefs.filterBy,
-                      due: v && v !== 'any' ? (v as 'has-date' | 'no-date' | 'overdue') : null,
-                    },
-                  })
-                }
-              >
-                <SelectTrigger className="w-36" aria-label="Filter by due date">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.keys(DUE_ITEMS).map((k) => (
-                    <SelectItem key={k} value={k}>
-                      {DUE_ITEMS[k]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            }
-          />
-
-          {showCompletedAvailable && (
-            <>
-              <div className="my-2 h-px bg-border" />
-              <MenuRow
-                label="Show completed"
-                control={
-                  <Switch
-                    checked={prefs.showCompleted}
-                    onCheckedChange={(c) => setPrefs({ showCompleted: c })}
-                    aria-label="Show completed tasks"
-                  />
-                }
-              />
-            </>
-          )}
 
           <div className="mt-3 flex justify-end">
             <button

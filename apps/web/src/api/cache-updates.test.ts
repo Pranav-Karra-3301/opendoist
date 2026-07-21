@@ -91,6 +91,39 @@ describe('applyClose', () => {
     expect(out[0]?.due?.recurrence).not.toBeNull()
   })
 
+  it('removes a completed parent AND its whole subtree (mirrors the server close cascade)', () => {
+    const tasks = [
+      task({ id: 'root' }),
+      task({ id: 'child', parent_id: 'root' }),
+      task({ id: 'grandchild', parent_id: 'child' }),
+      task({ id: 'other' }),
+    ]
+    // The server close route completes the whole open subtree; the optimistic cache must match so
+    // buildTaskTree never promotes an orphaned child to a top-level root (the subtasks glitch).
+    expect(applyClose(tasks, 'root', ctx).map((t) => t.id)).toEqual(['other'])
+  })
+
+  it('removes only the completed leaf subtask, leaving its parent and siblings', () => {
+    const tasks = [
+      task({ id: 'p' }),
+      task({ id: 'a', parent_id: 'p' }),
+      task({ id: 'b', parent_id: 'p' }),
+    ]
+    expect(applyClose(tasks, 'a', ctx).map((t) => t.id)).toEqual(['p', 'b'])
+  })
+
+  it('advances a recurring parent and keeps its subtree (no cascade on the advance branch)', () => {
+    const tasks = [
+      task({ id: 'r', due: everyDayDue('2026-07-16') }),
+      task({ id: 'kid', parent_id: 'r' }),
+    ]
+    const out = applyClose(tasks, 'r', ctx)
+    // A recurring occurrence advances (the server does not complete children here), so the child
+    // must stay put — the cascade applies only to a final completion.
+    expect(out.map((t) => t.id)).toEqual(['r', 'kid'])
+    expect(out.find((t) => t.id === 'r')?.due?.date).toBe('2026-07-17')
+  })
+
   it('removes a recurring task whose series has ended (past `until`)', () => {
     const rec = parseRecurrenceText('every day', ctx)
     if (rec === null) throw new Error('expected "every day" to parse')

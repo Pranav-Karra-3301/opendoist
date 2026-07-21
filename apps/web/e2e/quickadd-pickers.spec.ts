@@ -81,13 +81,6 @@ function expectAnchored(picker: Box, anchor: Box, vp: { width: number; height: n
 }
 
 test.describe('Quick Add chip pickers', () => {
-  test('one-line syntax hint teaches the tokens under the composer', async ({ page }) => {
-    await openWith(page, 'buy milk')
-    // The "# project · @ label …" lead-in is unique to the Task-F syntax hint caption (the sr-only
-    // dialog description mentions "#projects" but never "# project").
-    await expect(dialog(page).getByText('# project · @ label', { exact: false })).toBeVisible()
-  })
-
   test('deadline picker opens anchored to its chip and a day pick writes a {date} token', async ({
     page,
   }) => {

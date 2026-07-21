@@ -23,10 +23,58 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { endpoints } from './client'
 import { qk } from './keys'
-import { SseEventSchema } from './schemas'
+import { type SseEvent, SseEventSchema } from './schemas'
 
 /** Coalesce bursts of same-entity events into one refetch. */
 const DEBOUNCE_MS = 250
+
+/** A single cache to invalidate for one SSE frame, plus its debounce/dedupe key. */
+interface SseInvalidation {
+  dedupeKey: string
+  queryKey: readonly unknown[]
+}
+
+/**
+ * Map an SSE `sync` frame (entity + affected ids) to the ONE query cache it should invalidate,
+ * or `null` when the frame targets no cache we hold. Pure so the routing is unit-testable in the
+ * node test env (the hook itself needs a DOM + EventSource we don't rig).
+ *
+ * INVARIANT (reminders-dup guard): a `reminders` frame invalidates `qk.reminders` and NEVER
+ * `qk.tasks`. Reminders are not joined into the task list, so a reminder write must never trigger
+ * a task refetch — that is the only path by which "adding a reminder" could surface a task twice.
+ */
+export function sseInvalidationTarget(
+  entity: SseEvent['entity'],
+  ids: readonly string[],
+): SseInvalidation | null {
+  switch (entity) {
+    case 'task':
+      return { dedupeKey: 'task', queryKey: qk.tasks }
+    case 'project':
+      return { dedupeKey: 'project', queryKey: qk.projects }
+    case 'section':
+      return { dedupeKey: 'section', queryKey: qk.sections }
+    case 'label':
+      return { dedupeKey: 'label', queryKey: qk.labels }
+    case 'comment': {
+      const taskId = ids[0]
+      return taskId === undefined
+        ? null
+        : { dedupeKey: `comment:${taskId}`, queryKey: qk.comments(taskId) }
+    }
+    case 'settings':
+      return { dedupeKey: 'settings', queryKey: qk.userSettings }
+    case 'filter':
+      // No phase-4 consumer; phase 5 adds the ['filters'] key.
+      return null
+    case 'reminders':
+      return { dedupeKey: 'reminders', queryKey: qk.reminders }
+    case 'push_subscriptions':
+      return { dedupeKey: 'push_subscriptions', queryKey: qk.pushSubscriptions }
+    case 'notification_channels':
+      return { dedupeKey: 'notification_channels', queryKey: qk.channels }
+  }
+}
 
 /** Reconnect backoff: full-jitter exponential, `delay = random(0, min(CAP, BASE * FACTOR ** attempt))`. */
 const BACKOFF_BASE_MS = 1_000
@@ -71,40 +119,8 @@ export function useSseInvalidation(): void {
       const parsed = SseEventSchema.safeParse(raw)
       if (!parsed.success) return
       const { entity, ids } = parsed.data
-      switch (entity) {
-        case 'task':
-          invalidate('task', qk.tasks)
-          break
-        case 'project':
-          invalidate('project', qk.projects)
-          break
-        case 'section':
-          invalidate('section', qk.sections)
-          break
-        case 'label':
-          invalidate('label', qk.labels)
-          break
-        case 'comment': {
-          const taskId = ids[0]
-          if (taskId !== undefined) invalidate(`comment:${taskId}`, qk.comments(taskId))
-          break
-        }
-        case 'settings':
-          invalidate('settings', qk.userSettings)
-          break
-        case 'filter':
-          // No phase-4 consumer; phase 5 adds the ['filters'] key.
-          break
-        case 'reminders':
-          invalidate('reminders', qk.reminders)
-          break
-        case 'push_subscriptions':
-          invalidate('push_subscriptions', qk.pushSubscriptions)
-          break
-        case 'notification_channels':
-          invalidate('notification_channels', qk.channels)
-          break
-      }
+      const target = sseInvalidationTarget(entity, ids)
+      if (target !== null) invalidate(target.dedupeKey, target.queryKey)
     }
 
     function onOpen(): void {

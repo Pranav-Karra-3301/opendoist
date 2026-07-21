@@ -46,10 +46,33 @@ function mergePatch(task: Task, patch: TaskPatch): Task {
 }
 
 /**
+ * Every id in the subtree rooted at `id` — the task itself plus every descendant, transitively
+ * (the same closure the server walks when it cascades a delete/complete over a subtree).
+ */
+function subtreeIds(tasks: Task[], id: string): Set<string> {
+  const ids = new Set<string>([id])
+  for (;;) {
+    let grew = false
+    for (const t of tasks) {
+      if (!ids.has(t.id) && t.parent_id !== null && ids.has(t.parent_id)) {
+        ids.add(t.id)
+        grew = true
+      }
+    }
+    if (!grew) break
+  }
+  return ids
+}
+
+/**
  * Complete task `id`. A recurring due (recurrence non-null) advances to its next occurrence —
- * keeping the natural-language `string` and the `recurrence` spec — and stays in the list. A
- * non-recurring task, or a recurring series that has ended (nextOccurrence → null past `until`),
- * is completed and dropped from the active-tasks cache.
+ * keeping the natural-language `string` and the `recurrence` spec — and stays in the list (the
+ * server does not complete its children on an advance, so neither do we). A non-recurring task,
+ * or a recurring series that has ended (nextOccurrence → null past `until`), is completed AND its
+ * whole open subtree is dropped from the active-tasks cache — mirroring the server close route,
+ * which closes every open descendant. Dropping only the parent would leave orphaned subtasks in
+ * the cache, and buildTaskTree promotes an orphan (parent absent) to a top-level root, so the
+ * subtasks would visibly jump to the top of the list on parent completion.
  */
 export function applyClose(tasks: Task[], id: string, ctx: ParseContext): Task[] {
   const task = tasks.find((t) => t.id === id)
@@ -64,7 +87,8 @@ export function applyClose(tasks: Task[], id: string, ctx: ParseContext): Task[]
       return tasks.map((t) => (t.id === id ? { ...t, due: advanced } : t))
     }
   }
-  return tasks.filter((t) => t.id !== id)
+  const closed = subtreeIds(tasks, id)
+  return tasks.filter((t) => !closed.has(t.id))
 }
 
 /** Inverse of a completion for a task still present in the cache (best-effort; the reopen
@@ -75,17 +99,7 @@ export function applyReopen(tasks: Task[], id: string): Task[] {
 
 /** Drop task `id` and its entire subtree (soft-delete removes descendants from the active list). */
 export function applyRemove(tasks: Task[], id: string): Task[] {
-  const removed = new Set<string>([id])
-  for (;;) {
-    let grew = false
-    for (const t of tasks) {
-      if (!removed.has(t.id) && t.parent_id !== null && removed.has(t.parent_id)) {
-        removed.add(t.id)
-        grew = true
-      }
-    }
-    if (!grew) break
-  }
+  const removed = subtreeIds(tasks, id)
   return tasks.filter((t) => !removed.has(t.id))
 }
 

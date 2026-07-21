@@ -1,22 +1,32 @@
 import { Link } from '@tanstack/react-router'
 import {
   Activity,
+  Bell,
   CalendarCheck,
   CalendarDays,
+  CircleHelp,
   Filter,
   Inbox,
   type LucideIcon,
+  PanelLeft,
   Plus,
+  Search,
 } from 'lucide-react'
 import { type PointerEvent as ReactPointerEvent, useState } from 'react'
+import { buttonVariants } from '@/components/ui/button'
 import { useUserSettings } from '@/features/settings/useSettings'
 import { cn } from '@/lib/utils'
+import { ProductivityPopover } from '@/productivity/ProductivityPopover'
+import { RambleButton } from '@/ramble/RambleButton'
 import { useUiStore } from '@/stores/ui'
 import { useViewCounts } from './counts'
 import { isNavVisible } from './sidebar-nav'
 import { SidebarProjects } from './sidebar-projects'
+import { UserMenu } from './user-menu'
 
 const SIDEBAR_DEFAULT = 280
+
+const isMac = typeof navigator !== 'undefined' && /mac/i.test(navigator.userAgent)
 
 const NAV_LINK_CLASS =
   'flex h-8 items-center gap-2 rounded-sm px-[5px] text-body outline-none transition-colors focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-focus-ring'
@@ -94,6 +104,9 @@ export function Sidebar() {
   const width = useUiStore((s) => s.sidebarWidth)
   const setSidebarWidth = useUiStore((s) => s.setSidebarWidth)
   const setQuickAddOpen = useUiStore((s) => s.setQuickAddOpen)
+  const toggleSidebar = useUiStore((s) => s.toggleSidebar)
+  const setPaletteOpen = useUiStore((s) => s.setPaletteOpen)
+  const setShortcutOverlayOpen = useUiStore((s) => s.setShortcutOverlayOpen)
   const [dragging, setDragging] = useState(false)
   const counts = useViewCounts()
   const { settings } = useUserSettings()
@@ -115,18 +128,73 @@ export function Sidebar() {
         style={{ width }}
         className="flex h-full flex-col transition-transform duration-300 ease-standard group-data-[collapsed=true]/sidebar:-translate-x-full"
       >
-        <div className="px-2 pt-3">
+        {/* Former top-bar chrome, relocated here (Views & Chrome pass): account menu +
+            notifications + productivity + shortcuts + collapse on the top row, then the
+            red Add task with the Ramble mic beside it, then Search. */}
+        <header className="flex flex-col gap-2 px-2 pt-2.5">
+          <div className="flex items-center gap-0.5">
+            <UserMenu />
+            <div className="flex-1" />
+            <Link
+              to="/settings/$page"
+              params={{ page: 'notifications' }}
+              aria-label="Notifications"
+              title="Notifications"
+              className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
+            >
+              <Bell size={20} strokeWidth={1.75} aria-hidden="true" />
+            </Link>
+            <ProductivityPopover />
+            <button
+              type="button"
+              onClick={() => setShortcutOverlayOpen(true)}
+              aria-label="Keyboard shortcuts"
+              title="Keyboard shortcuts · ?"
+              className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
+            >
+              <CircleHelp size={20} strokeWidth={1.75} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              aria-label="Toggle sidebar"
+              title="Toggle sidebar · M"
+              className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
+            >
+              <PanelLeft size={20} strokeWidth={1.75} aria-hidden="true" />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setQuickAddOpen(true)}
+              className="flex h-8 flex-1 items-center gap-2 rounded-sm px-[5px] font-medium text-accent text-body outline-none transition-colors hover:bg-sidebar-hover focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            >
+              <span className="grid size-5 shrink-0 place-items-center rounded-full bg-accent text-on-accent">
+                <Plus size={14} strokeWidth={2.5} aria-hidden="true" />
+              </span>
+              Add task
+            </button>
+            <RambleButton />
+          </div>
+
           <button
             type="button"
-            onClick={() => setQuickAddOpen(true)}
-            className="flex h-8 w-full items-center gap-2 rounded-sm px-[5px] font-medium text-accent text-body outline-none transition-colors hover:bg-sidebar-hover focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            onClick={() => setPaletteOpen(true)}
+            aria-label="Search"
+            className="flex h-8 w-full items-center gap-2 rounded-sm px-[5px] text-copy text-text-secondary outline-none transition-colors hover:bg-sidebar-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           >
-            <span className="grid size-5 shrink-0 place-items-center rounded-full bg-accent text-on-accent">
-              <Plus size={14} strokeWidth={2.5} aria-hidden="true" />
-            </span>
-            Add task
+            <Search size={16} aria-hidden="true" />
+            <span className="flex-1 text-left">Search</span>
+            <kbd className="rounded-xs border border-border px-1 font-sans text-caption text-text-tertiary">
+              {isMac ? '⌘K' : 'Ctrl K'}
+            </kbd>
           </button>
-          <nav aria-label="Projects and views" className="mt-1 flex flex-col gap-px">
+        </header>
+
+        <div className="px-2 pt-2">
+          <nav aria-label="Projects and views" className="flex flex-col gap-px">
             {isNavVisible('inbox', sidebar) && (
               <Link
                 to="/inbox"

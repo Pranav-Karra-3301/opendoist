@@ -3,12 +3,44 @@ import { CalendarDays, Clock, Flag, Repeat, Tag } from 'lucide-react'
 import { useLabels } from '@/api/hooks/labels'
 import { useProjects } from '@/api/hooks/projects'
 import type { Task } from '@/api/schemas'
-import { DUE_TONE_VAR, formatDueChip } from '@/lib/format-date'
+import { DUE_TONE_VAR, type DueTone, formatDueChip } from '@/lib/format-date'
 import { useParseCtx } from '@/lib/parse-context'
 
 export interface TaskMetaProps {
   task: Task
   showProject?: boolean
+  /**
+   * ISO date implied by the surrounding view (Today → today; an Upcoming day → that day).
+   * A due chip whose date matches it is redundant with the view's own heading, so it is
+   * suppressed — the time (if any) still shows; overdue/other-day dates always show.
+   */
+  hideDueChipWhen?: string
+}
+
+/**
+ * The due chip to paint, with the view's implied date suppressed: when `due.date` equals
+ * `hideDueChipWhen` the redundant date word is dropped — a timed due keeps just its time
+ * (`Today 4pm` → `4pm`), an all-day due hides entirely (null). Every other due (overdue,
+ * another day, or no implied date) renders the normal {@link formatDueChip} label. Pure so
+ * it is unit-tested directly.
+ */
+export function contextualDueChip(
+  due: { date: string; time: string | null },
+  todayIso: string,
+  hideDueChipWhen: string | undefined,
+): { label: string; tone: DueTone } | null {
+  const chip = formatDueChip(due, todayIso)
+  if (hideDueChipWhen === undefined || due.date !== hideDueChipWhen) return chip
+  if (due.time === null) return null
+  // format-date's `timeLabel` isn't exported (and format-date.ts is out of this file set),
+  // so recover the time-only suffix from the two canonical chips instead of duplicating the
+  // formatter: the full label joins date + time with a single space (`Today 4pm`), so the
+  // time starts one char past the date-only label (`Today`).
+  const dateOnly = formatDueChip({ date: due.date, time: null }, todayIso).label
+  const timeOnly = chip.label.startsWith(`${dateOnly} `)
+    ? chip.label.slice(dateOnly.length + 1)
+    : chip.label
+  return { label: timeOnly, tone: chip.tone }
 }
 
 /** `berry_red` → `var(--od-palette-berry-red)`; unknown/blank falls back to grey. */
@@ -29,7 +61,7 @@ function durationLabel(minutes: number): string {
  * — a right-aligned project breadcrumb with its color dot. Renders nothing when the task
  * carries no metadata so rows stay one line.
  */
-export function TaskMeta({ task, showProject }: TaskMetaProps) {
+export function TaskMeta({ task, showProject, hideDueChipWhen }: TaskMetaProps) {
   const ctx = useParseCtx()
   const today = dateInTz(ctx.now, ctx.timezone)
   const projects = useProjects().data
@@ -37,26 +69,25 @@ export function TaskMeta({ task, showProject }: TaskMetaProps) {
 
   const due = task.due
   const project = showProject ? projects?.find((p) => p.id === task.project_id) : undefined
+  const dueChip = due === null ? null : contextualDueChip(due, today, hideDueChipWhen)
   const hasMeta =
-    due !== null ||
+    dueChip !== null ||
     task.deadline_date !== null ||
     task.duration_min !== null ||
     task.labels.length > 0 ||
     project !== undefined
   if (!hasMeta) return null
 
-  const dueChip = due === null ? null : formatDueChip(due, today)
-
   return (
     <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-caption text-text-tertiary">
-      {due !== null && dueChip !== null && (
+      {dueChip !== null && (
         <span
           className="flex items-center gap-1"
           style={{ color: `var(${DUE_TONE_VAR[dueChip.tone]})` }}
         >
           <CalendarDays size={16} strokeWidth={2} />
           {dueChip.label}
-          {due.recurrence !== null && <Repeat size={12} strokeWidth={2} />}
+          {due?.recurrence != null && <Repeat size={12} strokeWidth={2} />}
         </span>
       )}
       {task.deadline_date !== null && (

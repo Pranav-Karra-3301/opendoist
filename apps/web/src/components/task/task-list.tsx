@@ -15,6 +15,8 @@ export interface TaskListProps {
   showProject?: boolean
   tree?: boolean
   sortable?: boolean
+  /** ISO date implied by the surrounding view — rows suppress a matching due chip (see TaskMeta). */
+  hideDueChipWhen?: string
 }
 
 type TaskRowSpec = { task: Task; depth: number }
@@ -55,6 +57,7 @@ function renderTaskRow(
     parentIds: Set<string | null> | null
     showProject: boolean | undefined
     sortable: boolean | undefined
+    hideDueChipWhen: string | undefined
     update: UpdateMutation
   },
 ) {
@@ -79,6 +82,7 @@ function renderTaskRow(
       depth={depth}
       showProject={opts.showProject}
       sortable={opts.sortable}
+      hideDueChipWhen={opts.hideDueChipWhen}
       collapse={collapse}
     />
   )
@@ -101,6 +105,7 @@ export function TaskList({
   showProject,
   tree,
   sortable,
+  hideDueChipWhen,
 }: TaskListProps) {
   const { update } = useTaskMutations()
 
@@ -133,13 +138,14 @@ export function TaskList({
         tree={tree}
         parentIds={parentIds}
         showProject={showProject}
+        hideDueChipWhen={hideDueChipWhen}
         update={update}
       />
     )
   }
 
   const rendered = rows.map((row) =>
-    renderTaskRow(row, { tree, parentIds, showProject, sortable, update }),
+    renderTaskRow(row, { tree, parentIds, showProject, sortable, hideDueChipWhen, update }),
   )
 
   if (sortable) {
@@ -173,12 +179,14 @@ function VirtualTaskList({
   tree,
   parentIds,
   showProject,
+  hideDueChipWhen,
   update,
 }: {
   rows: TaskRowSpec[]
   tree: boolean | undefined
   parentIds: Set<string | null> | null
   showProject: boolean | undefined
+  hideDueChipWhen: string | undefined
   update: UpdateMutation
 }) {
   const parentRef = useRef<HTMLDivElement>(null)
@@ -236,7 +244,14 @@ function VirtualTaskList({
               transform: `translateY(${item.start - scrollMargin}px)`,
             }}
           >
-            {renderTaskRow(row, { tree, parentIds, showProject, sortable: false, update })}
+            {renderTaskRow(row, {
+              tree,
+              parentIds,
+              showProject,
+              sortable: false,
+              hideDueChipWhen,
+              update,
+            })}
           </div>
         )
       })}

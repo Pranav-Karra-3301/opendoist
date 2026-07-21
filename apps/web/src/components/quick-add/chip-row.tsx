@@ -403,37 +403,30 @@ export function ChipRow({ text, parsed, activeTokens, ctx, onEdit }: ChipRowProp
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
-        {visible.map((chip) => (
-          <Fragment key={chip.id}>{CHIP_RENDERERS[chip.id](rc)}</Fragment>
-        ))}
-        <ProjectChip rc={rc} />
-        {hidden.length > 0 && (
-          <Popover>
-            <PopoverTrigger
-              aria-label="More Quick Add options"
-              className={cn(chipBase, 'text-text-secondary')}
-            >
-              <Ellipsis size={12} aria-hidden />
-            </PopoverTrigger>
-            <PopoverContent align="start" className="w-auto max-w-xs p-2">
-              <div className="flex flex-wrap items-center gap-2">
-                {hidden.map((chip) => (
-                  <Fragment key={chip.id}>
-                    {CHIP_RENDERERS[chip.id]({ ...rc, labeled: true })}
-                  </Fragment>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-        )}
-      </div>
-      {/* One-line syntax hint (plan Task F): teaches the raw tokens under the composer instead of
-          dumping sigils into the input. The chip row only renders inside the open/focused composer. */}
-      <p className="text-caption text-text-tertiary">
-        {'# project · @ label · p1–p4 · {deadline} · !reminder · for 45min'}
-      </p>
+    <div className="flex flex-wrap items-center gap-2">
+      {visible.map((chip) => (
+        <Fragment key={chip.id}>{CHIP_RENDERERS[chip.id](rc)}</Fragment>
+      ))}
+      <ProjectChip rc={rc} />
+      {hidden.length > 0 && (
+        <Popover>
+          <PopoverTrigger
+            aria-label="More Quick Add options"
+            className={cn(chipBase, 'text-text-secondary')}
+          >
+            <Ellipsis size={12} aria-hidden />
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-auto max-w-xs p-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {hidden.map((chip) => (
+                <Fragment key={chip.id}>
+                  {CHIP_RENDERERS[chip.id]({ ...rc, labeled: true })}
+                </Fragment>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
     </div>
   )
 }
