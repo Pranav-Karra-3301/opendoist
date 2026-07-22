@@ -150,6 +150,7 @@ describe('ParsedQuickAddSchema', () => {
         string: 'tom 4pm',
         recurrence: null,
       },
+      dueDateCertain: true,
       durationMin: 45,
       deadline: { date: '2026-07-30', time: null },
       priority: 1 as const,

@@ -1,11 +1,12 @@
 import { type ParseContext, parseQuickAdd } from '@opendoist/core'
 import { describe, expect, it } from 'vitest'
-import { initialTextFromContext } from './inline-composer'
+import { applyComposerContext, composerSubmitText, parseState } from './quick-add-model'
 
-// The composer expresses its list-row context AS TEXT (text stays the single source of truth), so
-// the mapping is the seam worth unit-testing: context names in, an input line the parser re-reads
-// out. The round-trip cases feed that line straight back through parseQuickAdd to prove the tokens
-// resolve to the intended project / section / due.
+// The composer holds its list-row context as a PRESET (Todoist parity): it never appears in the
+// input, the chips show it via applyComposerContext, and the quick path re-expresses whatever the
+// user did not override as tokens via composerSubmitText. These are the two seams worth
+// unit-testing; the round-trip cases feed the submit line straight back through parseQuickAdd to
+// prove the server's re-parse resolves the intended project / section / due.
 
 const ctx: ParseContext = {
   now: '2026-07-20T12:00:00Z',
@@ -16,81 +17,128 @@ const ctx: ParseContext = {
   smartDate: true,
 }
 
-describe('initialTextFromContext', () => {
-  it('is empty when there is no context', () => {
-    expect(initialTextFromContext({})).toBe('')
+const parse = (text: string) => parseState({ text, ignored: [] }, ctx)
+
+describe('applyComposerContext (what the chips display)', () => {
+  it('is the identity without context', () => {
+    const { parsed } = parse('Buy milk tomorrow')
+    expect(applyComposerContext(parsed, {})).toEqual(parsed)
   })
 
-  it('emits a #project token (trailing space parks the caret past it)', () => {
-    expect(initialTextFromContext({ projectName: 'Work' })).toBe('#Work ')
+  it('fills a missing due with the context date (date-only)', () => {
+    const { parsed } = parse('Buy milk')
+    const merged = applyComposerContext(parsed, { dueDate: '2026-07-25' })
+    expect(merged.due).toEqual({
+      date: '2026-07-25',
+      time: null,
+      string: '2026-07-25',
+      recurrence: null,
+    })
   })
 
-  it('emits #project + /section for a section row', () => {
-    expect(initialTextFromContext({ projectName: 'Work', sectionName: 'Backlog' })).toBe(
-      '#Work /Backlog ',
-    )
+  it('replaces the implied date of a standalone-time due, keeping the time', () => {
+    const { parsed } = parse('Buy milk 4:18pm')
+    const merged = applyComposerContext(parsed, { dueDate: '2026-07-25' })
+    expect(merged.due?.date).toBe('2026-07-25')
+    expect(merged.due?.time).toBe('16:18')
   })
 
-  it('quotes multi-word project and section names', () => {
-    expect(initialTextFromContext({ projectName: 'Work Stuff', sectionName: 'To Do' })).toBe(
-      '#"Work Stuff" /"To Do" ',
-    )
+  it('never touches a written date or a recurrence', () => {
+    const written = parse('Buy milk tomorrow 5pm').parsed
+    expect(applyComposerContext(written, { dueDate: '2026-07-25' }).due).toEqual(written.due)
+    const recurring = parse('water plants every day at 9am').parsed
+    expect(applyComposerContext(recurring, { dueDate: '2026-07-25' }).due).toEqual(recurring.due)
   })
 
-  it('drops embedded quotes from a name so it can round-trip', () => {
-    expect(initialTextFromContext({ projectName: 'Quo"te' })).toBe('#Quote ')
+  it('a cleared preset stays cleared', () => {
+    const { parsed } = parse('Buy milk')
+    const merged = applyComposerContext(parsed, { dueDate: '2026-07-25' }, { due: true })
+    expect(merged.due).toBeNull()
   })
 
-  it('emits the ISO due date for a day-scoped row', () => {
-    expect(initialTextFromContext({ dueDate: '2026-07-25' })).toBe('2026-07-25 ')
+  it('applies the context project + section only when none was typed', () => {
+    const bare = parse('Buy milk').parsed
+    const merged = applyComposerContext(bare, { projectName: 'Work', sectionName: 'Backlog' })
+    expect(merged.project).toBe('Work')
+    expect(merged.section).toBe('Backlog')
+
+    const typed = parse('#Home Buy milk').parsed
+    const kept = applyComposerContext(typed, { projectName: 'Work', sectionName: 'Backlog' })
+    expect(kept.project).toBe('Home')
+    expect(kept.section).toBeNull()
   })
 
-  it('drops a /section that has no #project to anchor it', () => {
-    expect(initialTextFromContext({ sectionName: 'Backlog' })).toBe('')
-  })
-
-  it('combines a project and a due date', () => {
-    expect(initialTextFromContext({ projectName: 'Work', dueDate: '2026-07-25' })).toBe(
-      '#Work 2026-07-25 ',
-    )
-  })
-
-  it('ignores whitespace-only names', () => {
-    expect(initialTextFromContext({ projectName: '   ', dueDate: '  ' })).toBe('')
+  it('ignores whitespace-only context names', () => {
+    const { parsed } = parse('Buy milk')
+    expect(applyComposerContext(parsed, { projectName: '   ', dueDate: '  ' })).toEqual(parsed)
   })
 })
 
-describe('initialTextFromContext → parseQuickAdd round-trip', () => {
-  it('project context parses back to that project', () => {
-    const parsed = parseQuickAdd(`${initialTextFromContext({ projectName: 'Work' })}Buy milk`, ctx)
+describe('composerSubmitText → parseQuickAdd round-trip (what the server saves)', () => {
+  const submit = (text: string, names: Parameters<typeof composerSubmitText>[3], cleared = {}) => {
+    const { parsed, activeTokens } = parse(text)
+    return composerSubmitText({ text, ignored: [] }, parsed, activeTokens, names, cleared)
+  }
+
+  it('project context parses back to that project, title untouched', () => {
+    const line = submit('Buy milk', { projectName: 'Work' })
+    const parsed = parseQuickAdd(line, ctx)
     expect(parsed.project).toBe('Work')
     expect(parsed.title).toBe('Buy milk')
   })
 
-  it('multi-word project + section context parse back whole', () => {
-    const text = `${initialTextFromContext({ projectName: 'Work Stuff', sectionName: 'To Do' })}Draft memo`
-    const parsed = parseQuickAdd(text, ctx)
+  it('multi-word project + section context round-trip whole (quoted sigils)', () => {
+    const line = submit('Draft memo', { projectName: 'Work Stuff', sectionName: 'To Do' })
+    const parsed = parseQuickAdd(line, ctx)
     expect(parsed.project).toBe('Work Stuff')
     expect(parsed.section).toBe('To Do')
     expect(parsed.title).toBe('Draft memo')
   })
 
-  it('ISO due-date context parses back to that due', () => {
-    const parsed = parseQuickAdd(`${initialTextFromContext({ dueDate: '2026-07-25' })}Ship it`, ctx)
+  it('date context parses back to that due when no due was typed', () => {
+    const parsed = parseQuickAdd(submit('Ship it', { dueDate: '2026-07-25' }), ctx)
     expect(parsed.due?.date).toBe('2026-07-25')
+    expect(parsed.due?.time).toBeNull()
     expect(parsed.title).toBe('Ship it')
   })
 
-  it('project + due-date context parse back together', () => {
-    const text = `${initialTextFromContext({ projectName: 'Work', dueDate: '2026-07-25' })}Review`
-    const parsed = parseQuickAdd(text, ctx)
-    expect(parsed.project).toBe('Work')
+  it('a standalone typed time lands ON the context date (the Upcoming-row case)', () => {
+    const parsed = parseQuickAdd(submit('Ship it 4:18pm', { dueDate: '2026-07-25' }), ctx)
     expect(parsed.due?.date).toBe('2026-07-25')
-    expect(parsed.title).toBe('Review')
+    expect(parsed.due?.time).toBe('16:18')
+    expect(parsed.title).toBe('Ship it')
   })
 
-  it('an untouched context line has an empty title (so save is blocked)', () => {
-    const parsed = parseQuickAdd(initialTextFromContext({ projectName: 'Work' }), ctx)
+  it('a written due wins — the context date is not injected at all', () => {
+    const line = submit('Ship it tomorrow 5pm', { dueDate: '2026-07-25' })
+    expect(line).toBe('Ship it tomorrow 5pm')
+    expect(parseQuickAdd(line, ctx).due?.date).toBe('2026-07-21')
+  })
+
+  it('a typed #project wins — the context project is not injected', () => {
+    const line = submit('#Home Buy milk', { projectName: 'Work', sectionName: 'Backlog' })
+    expect(line).toBe('#Home Buy milk')
+  })
+
+  it('a cleared date preset is not injected', () => {
+    expect(submit('Ship it', { dueDate: '2026-07-25' }, { due: true })).toBe('Ship it')
+  })
+
+  it('typed reminders survive alongside injected project + date context', () => {
+    const line = submit('Pay rent 5pm !30 min before', {
+      projectName: 'Home',
+      dueDate: '2026-07-25',
+    })
+    const parsed = parseQuickAdd(line, ctx)
+    expect(parsed.project).toBe('Home')
+    expect(parsed.due?.date).toBe('2026-07-25')
+    expect(parsed.due?.time).toBe('17:00')
+    expect(parsed.reminders).toEqual([{ kind: 'relative', minutesBefore: 30 }])
+    expect(parsed.title).toBe('Pay rent')
+  })
+
+  it('an untouched preset line still has an empty title (so save stays blocked)', () => {
+    const parsed = parseQuickAdd(submit('', { projectName: 'Work', dueDate: '2026-07-25' }), ctx)
     expect(parsed.title).toBe('')
   })
 })

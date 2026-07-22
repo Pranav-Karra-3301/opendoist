@@ -116,6 +116,9 @@ export const ParsedQuickAddSchema = z.object({
   title: z.string(),
   tokens: z.array(QuickAddTokenSchema),
   due: DueSchema.nullable(),
+  /** false only when `due` exists and its DATE was implied by a standalone time ("4:18pm" →
+   *  today/tomorrow) rather than written; composers may substitute a view-context date then */
+  dueDateCertain: z.boolean().default(true),
   durationMin: z.number().int().min(1).max(1440).nullable(),
   deadline: DeadlineSchema.nullable(),
   priority: PrioritySchema,

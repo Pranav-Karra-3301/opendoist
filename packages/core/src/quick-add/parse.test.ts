@@ -293,3 +293,25 @@ describe('result shape', () => {
     expect(ParsedQuickAddSchema.parse(r)).toEqual(r)
   })
 })
+
+describe('dueDateCertain', () => {
+  test('a standalone time implies its date (today/tomorrow) → uncertain', () => {
+    const r = parseQuickAdd('call mom 4:18pm', ctx)
+    expect(r.due?.time).toBe('16:18')
+    expect(r.dueDateCertain).toBe(false)
+  })
+
+  test('a written date is certain, with or without a time', () => {
+    expect(parseQuickAdd('call mom tomorrow', ctx).dueDateCertain).toBe(true)
+    expect(parseQuickAdd('call mom tomorrow 5pm', ctx).dueDateCertain).toBe(true)
+    expect(parseQuickAdd('call mom 2026-07-25 4:18pm', ctx).dueDateCertain).toBe(true)
+  })
+
+  test('no due at all stays certain (the flag is only meaningful beside a due)', () => {
+    expect(parseQuickAdd('call mom', ctx).dueDateCertain).toBe(true)
+  })
+
+  test('a recurrence phrase is certain', () => {
+    expect(parseQuickAdd('water plants every day at 9am', ctx).dueDateCertain).toBe(true)
+  })
+})

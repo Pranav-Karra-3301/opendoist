@@ -135,6 +135,7 @@ export function parseState(state: QuickAddState, ctx: ParseContext): ParseStateR
     title: titleFrom(state.text, activeTokens),
     tokens: activeTokens,
     due,
+    dueDateCertain: due === null ? true : raw.dueDateCertain,
     durationMin,
     deadline: has('deadline') ? raw.deadline : null,
     priority: has('priority') ? raw.priority : 4,
@@ -250,4 +251,95 @@ export function setDueText(
       : replaceRange(text, token.start, token.end, phrase)
   }
   return phrase === '' ? text : appendToken(text, phrase)
+}
+
+/* ---------- list-row context (Todoist-style presets: state, never input text) ---------- */
+
+/** Resolved context names (IDs mapped to display names) that PRESET the composer. */
+export interface ComposerContextNames {
+  projectName?: string
+  sectionName?: string
+  dueDate?: string
+}
+
+/** Which context presets the user explicitly cleared via the chips. */
+export interface ComposerContextCleared {
+  due?: boolean
+}
+
+/** Quote a sigil name that contains whitespace so a multi-word project/section survives the
+ *  parser's `#"…"` / `/"…"` grammar; embedded quotes are dropped (they can't round-trip). */
+export function sigilToken(sigil: '#' | '/', name: string): string {
+  const clean = name.replace(/"/g, '')
+  return /\s/.test(clean) ? `${sigil}"${clean}"` : `${sigil}${clean}`
+}
+
+/**
+ * Overlay the list-row context onto an effective parse — what the chips display and what the
+ * structured path saves. Explicit text always wins:
+ * - project/section apply only when no `#project` token was typed;
+ * - the context date fills a missing due (date-only), and REPLACES the implied date of a
+ *   standalone-time due (`4:18pm` on a Jul 25 row → Jul 25 4:18pm); a written date or a
+ *   recurrence is never touched;
+ * - a context preset the user cleared via the chips stays cleared.
+ */
+export function applyComposerContext(
+  parsed: ParsedQuickAdd,
+  names: ComposerContextNames,
+  cleared: ComposerContextCleared = {},
+): ParsedQuickAdd {
+  const projectName = names.projectName?.trim() || undefined
+  const sectionName = names.sectionName?.trim() || undefined
+  const dueDate = names.dueDate?.trim() || undefined
+
+  let due = parsed.due
+  if (dueDate !== undefined && cleared.due !== true) {
+    if (due === null) {
+      due = { date: dueDate, time: null, string: dueDate, recurrence: null }
+    } else if (!parsed.dueDateCertain && due.recurrence === null) {
+      due = { ...due, date: dueDate }
+    }
+  }
+
+  const project = parsed.project ?? projectName ?? null
+  const section =
+    parsed.project !== null ? parsed.section : project !== null ? (sectionName ?? null) : null
+
+  return { ...parsed, due, project, section }
+}
+
+/**
+ * The text actually submitted to `/tasks/quick` — the visible input plus the non-overridden
+ * context expressed as tokens the server's re-parse reads the same way `applyComposerContext`
+ * does. The due-token rewrite (context date prefixed ADJACENT to a standalone time) relies on
+ * the parser's certain-date + bare-time merge; prepends go first so offsets stay valid.
+ */
+export function composerSubmitText(
+  state: QuickAddState,
+  parsed: ParsedQuickAdd,
+  activeTokens: readonly QuickAddToken[],
+  names: ComposerContextNames,
+  cleared: ComposerContextCleared = {},
+): string {
+  const projectName = names.projectName?.trim() || undefined
+  const sectionName = names.sectionName?.trim() || undefined
+  const dueDate = names.dueDate?.trim() || undefined
+
+  let text = state.text
+  if (dueDate !== undefined && cleared.due !== true && parsed.due !== null) {
+    const token = activeTokens.find((t) => t.kind === 'due')
+    if (token && !parsed.dueDateCertain && parsed.due.recurrence === null) {
+      text = replaceRange(text, token.start, token.end, `${dueDate} ${token.text}`)
+    }
+  }
+
+  const prefix: string[] = []
+  if (projectName !== undefined && parsed.project === null) {
+    prefix.push(sigilToken('#', projectName))
+    if (sectionName !== undefined) prefix.push(sigilToken('/', sectionName))
+  }
+  if (dueDate !== undefined && cleared.due !== true && parsed.due === null) {
+    prefix.push(dueDate)
+  }
+  return prefix.length === 0 ? text : `${prefix.join(' ')} ${text}`
 }
