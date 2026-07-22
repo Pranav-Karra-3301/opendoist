@@ -1,6 +1,10 @@
 # Changelog
 
 All notable changes to OpenDoist.
+## [0.3.1] - 2026-07-22
+
+### Bug Fixes
+- *(reminders)* Claim born-past relative reminders instead of firing them late
 ## [0.3.0] - 2026-07-22
 
 ### Bug Fixes
@@ -12,6 +16,9 @@ All notable changes to OpenDoist.
 
 ### Features
 - *(quick-add)* Hold list-row context as a preset, not input text
+
+### Maintenance
+- *(release)* V0.3.0
 
 ### Testing
 - *(e2e)* Assert composer context via preset chips, not seeded input text
