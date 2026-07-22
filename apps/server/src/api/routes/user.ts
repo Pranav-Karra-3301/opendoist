@@ -18,8 +18,9 @@ const TIMEZONES = new Set<string>([...Intl.supportedValuesOf('timeZone'), 'UTC']
 /**
  * Allowed `autoReminderMinutes` values (phase 6, Settings > Reminders select).
  * Core's `UserSettingsSchema` only bounds the range (0–10080 | null); the PATCH
- * boundary constrains it to the exact option set — `null` = auto-reminders off,
- * `0` = at task time.
+ * boundary constrains it to the exact option set. The at-time reminder is always
+ * materialized for timed tasks, so `null` = no extra heads-up and `0` is a
+ * back-compat alias for null (the web menu no longer offers it).
  */
 const AUTO_REMINDER_MINUTES = new Set<number | null>([null, 0, 5, 10, 15, 30, 45, 60, 120])
 
@@ -123,7 +124,7 @@ const patchSettingsRoute = createRoute({
   summary: 'Update client preferences',
   description:
     'Shallow top-level merge onto the stored document; only the keys present in the request body are changed. `viewPrefs` merges per view key (provided keys replace, others are kept). ' +
-    '`autoReminderMinutes` accepts exactly null, 0, 5, 10, 15, 30, 45, 60, or 120 (null = no automatic reminder, 0 = at task time).',
+    '`autoReminderMinutes` accepts exactly null, 0, 5, 10, 15, 30, 45, 60, or 120 — the extra heads-up before a timed due. Tasks with a due time always get an at-time reminder; null means no extra heads-up and 0 is a back-compat alias for null.',
   security,
   request: {
     body: { content: { 'application/json': { schema: SettingsSchema.partial() } } },

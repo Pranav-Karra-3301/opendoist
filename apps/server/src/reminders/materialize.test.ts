@@ -254,7 +254,8 @@ describe('syncTaskReminders — recompute + re-arm', () => {
       firedAt: '2000-01-01T00:00:00.000Z',
     })
     await syncTaskReminders(db, taskId)
-    const row = one(remindersOf(db, taskId))
+    // The built-in at-time auto row also materializes; this test cares about the manual one.
+    const row = one(remindersOf(db, taskId).filter((r) => !r.isAuto))
     expect(row.fireAtUtc).toBe(
       computeFireAt(
         { type: 'relative', minuteOffset: 30, due: null },
@@ -286,7 +287,7 @@ describe('syncTaskReminders — recompute + re-arm', () => {
       firedAt: '2026-07-16T20:30:00.000Z',
     })
     await syncTaskReminders(db, taskId)
-    const row = one(remindersOf(db, taskId))
+    const row = one(remindersOf(db, taskId).filter((r) => !r.isAuto))
     expect(row.fireAtUtc).toBe(correct)
     expect(row.firedAt).toBe('2026-07-16T20:30:00.000Z')
   })
@@ -351,7 +352,15 @@ describe('syncTaskReminders — suppression on complete / delete', () => {
 })
 
 describe('syncTaskReminders — auto reminders', () => {
-  test('creates exactly one auto row for a timed task', async () => {
+  /** Sorted auto offsets for a task — the shape most assertions care about. */
+  function autoOffsets(db: Db, taskId: string): Array<number | null> {
+    return remindersOf(db, taskId)
+      .filter((r) => r.isAuto)
+      .map((r) => r.minuteOffset)
+      .sort((a, b) => (a ?? 0) - (b ?? 0))
+  }
+
+  test('creates the at-time row plus the heads-up row for a timed task', async () => {
     const db = await freshDb()
     const { userId } = await seedUser(db, { autoReminderMinutes: 30 })
     const { id: taskId } = await seedTask(db, userId, {
@@ -359,23 +368,22 @@ describe('syncTaskReminders — auto reminders', () => {
       dueTime: '17:00',
     })
     await syncTaskReminders(db, taskId)
-    const rows = remindersOf(db, taskId)
-    const auto = rows.filter((r) => r.isAuto)
-    expect(auto).toHaveLength(1)
-    const autoRow = one(auto)
-    expect(autoRow.type).toBe('relative')
-    expect(autoRow.minuteOffset).toBe(30)
-    expect(autoRow.fireAtUtc).toBe(
-      computeFireAt(
-        { type: 'relative', minuteOffset: 30, due: null },
-        { date: '2026-07-16', time: '17:00' },
-        NY,
-      ),
-    )
-    expect(autoRow.firedAt).toBeNull()
+    const auto = remindersOf(db, taskId).filter((r) => r.isAuto)
+    expect(autoOffsets(db, taskId)).toEqual([0, 30])
+    for (const row of auto) {
+      expect(row.type).toBe('relative')
+      expect(row.firedAt).toBeNull()
+      expect(row.fireAtUtc).toBe(
+        computeFireAt(
+          { type: 'relative', minuteOffset: row.minuteOffset, due: null },
+          { date: '2026-07-16', time: '17:00' },
+          NY,
+        ),
+      )
+    }
   })
 
-  test('does not create an auto row for an all-day task', async () => {
+  test('does not create auto rows for an all-day task', async () => {
     const db = await freshDb()
     const { userId } = await seedUser(db, { autoReminderMinutes: 30 })
     const { id: taskId } = await seedTask(db, userId, { dueDate: '2026-07-16', dueTime: null })
@@ -383,7 +391,7 @@ describe('syncTaskReminders — auto reminders', () => {
     expect(remindersOf(db, taskId).filter((r) => r.isAuto)).toHaveLength(0)
   })
 
-  test('does not create an auto row when autoReminderMinutes is null', async () => {
+  test('still creates the at-time row when autoReminderMinutes is null', async () => {
     const db = await freshDb()
     const { userId } = await seedUser(db, { autoReminderMinutes: null })
     const { id: taskId } = await seedTask(db, userId, {
@@ -391,10 +399,21 @@ describe('syncTaskReminders — auto reminders', () => {
       dueTime: '17:00',
     })
     await syncTaskReminders(db, taskId)
-    expect(remindersOf(db, taskId).filter((r) => r.isAuto)).toHaveLength(0)
+    expect(autoOffsets(db, taskId)).toEqual([0])
   })
 
-  test('skips the auto row when a manual relative reminder shares the offset', async () => {
+  test('autoReminderMinutes 0 collapses into the single built-in at-time row', async () => {
+    const db = await freshDb()
+    const { userId } = await seedUser(db, { autoReminderMinutes: 0 })
+    const { id: taskId } = await seedTask(db, userId, {
+      dueDate: '2026-07-16',
+      dueTime: '17:00',
+    })
+    await syncTaskReminders(db, taskId)
+    expect(autoOffsets(db, taskId)).toEqual([0])
+  })
+
+  test('skips the heads-up auto row when a manual relative reminder shares its offset', async () => {
     const db = await freshDb()
     const { userId } = await seedUser(db, { autoReminderMinutes: 30 })
     const { id: taskId } = await seedTask(db, userId, {
@@ -404,11 +423,26 @@ describe('syncTaskReminders — auto reminders', () => {
     await seedReminder(db, { userId, taskId, type: 'relative', minuteOffset: 30, isAuto: false })
     await syncTaskReminders(db, taskId)
     const rows = remindersOf(db, taskId)
+    // Manual-30 wins over auto-30; the built-in at-time row still materializes.
+    expect(autoOffsets(db, taskId)).toEqual([0])
+    expect(rows).toHaveLength(2)
+  })
+
+  test('skips the at-time auto row when a manual reminder sits at offset 0', async () => {
+    const db = await freshDb()
+    const { userId } = await seedUser(db, { autoReminderMinutes: null })
+    const { id: taskId } = await seedTask(db, userId, {
+      dueDate: '2026-07-16',
+      dueTime: '17:00',
+    })
+    await seedReminder(db, { userId, taskId, type: 'relative', minuteOffset: 0, isAuto: false })
+    await syncTaskReminders(db, taskId)
+    const rows = remindersOf(db, taskId)
     expect(rows.filter((r) => r.isAuto)).toHaveLength(0)
     expect(rows).toHaveLength(1)
   })
 
-  test('still creates the auto row when a manual reminder uses a different offset', async () => {
+  test('keeps both auto rows alongside a manual reminder at a different offset', async () => {
     const db = await freshDb()
     const { userId } = await seedUser(db, { autoReminderMinutes: 30 })
     const { id: taskId } = await seedTask(db, userId, {
@@ -418,18 +452,17 @@ describe('syncTaskReminders — auto reminders', () => {
     await seedReminder(db, { userId, taskId, type: 'relative', minuteOffset: 45, isAuto: false })
     await syncTaskReminders(db, taskId)
     const rows = remindersOf(db, taskId)
-    const auto = rows.filter((r) => r.isAuto)
-    expect(auto).toHaveLength(1)
-    const autoRow = one(auto)
-    expect(autoRow.minuteOffset).toBe(30)
-    // Relative-45 fires earlier than auto-30 for the same due.
+    expect(autoOffsets(db, taskId)).toEqual([0, 30])
+    // Relative-45 fires earlier than auto-30, which fires earlier than auto-0 (at time).
     const manual = one(rows.filter((r) => !r.isAuto))
-    expect(Date.parse(manual.fireAtUtc as string)).toBeLessThan(
-      Date.parse(autoRow.fireAtUtc as string),
-    )
+    const instants = rows
+      .filter((r) => r.isAuto)
+      .map((r) => Date.parse(r.fireAtUtc as string))
+      .sort((a, b) => a - b)
+    expect(Date.parse(manual.fireAtUtc as string)).toBeLessThan(one(instants))
   })
 
-  test('updates an existing auto row offset in place rather than duplicating', async () => {
+  test('reconciles stale auto offsets to the wanted set', async () => {
     const db = await freshDb()
     const { userId } = await seedUser(db, { autoReminderMinutes: 30 })
     const { id: taskId } = await seedTask(db, userId, {
@@ -439,9 +472,7 @@ describe('syncTaskReminders — auto reminders', () => {
     // Pre-existing auto row with a stale offset (as if the setting changed).
     await seedReminder(db, { userId, taskId, type: 'relative', minuteOffset: 15, isAuto: true })
     await syncTaskReminders(db, taskId)
-    const auto = remindersOf(db, taskId).filter((r) => r.isAuto)
-    expect(auto).toHaveLength(1)
-    expect(one(auto).minuteOffset).toBe(30)
+    expect(autoOffsets(db, taskId)).toEqual([0, 30])
   })
 
   test('deletes the auto row when the task loses its time', async () => {

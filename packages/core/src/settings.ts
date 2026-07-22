@@ -151,7 +151,8 @@ export const UserSettingsSchema = z.object({
   daysOff: z.array(WeekdaySchema).default([6, 7]),
   vacationMode: z.boolean().default(false),
   karmaEnabled: z.boolean().default(true),
-  /** minutes before a timed due for the automatic reminder; 0 = at due time; null = off */
+  /** Optional heads-up minutes before a timed due. The at-time automatic reminder is always
+   *  materialized server-side; null = no extra heads-up, 0 = legacy value equivalent to null. */
   autoReminderMinutes: z.number().int().min(0).max(10080).nullable().default(30),
   notifications: NotificationTogglesSchema.default({
     push: true,

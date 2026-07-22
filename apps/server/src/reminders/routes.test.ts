@@ -116,22 +116,27 @@ describe('reminder routes — lifecycle & hooks', () => {
     expect((await listReminders(t, taskId)).length).toBe(0)
   })
 
-  it('persists a quick-add `!` reminder alongside the auto-reminder, correctly ordered', async () => {
+  it('persists a quick-add `!` reminder alongside both auto rows, correctly ordered', async () => {
     const t = await make() // default autoReminderMinutes = 30, timezone UTC
     const task = await json<TaskDto>(
       await t.post('/api/v1/tasks/quick', { text: 'Pay rent tomorrow 5pm !45 min before' }),
     )
     const rows = await listReminders(t, task.id)
-    expect(rows.length).toBe(2)
+    // at-time auto (0) + heads-up auto (30) + manual (45)
+    expect(rows.length).toBe(3)
 
-    const auto = rows.find((r) => r.is_auto)
+    const autos = rows
+      .filter((r) => r.is_auto)
+      .sort((a, b) => (a.minute_offset ?? 0) - (b.minute_offset ?? 0))
     const manual = rows.find((r) => !r.is_auto)
-    expect(auto?.minute_offset).toBe(30)
+    expect(autos.map((r) => r.minute_offset)).toEqual([0, 30])
     expect(manual?.minute_offset).toBe(45)
-    expect(auto?.fire_at_utc).not.toBeNull()
-    expect(manual?.fire_at_utc).not.toBeNull()
-    // 45 minutes before fires earlier than 30 minutes before the same due time.
-    expect(String(manual?.fire_at_utc).localeCompare(String(auto?.fire_at_utc))).toBeLessThan(0)
+    for (const r of rows) expect(r.fire_at_utc).not.toBeNull()
+    // 45 before < 30 before < at-time for the same due time.
+    const headsUp = autos[1]
+    const atTime = autos[0]
+    expect(String(manual?.fire_at_utc).localeCompare(String(headsUp?.fire_at_utc))).toBeLessThan(0)
+    expect(String(headsUp?.fire_at_utc).localeCompare(String(atTime?.fire_at_utc))).toBeLessThan(0)
   })
 
   it('dedupes a quick-add reminder whose offset equals the auto-reminder offset', async () => {
@@ -140,10 +145,12 @@ describe('reminder routes — lifecycle & hooks', () => {
       await t.post('/api/v1/tasks/quick', { text: 'Pay rent tomorrow 5pm !30 min before' }),
     )
     const rows = await listReminders(t, task.id)
-    expect(rows.length).toBe(1)
-    expect(rows[0]?.minute_offset).toBe(30)
-    // the explicit (non-auto) reminder wins; the auto row is suppressed.
-    expect(rows[0]?.is_auto).toBe(false)
+    // the explicit (non-auto) reminder wins over its auto twin; the at-time row remains.
+    expect(rows.length).toBe(2)
+    const manual = rows.find((r) => !r.is_auto)
+    const atTime = rows.find((r) => r.is_auto)
+    expect(manual?.minute_offset).toBe(30)
+    expect(atTime?.minute_offset).toBe(0)
   })
 
   it('skips a quick-add relative reminder when the task has no due time', async () => {

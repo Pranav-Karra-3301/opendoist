@@ -90,9 +90,10 @@ function parseDue(dueJson: string | null): Due | null {
  * - Recompute each row's `fire_at_utc`; if it changed, reset `fired_at = null` (re-arm).
  * - On a completed non-recurring task or a soft-deleted task, relative/auto rows are nulled
  *   (absolute/recurring rows keep their own instant).
- * - Maintain exactly one auto row when the task is alive, has a timed due, and the user's
- *   `autoReminderMinutes` is set — unless a non-auto relative reminder already uses that
- *   offset (dedupe). Otherwise the auto row is removed.
+ * - Maintain the auto rows for a task that is alive with a timed due: always one at-time row
+ *   (offset 0), plus one heads-up row at the user's `autoReminderMinutes` when set. An offset
+ *   already covered by a non-auto relative reminder is skipped (the explicit reminder wins);
+ *   auto rows outside the wanted set are removed.
  */
 export async function syncTaskReminders(db: Db, taskId: string): Promise<void> {
   const task = db
@@ -130,48 +131,53 @@ export async function syncTaskReminders(db: Db, taskId: string): Promise<void> {
     task.deletedAt !== null || (task.completedAt !== null && task.recurrence === null)
 
   // ---- Pass 1: auto-reminder maintenance ----
+  // Wanted auto offsets: the built-in at-time reminder (0) for every live timed task, plus the
+  // user's optional heads-up offset. A Set collapses autoMinutes = 0 into the at-time row, and
+  // any offset already covered by an explicit non-auto relative reminder is dropped (it wins).
   const rows = db.select().from(reminders).where(eq(reminders.taskId, taskId)).all()
-  const nonAutoRelativeOffsets = rows
-    .filter((r) => !r.isAuto && r.type === 'relative')
-    .map((r) => r.minuteOffset)
-  const autoWanted =
-    alive && hasTimedDue && autoMinutes !== null && !nonAutoRelativeOffsets.includes(autoMinutes)
-  const autoRows = rows.filter((r) => r.isAuto)
+  const wantedOffsets = new Set<number>()
+  if (alive && hasTimedDue) {
+    wantedOffsets.add(0)
+    if (autoMinutes !== null) wantedOffsets.add(autoMinutes)
+  }
+  for (const r of rows) {
+    if (!r.isAuto && r.type === 'relative' && r.minuteOffset !== null) {
+      wantedOffsets.delete(r.minuteOffset)
+    }
+  }
 
-  if (autoWanted) {
-    if (autoRows.length === 0) {
-      const stamp = nowIso()
-      db.insert(reminders)
-        .values({
-          id: newId(),
-          userId: task.userId,
-          taskId,
-          type: 'relative',
-          minuteOffset: autoMinutes,
-          dueJson: null,
-          isAuto: true,
-          fireAtUtc: null,
-          firedAt: null,
-          createdAt: stamp,
-          updatedAt: stamp,
-        })
-        .run()
+  // Reconcile existing auto rows against the wanted set: keep one row per wanted offset,
+  // delete stale/duplicate ones, insert the missing ones (pass 2 arms their instants).
+  const keptOffsets = new Set<number>()
+  for (const r of rows.filter((r) => r.isAuto)) {
+    const wanted =
+      r.minuteOffset !== null &&
+      wantedOffsets.has(r.minuteOffset) &&
+      !keptOffsets.has(r.minuteOffset)
+    if (wanted && r.minuteOffset !== null) {
+      keptOffsets.add(r.minuteOffset)
     } else {
-      const [keep, ...extras] = autoRows
-      if (keep !== undefined && keep.minuteOffset !== autoMinutes) {
-        db.update(reminders)
-          .set({ minuteOffset: autoMinutes, updatedAt: nowIso() })
-          .where(eq(reminders.id, keep.id))
-          .run()
-      }
-      for (const extra of extras) {
-        db.delete(reminders).where(eq(reminders.id, extra.id)).run()
-      }
+      db.delete(reminders).where(eq(reminders.id, r.id)).run()
     }
-  } else {
-    for (const a of autoRows) {
-      db.delete(reminders).where(eq(reminders.id, a.id)).run()
-    }
+  }
+  for (const offset of wantedOffsets) {
+    if (keptOffsets.has(offset)) continue
+    const stamp = nowIso()
+    db.insert(reminders)
+      .values({
+        id: newId(),
+        userId: task.userId,
+        taskId,
+        type: 'relative',
+        minuteOffset: offset,
+        dueJson: null,
+        isAuto: true,
+        fireAtUtc: null,
+        firedAt: null,
+        createdAt: stamp,
+        updatedAt: stamp,
+      })
+      .run()
   }
 
   // ---- Pass 2: recompute fire instants for every surviving row ----

@@ -2,12 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { REMINDER_OPTIONS, reminderMinutesFromValue, reminderSelectValue } from './RemindersPage'
 
 describe('reminderMinutesFromValue', () => {
-  it('maps "None" to null (no automatic reminder)', () => {
+  it('maps "None" to null (no extra heads-up)', () => {
     expect(reminderMinutesFromValue('none')).toBeNull()
-  })
-
-  it('maps "At due time" to 0, not null', () => {
-    expect(reminderMinutesFromValue('0')).toBe(0)
   })
 
   it('maps a minutes-before choice to its number', () => {
@@ -25,8 +21,8 @@ describe('reminderSelectValue', () => {
     expect(reminderSelectValue(null)).toBe('none')
   })
 
-  it('maps 0 to the "at due time" option (distinct from null)', () => {
-    expect(reminderSelectValue(0)).toBe('0')
+  it('maps a legacy stored 0 to "none" (the at-time reminder is built in)', () => {
+    expect(reminderSelectValue(0)).toBe('none')
   })
 
   it('maps the default 30 to its option', () => {
@@ -46,7 +42,7 @@ describe('REMINDER_OPTIONS', () => {
     }
   })
 
-  it('offers the offset menu the server accepts (off, at-time, and minutes-before)', () => {
-    expect(REMINDER_OPTIONS.map((o) => o.minutes)).toEqual([null, 0, 5, 10, 15, 30, 45, 60, 120])
+  it('offers off and the minutes-before offsets, without the redundant at-time entry', () => {
+    expect(REMINDER_OPTIONS.map((o) => o.minutes)).toEqual([null, 5, 10, 15, 30, 45, 60, 120])
   })
 })
