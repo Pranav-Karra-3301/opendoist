@@ -1,6 +1,20 @@
 # Changelog
 
 All notable changes to OpenDoist.
+## [0.3.0] - 2026-07-22
+
+### Bug Fixes
+- *(web)* Accent swatches preview their own accent; rename Todoist accent to Red
+- *(quick-add)* Keep a typed /section ahead of the section-row context
+
+### Documentation
+- Plan the Board view pass (layout pref + kanban renderer over existing groups)
+
+### Features
+- *(quick-add)* Hold list-row context as a preset, not input text
+
+### Testing
+- *(e2e)* Assert composer context via preset chips, not seeded input text
 ## [0.2.0] - 2026-07-22
 
 ### Documentation
@@ -12,6 +26,9 @@ All notable changes to OpenDoist.
 - *(web)* Views & Chrome pass — sidebar chrome, Display menu, task-row polish, subtask fix
 - *(web)* Settings & Theme pass — modal polish, user-menu entry, appearance×accent theme
 - *(reminders)* Always add an at-time automatic reminder
+
+### Maintenance
+- *(release)* V0.2.0
 ## [0.1.1] - 2026-07-20
 
 ### Bug Fixes
