@@ -68,6 +68,12 @@ export const CompletedTaskSchema = z.object({
   id: z.string(),
   content: z.string(),
   project_id: z.string(),
+  /** Board columns attribute completed cards to their section column (board-view pass);
+   *  defaulted so rows from older callers/tests without the field still parse. */
+  section_id: z.string().nullable().default(null),
+  /** Due DATE only (board day columns attribute completed cards by it); the row's full due
+   *  object is stripped down to the date, and a missing due defaults to null. */
+  due: z.object({ date: z.string() }).nullable().default(null),
   priority: PrioritySchema.default(4),
   /** ISO instant */
   completed_at: z.string(),

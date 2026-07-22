@@ -44,10 +44,14 @@ export function buildFilterContext(parse: ParseContext, projects: ProjectsMap): 
   }
 }
 
-/** True when prefs equal the defaults INCLUDING `showCompleted` — drives the menu-trigger dot. */
+/**
+ * True when prefs equal the defaults INCLUDING `showCompleted` and `layout` — drives the
+ * menu-trigger dot, so switching to the Board layout counts as a customization.
+ */
 export function prefsAreDefault(p: ViewPrefs): boolean {
   const d = DEFAULT_VIEW_PREFS
   return (
+    p.layout === d.layout &&
     p.groupBy === d.groupBy &&
     p.sortBy === d.sortBy &&
     p.sortDir === d.sortDir &&

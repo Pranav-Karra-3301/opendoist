@@ -42,15 +42,17 @@ test('the Display menu sits in the view header (not the sidebar) and opens', asy
   const popover = page.locator('[data-slot="popover-content"]')
   await expect(popover).toBeVisible()
 
-  // Layout segmented control (first section): List is the only active layout; Board and
-  // Calendar are v1 non-goals, shown disabled with a "Soon" affordance.
+  // Layout segmented control (first section): List (the default) is active and Board is a live
+  // choice (Board View pass); Calendar stays a non-goal, disabled with a "Soon" affordance.
   await expect(popover.getByText('Layout', { exact: true })).toBeVisible()
   const listSeg = popover.getByRole('button', { name: 'List', exact: true })
   await expect(listSeg).toBeEnabled()
   await expect(listSeg).toHaveAttribute('aria-pressed', 'true')
-  await expect(popover.getByRole('button', { name: /Board/ })).toBeDisabled()
+  const boardSeg = popover.getByRole('button', { name: 'Board', exact: true })
+  await expect(boardSeg).toBeEnabled()
+  await expect(boardSeg).toHaveAttribute('aria-pressed', 'false')
   await expect(popover.getByRole('button', { name: /Calendar/ })).toBeDisabled()
-  await expect(popover.getByText('Soon', { exact: true })).toHaveCount(2)
+  await expect(popover.getByText('Soon', { exact: true })).toHaveCount(1)
 
   // Completed toggle + reference-named Sort sections; the extra "Due" filter is gone.
   await expect(popover.getByLabel('Show completed tasks')).toBeVisible()

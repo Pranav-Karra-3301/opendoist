@@ -80,31 +80,66 @@ test('the 6-dot drag handle reorders two rows and the order persists via the API
   await expect(alpha).toBeVisible()
   await expect(bravo).toBeVisible()
 
-  // Drag alpha's grip onto bravo (tolerant of the starting order): closestCenter drops it at
-  // bravo's slot, so bravo ends up above alpha.
-  const grip = alpha.getByRole('button', { name: 'Reorder task' })
+  // Fresh tasks all carry day_order 0 and byDayOrder tie-breaks by random id, so which of the
+  // two starts on top is a coin flip. Dragging DOWN (top row onto the bottom one) is the only
+  // orientation closestCenter resolves deterministically, so pick the pair by measured position:
+  // drag the top row's grip onto the bottom row → they swap.
+  const alphaStartsTop = (await rowTop(alpha)) < (await rowTop(bravo))
+  const [topText, bottomText] = alphaStartsTop
+    ? (['Dragzeta alpha', 'Dragzeta bravo'] as const)
+    : (['Dragzeta bravo', 'Dragzeta alpha'] as const)
+  const topRow = alphaStartsTop ? alpha : bravo
+  const bottomRow = alphaStartsTop ? bravo : alpha
+
+  const grip = topRow.getByRole('button', { name: 'Reorder task' })
   const from = await grip.boundingBox()
-  const dest = await bravo.boundingBox()
+  const dest = await bottomRow.boundingBox()
   if (from === null || dest === null) throw new Error('missing bounding boxes for drag')
   await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
   await page.mouse.down()
   await page.mouse.move(from.x + from.width / 2, from.y + 12, { steps: 4 })
   await page.mouse.move(dest.x + dest.width / 2, dest.y + dest.height * 0.75, { steps: 12 })
-  // The same-day reorder writes day_order back through PATCH /tasks/{id}; wait for it to land
-  // so the reload below reads the persisted order, not a pre-write refetch.
+  // The same-day reorder writes day_order back through PATCH /tasks/{id}; wait for the first
+  // write to land, then poll SERVER truth below (the reorder patches every shifted row in the
+  // day, so a single response is necessary but not sufficient for the reload to read the swap).
   const persisted = page.waitForResponse(
     (r) => /\/tasks\/[^/]+$/.test(r.url()) && r.request().method() === 'PATCH',
   )
   await page.mouse.up()
   await persisted
 
-  await expect.poll(async () => (await rowTop(bravo)) < (await rowTop(alpha))).toBe(true)
+  // The optimistic cache swaps the rows immediately…
+  await expect.poll(async () => (await rowTop(bottomRow)) < (await rowTop(topRow))).toBe(true)
+
+  // …and the API confirms the persisted day_order ranks the former bottom row strictly first
+  // (a tie means a sibling silent PATCH is still in flight — keep polling until it lands).
+  await expect
+    .poll(async () => {
+      const rows: Array<{ content: string; day_order: number }> = []
+      let cursor: string | null = null
+      do {
+        const res = await page.request.get(
+          `/api/v1/tasks${cursor === null ? '' : `?cursor=${encodeURIComponent(cursor)}`}`,
+        )
+        expect(res.ok(), 'list tasks').toBeTruthy()
+        const body = (await res.json()) as {
+          results: Array<{ content: string; day_order: number }>
+          next_cursor: string | null
+        }
+        rows.push(...body.results)
+        cursor = body.next_cursor
+      } while (cursor !== null)
+      const topOrder = rows.find((t) => t.content.includes(topText))?.day_order
+      const bottomOrder = rows.find((t) => t.content.includes(bottomText))?.day_order
+      return topOrder !== undefined && bottomOrder !== undefined && bottomOrder < topOrder
+    })
+    .toBe(true)
 
   // Reload from the server: the new order came from the persisted day_order, not local cache.
   await page.reload()
-  const alpha2 = page.locator('[id^="task-"]').filter({ hasText: 'Dragzeta alpha' }).first()
-  const bravo2 = page.locator('[id^="task-"]').filter({ hasText: 'Dragzeta bravo' }).first()
-  await expect(alpha2).toBeVisible()
-  await expect(bravo2).toBeVisible()
-  await expect.poll(async () => (await rowTop(bravo2)) < (await rowTop(alpha2))).toBe(true)
+  const top2 = page.locator('[id^="task-"]').filter({ hasText: topText }).first()
+  const bottom2 = page.locator('[id^="task-"]').filter({ hasText: bottomText }).first()
+  await expect(top2).toBeVisible()
+  await expect(bottom2).toBeVisible()
+  await expect.poll(async () => (await rowTop(bottom2)) < (await rowTop(top2))).toBe(true)
 })

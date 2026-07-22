@@ -61,6 +61,16 @@ export function migrateThemeToAppearance(
   return { appearance: 'light', accent: theme }
 }
 
+/**
+ * How a view renders its tasks. `list` is the shipped default; `board` is the Todoist-parity
+ * kanban renderer (Board View pass). `calendar` stays a non-goal (disabled + "Soon" in the
+ * Display menu), so it is intentionally NOT part of this enum. Back-compat: the field carries a
+ * zod default of `list`, so any stored `viewPrefs` row written before this field existed parses
+ * with `layout: 'list'` and needs no migration.
+ */
+export const ViewLayoutSchema = z.enum(['list', 'board'])
+export type ViewLayout = z.infer<typeof ViewLayoutSchema>
+
 export const ViewGroupBySchema = z.enum(['none', 'project', 'priority', 'label', 'date'])
 export type ViewGroupBy = z.infer<typeof ViewGroupBySchema>
 export const ViewSortBySchema = z.enum(['manual', 'date', 'added', 'priority', 'alphabetical'])
@@ -75,6 +85,9 @@ export const ViewFilterBySchema = z.object({
 export type ViewFilterBy = z.infer<typeof ViewFilterBySchema>
 
 export const ViewPrefsSchema = z.object({
+  /** Renderer choice (list | board). A renderer detail, NOT a pipeline deviation: it never
+   *  changes grouping/sorting/filtering or the section/dnd rendering the pipeline drives. */
+  layout: ViewLayoutSchema.default('list'),
   groupBy: ViewGroupBySchema.default('none'),
   sortBy: ViewSortBySchema.default('manual'),
   sortDir: z.enum(['asc', 'desc']).default('asc'),

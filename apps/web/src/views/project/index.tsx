@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
+import { BoardView, groupBoardColumns, projectBoardColumns } from '@/features/board/BoardView'
 import { useDialogStore } from '@/features/dialogs/store'
 import { CompletedSection } from '@/features/display/CompletedSection'
 import DisplayMenu, { GroupedTaskList, useFilterContext } from '@/features/display/DisplayMenu'
@@ -129,71 +130,91 @@ function ProjectViewInner() {
   const active = activeTasks(tasksInProject(allTasks, projectId))
   const rootTasks = containerTasks(active, (t) => t.parent_id === null && t.section_id === null)
 
-  return (
-    <div className={CONTENT}>
-      <header className="flex items-start justify-between gap-4 pt-8 pb-4">
-        <div className="flex min-w-0 items-center gap-2">
-          <ColorDot color={project.color} />
-          {/* Accessible page heading: the visible title is a click-to-edit button, so a
+  const header = (
+    <header className="flex items-start justify-between gap-4 pt-8 pb-4">
+      <div className="flex min-w-0 items-center gap-2">
+        <ColorDot color={project.color} />
+        {/* Accessible page heading: the visible title is a click-to-edit button, so a
               visually-hidden h1 carries the project name for heading navigation and axe. */}
-          <h1 className="sr-only">{project.name}</h1>
-          <EditableText
-            value={project.name}
-            editing={titleEditing}
-            onEditingChange={setTitleEditing}
-            onSave={(name) => updateProject.mutate({ id: projectId, patch: { name } })}
-            ariaLabel="Project name"
-            className="font-strong text-header text-text-primary"
-            inputClassName="h-9 font-strong text-header"
-          />
-        </div>
-        <div className="flex shrink-0 items-center gap-1">
-          <DisplayMenu viewKey={displayKey} />
-          <button
-            type="button"
-            className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}
-            onClick={() => startAddSection('__end__')}
-          >
-            <Plus size={16} aria-hidden /> Add section
-          </button>
-          {/* Task X gate wiring: edit/archive/delete route through the Task F dialogs
+        <h1 className="sr-only">{project.name}</h1>
+        <EditableText
+          value={project.name}
+          editing={titleEditing}
+          onEditingChange={setTitleEditing}
+          onSave={(name) => updateProject.mutate({ id: projectId, patch: { name } })}
+          ariaLabel="Project name"
+          className="font-strong text-header text-text-primary"
+          inputClassName="h-9 font-strong text-header"
+        />
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
+        <DisplayMenu viewKey={displayKey} />
+        <button
+          type="button"
+          className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}
+          onClick={() => startAddSection('__end__')}
+        >
+          <Plus size={16} aria-hidden /> Add section
+        </button>
+        {/* Task X gate wiring: edit/archive/delete route through the Task F dialogs
               (ProjectDialog + ProjectConfirms) so confirms + undo toasts apply. The Inbox
               allows nothing but view prefs (plan Task F), so it gets no actions menu. */}
-          {!project.is_inbox && (
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
-                aria-label="Project actions"
+        {!project.is_inbox && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
+              aria-label="Project actions"
+            >
+              <Ellipsis size={20} strokeWidth={1.75} aria-hidden />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setTitleEditing(true)}>
+                <Pencil size={16} aria-hidden /> Rename
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => openDialog({ kind: 'project', mode: 'edit', projectId })}
               >
-                <Ellipsis size={20} strokeWidth={1.75} aria-hidden />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTitleEditing(true)}>
-                  <Pencil size={16} aria-hidden /> Rename
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => openDialog({ kind: 'project', mode: 'edit', projectId })}
-                >
-                  <Settings2 size={16} aria-hidden /> Edit project
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => openDialog({ kind: 'project-archive', projectId })}
-                >
-                  <Archive size={16} aria-hidden /> Archive project
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={() => openDialog({ kind: 'project-delete', projectId })}
-                >
-                  <Trash2 size={16} aria-hidden /> Delete project
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-      </header>
+                <Settings2 size={16} aria-hidden /> Edit project
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openDialog({ kind: 'project-archive', projectId })}>
+                <Archive size={16} aria-hidden /> Archive project
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => openDialog({ kind: 'project-delete', projectId })}
+              >
+                <Trash2 size={16} aria-hidden /> Delete project
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+    </header>
+  )
 
+  if (prefs.layout === 'board') {
+    const columns =
+      prefs.groupBy === 'none'
+        ? projectBoardColumns(active, sections, projectId)
+        : groupBoardColumns(pipelineGroups(active, prefs, filterCtx, filterCtx.projects))
+    return (
+      <div className="flex h-full flex-col px-6">
+        {header}
+        <BoardView
+          columns={columns}
+          label={project.name}
+          addSection={prefs.groupBy === 'none' ? { projectId } : undefined}
+          completed={prefs.showCompleted ? { projectId } : undefined}
+          emptyText="No tasks"
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className={CONTENT}>
+      {header}
       {pipelineDeviates(prefs) ? (
         // Group/sort/filter replace the section + subtree + dnd rendering (sorting disables
         // manual ordering, matching Todoist); the flat pipeline runs over ALL active project

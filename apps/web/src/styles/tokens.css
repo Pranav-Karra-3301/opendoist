@@ -139,7 +139,11 @@
   --od-date-tomorrow: #ad6200;
   --od-date-weekend: #246fe0;
   --od-date-next-week: #692ec2;
-  --od-date-overdue: #d1453b;
+  /* Todoist-parity #d1453b is only 4.41:1 as 12px chip text on the accent-tinted --od-surface
+   * card/sidebar backgrounds (#fcfcf8 …), failing WCAG AA and the board pass's axe gate; #c53c35
+   * keeps ≥4.5:1 on every light surface the chip renders on, INCLUDING --od-hover #f3f3f3
+   * (4.65 worst case — board-view a11y fix, same precedent as --od-text-tertiary). */
+  --od-date-overdue: #c53c35;
   /* focus (always blue, never accent) */
   --od-focus-ring: #1f60c2;
   --od-focus-ring-outer: #dceaff;

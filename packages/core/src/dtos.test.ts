@@ -66,9 +66,37 @@ describe('CompletedTaskSchema', () => {
       id: 't1',
       content: 'Ship phase 5',
       project_id: 'p1',
+      section_id: null,
+      due: { date: '2026-07-14' },
       priority: 2,
       completed_at: '2026-07-15T12:34:56.000Z',
     })
+  })
+
+  it('keeps section_id for board-column attribution and strips due to its date', () => {
+    const parsed = CompletedTaskSchema.parse({
+      id: 't2',
+      content: 'Sectioned',
+      project_id: 'p1',
+      section_id: 's9',
+      due: { date: '2026-07-20', time: '09:00', string: 'jul 20 9am', is_recurring: true },
+      priority: 1,
+      completed_at: '2026-07-21T08:00:00.000Z',
+    })
+    expect(parsed.section_id).toBe('s9')
+    expect(parsed.due).toEqual({ date: '2026-07-20' })
+  })
+
+  it('defaults section_id and due when absent (pre-board-pass row shape stays parseable)', () => {
+    const parsed = CompletedTaskSchema.parse({
+      id: 't3',
+      content: 'Legacy shape',
+      project_id: 'p1',
+      completed_at: '2026-07-15T12:34:56.000Z',
+    })
+    expect(parsed.section_id).toBeNull()
+    expect(parsed.due).toBeNull()
+    expect(parsed.priority).toBe(4)
   })
 })
 

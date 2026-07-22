@@ -13,6 +13,7 @@ import { useParams } from '@tanstack/react-router'
 import { Tag } from 'lucide-react'
 import { useLabels } from '@/api/hooks/labels'
 import { EmptyState, ODErrorBoundary } from '@/components/feedback'
+import { BoardView, viewsToBoardColumns } from '@/features/board/BoardView'
 import { colorVar } from '@/features/dialogs/ColorPicker'
 import DisplayMenu from '@/features/display/DisplayMenu'
 import { useViewPrefs } from '@/features/display/useViewPrefs'
@@ -49,26 +50,43 @@ function LabelViewPageInner() {
   const tasks = labelViewTasks(data.tasks, label.name)
   const count = tasks.length
 
+  const header = (
+    <header className="flex items-start justify-between gap-4 pt-8 pb-4">
+      <div className="flex min-w-0 items-center gap-2">
+        <span
+          aria-hidden
+          className="size-3 shrink-0 rounded-full"
+          style={{ backgroundColor: colorVar(label.color) }}
+        />
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <h1 className="truncate font-strong text-header text-text-primary">{label.name}</h1>
+          <p className="text-caption text-text-tertiary">
+            {count} {count === 1 ? 'task' : 'tasks'}
+          </p>
+        </div>
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
+        <DisplayMenu viewKey={key} />
+      </div>
+    </header>
+  )
+
+  if (prefs.layout === 'board') {
+    return (
+      <div className="flex h-full flex-col px-6">
+        {header}
+        <BoardView
+          columns={viewsToBoardColumns(tasks, prefs, data.ctx, data.taskById)}
+          label={label.name}
+          emptyText={`No tasks with @${label.name}.`}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="mx-auto max-w-[var(--content-max)] px-6 pb-24">
-      <header className="flex items-start justify-between gap-4 pt-8 pb-4">
-        <div className="flex min-w-0 items-center gap-2">
-          <span
-            aria-hidden
-            className="size-3 shrink-0 rounded-full"
-            style={{ backgroundColor: colorVar(label.color) }}
-          />
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <h1 className="truncate font-strong text-header text-text-primary">{label.name}</h1>
-            <p className="text-caption text-text-tertiary">
-              {count} {count === 1 ? 'task' : 'tasks'}
-            </p>
-          </div>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <DisplayMenu viewKey={key} />
-        </div>
-      </header>
+      {header}
       <FilterPane
         tasks={tasks}
         paneKey={`label:${label.id}`}

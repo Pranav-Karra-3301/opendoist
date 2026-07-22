@@ -21,6 +21,7 @@ import { EmptyState, ODErrorBoundary, TaskListSkeleton } from '@/components/feed
 import { InlineComposer, type InlineComposerContext } from '@/components/quick-add/inline-composer'
 import { TaskList } from '@/components/task/task-list'
 import { ViewHeader } from '@/components/view-header'
+import { BoardView, groupBoardColumns, inboxBoardColumns } from '@/features/board/BoardView'
 import { CompletedSection } from '@/features/display/CompletedSection'
 import DisplayMenu, { GroupedTaskList, useFilterContext } from '@/features/display/DisplayMenu'
 import { pipelineDeviates, pipelineGroups } from '@/features/display/pipeline'
@@ -65,6 +66,33 @@ export function InboxView() {
       ? byChildOrder(tasksInProject(activeTasks(tasksQuery.data), inbox.id))
       : []
   const deviates = pipelineDeviates(prefs)
+
+  if (prefs.layout === 'board') {
+    const columns = !inbox
+      ? []
+      : prefs.groupBy === 'none'
+        ? inboxBoardColumns(tasks, inbox.id)
+        : groupBoardColumns(pipelineGroups(tasks, prefs, ctx, ctx.projects))
+    return (
+      <ODErrorBoundary label="Inbox">
+        <div className="flex h-full flex-col px-6">
+          <ViewHeader title="Inbox" actions={<DisplayMenu viewKey={INBOX_KEY} />} />
+          {loading ? (
+            <div aria-busy="true">
+              <TaskListSkeleton rows={8} />
+            </div>
+          ) : (
+            <BoardView
+              columns={columns}
+              label="Inbox"
+              completed={prefs.showCompleted && inbox ? { projectId: inbox.id } : undefined}
+              emptyText="Your inbox is empty"
+            />
+          )}
+        </div>
+      </ODErrorBoundary>
+    )
+  }
 
   return (
     <ODErrorBoundary label="Inbox">

@@ -14,6 +14,7 @@ import {
   DEFAULT_VIEW_PREFS,
   type Priority,
   type ViewGroupBy,
+  type ViewLayout,
   type ViewSortBy,
 } from '@opendoist/core'
 import {
@@ -121,15 +122,16 @@ const PRIORITY_ITEMS: Record<string, string> = {
 const ANY_LABEL = '__all__'
 
 /**
- * The three layouts shown in the reference Display popover. List is the only shipped layout;
- * Board and Calendar are v1 non-goals, so they render disabled with a "Soon" affordance
- * (Global Constraints — Board/Calendar are shown-but-disabled, List is the only active layout).
+ * The three layouts shown in the reference Display popover. List and Board are shipped and
+ * persisted per view (`ViewPrefs.layout`); Calendar remains a non-goal, so it renders disabled
+ * with a "Soon" affordance (Global Constraints — Calendar stays disabled + "Soon").
  */
-const LAYOUTS: { key: string; label: string; icon: LucideIcon; soon: boolean }[] = [
-  { key: 'list', label: 'List', icon: List, soon: false },
-  { key: 'board', label: 'Board', icon: Columns3, soon: true },
-  { key: 'calendar', label: 'Calendar', icon: CalendarDays, soon: true },
-]
+const LAYOUTS: { key: ViewLayout | 'calendar'; label: string; icon: LucideIcon; soon: boolean }[] =
+  [
+    { key: 'list', label: 'List', icon: List, soon: false },
+    { key: 'board', label: 'Board', icon: Columns3, soon: false },
+    { key: 'calendar', label: 'Calendar', icon: CalendarDays, soon: true },
+  ]
 
 /** One cell of the Layout segmented control. `active` = the current layout; `soon` = disabled. */
 function LayoutSegment({
@@ -137,17 +139,20 @@ function LayoutSegment({
   label,
   active,
   soon,
+  onClick,
 }: {
   icon: LucideIcon
   label: string
   active: boolean
   soon: boolean
+  onClick?: () => void
 }) {
   return (
     <button
       type="button"
       disabled={soon}
       aria-pressed={active}
+      onClick={onClick}
       className={cn(
         'flex flex-col items-center gap-1 rounded-sm border px-1 py-2 text-caption transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]',
         active
@@ -216,8 +221,9 @@ export default function DisplayMenu({
                   key={l.key}
                   icon={l.icon}
                   label={l.label}
-                  active={l.key === 'list'}
+                  active={l.key === prefs.layout}
                   soon={l.soon}
+                  onClick={l.soon ? undefined : () => setPrefs({ layout: l.key as ViewLayout })}
                 />
               ))}
             </div>

@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTaskMutations } from '@/api/hooks/tasks'
 import { ODErrorBoundary, TaskListSkeleton } from '@/components/feedback'
 import { TaskRow } from '@/components/task/task-row'
+import { BoardView, upcomingBoardColumns } from '@/features/board/BoardView'
 import { CompletedSection } from '@/features/display/CompletedSection'
 import DisplayMenu, { useFilterContext } from '@/features/display/DisplayMenu'
 import { pipelineDeviates, pipelineSortFilter } from '@/features/display/pipeline'
@@ -156,6 +157,37 @@ export function UpcomingView() {
         patch: { due: { ...sourceDue, date: targetDate, string: targetDate } },
       })
     }
+  }
+
+  if (prefs.layout === 'board') {
+    return (
+      <ODErrorBoundary label="Upcoming">
+        <div className="flex h-full flex-col px-6">
+          <WeekStrip
+            today={today}
+            anchor={anchor}
+            weekStart={weekStart}
+            datesWithTasks={datesWithTasks}
+            onSelectDay={selectDay}
+            onPrevWeek={() => pageWeek(-1)}
+            onNextWeek={() => pageWeek(1)}
+            onToday={jumpToday}
+            actions={<DisplayMenu viewKey={UPCOMING_KEY} />}
+          />
+          {isLoading ? (
+            <div aria-busy="true" className="pt-4">
+              <TaskListSkeleton rows={8} />
+            </div>
+          ) : (
+            <BoardView
+              columns={upcomingBoardColumns(days, tasksByDay, today)}
+              label="Upcoming"
+              completed={prefs.showCompleted ? {} : undefined}
+            />
+          )}
+        </div>
+      </ODErrorBoundary>
+    )
   }
 
   return (

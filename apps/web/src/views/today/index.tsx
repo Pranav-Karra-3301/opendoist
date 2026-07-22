@@ -20,6 +20,7 @@ import { EmptyState, ODErrorBoundary, TaskListSkeleton } from '@/components/feed
 import { InlineComposer, type InlineComposerContext } from '@/components/quick-add/inline-composer'
 import { TaskList } from '@/components/task/task-list'
 import { ViewHeader } from '@/components/view-header'
+import { BoardView, todayBoardColumns } from '@/features/board/BoardView'
 import { CompletedSection } from '@/features/display/CompletedSection'
 import DisplayMenu, { GroupedTaskList, useFilterContext } from '@/features/display/DisplayMenu'
 import { pipelineDeviates, pipelineGroups } from '@/features/display/pipeline'
@@ -89,6 +90,33 @@ export function TodayView() {
   const todayTasks = byDayOrder(dueOn(active, today))
   const count = overdueTasks.length + todayTasks.length
   const deviates = pipelineDeviates(prefs)
+
+  if (prefs.layout === 'board') {
+    return (
+      <ODErrorBoundary label="Today">
+        <div className="flex h-full flex-col px-6">
+          <ViewHeader
+            title="Today"
+            subtitle={
+              tasksQuery.isPending ? undefined : `${count} ${count === 1 ? 'task' : 'tasks'}`
+            }
+            actions={<DisplayMenu viewKey={TODAY_KEY} />}
+          />
+          {tasksQuery.isPending ? (
+            <div aria-busy="true">
+              <TaskListSkeleton rows={8} />
+            </div>
+          ) : (
+            <BoardView
+              columns={todayBoardColumns(active, today)}
+              label="Today"
+              completed={prefs.showCompleted ? {} : undefined}
+            />
+          )}
+        </div>
+      </ODErrorBoundary>
+    )
+  }
 
   return (
     <ODErrorBoundary label="Today">

@@ -40,6 +40,31 @@ describe('UserSettingsSchema', () => {
     const parsed = UserSettingsSchema.parse({ viewPrefs: { today: { groupBy: 'priority' } } })
     expect(parsed.viewPrefs.today).toEqual({ ...DEFAULT_VIEW_PREFS, groupBy: 'priority' })
   })
+
+  it('defaults a viewPrefs layout to list', () => {
+    expect(DEFAULT_VIEW_PREFS.layout).toBe('list')
+  })
+
+  it('parses a layout-less viewPrefs value (old stored row) as layout list', () => {
+    // A viewPrefs row written before the `layout` field existed carries no `layout` key; the
+    // zod default backfills it so old settings documents load unchanged (no migration needed).
+    const parsed = UserSettingsSchema.parse({
+      viewPrefs: { today: { groupBy: 'date', sortBy: 'manual', showCompleted: false } },
+    })
+    expect(parsed.viewPrefs.today?.layout).toBe('list')
+    expect(parsed.viewPrefs.today).toEqual({ ...DEFAULT_VIEW_PREFS, groupBy: 'date' })
+  })
+
+  it('accepts an explicit board layout', () => {
+    const parsed = UserSettingsSchema.parse({ viewPrefs: { today: { layout: 'board' } } })
+    expect(parsed.viewPrefs.today?.layout).toBe('board')
+  })
+
+  it('rejects an unknown layout value', () => {
+    expect(() =>
+      UserSettingsSchema.parse({ viewPrefs: { today: { layout: 'calendar' } } }),
+    ).toThrow()
+  })
 })
 
 describe('viewKey', () => {

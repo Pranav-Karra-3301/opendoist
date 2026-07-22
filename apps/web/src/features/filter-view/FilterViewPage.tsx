@@ -30,6 +30,7 @@ import { apiAllPages } from '@/api/client'
 import { EmptyState, ODErrorBoundary } from '@/components/feedback'
 import { Button } from '@/components/ui/button'
 import { ViewHeader } from '@/components/view-header'
+import { BoardView, viewsToBoardColumns } from '@/features/board/BoardView'
 import { useDialogStore } from '@/features/dialogs/store'
 import DisplayMenu from '@/features/display/DisplayMenu'
 import { useViewPrefs } from '@/features/display/useViewPrefs'
@@ -149,6 +150,21 @@ function FilterViewPageInner() {
     raw: (rawPanes[i] ?? '').trim(),
     paneKey: `filter:${filter.id}:${i}`,
   }))
+
+  // Single-pane filters get the board renderer; multi-pane filters stay list — nested horizontal
+  // scrollers (a board inside a horizontally-scrolling pane row) are unusable (frozen descope).
+  if (prefs.layout === 'board' && !multi) {
+    return (
+      <div className="flex h-full flex-col px-6">
+        <ViewHeader title={filter.name} subtitle={subtitle} actions={displayMenu} />
+        <BoardView
+          columns={viewsToBoardColumns(panes[0] ?? [], prefs, data.ctx, data.taskById)}
+          label={filter.name}
+          emptyText="No tasks match this filter."
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="px-6 pb-24">

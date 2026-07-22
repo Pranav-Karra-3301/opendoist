@@ -99,6 +99,30 @@ interface DropTarget {
   overTask: Task | undefined
 }
 
+/**
+ * Within-container reorder → the `child_order` patches to apply (silent). The container's existing
+ * `child_order` value SET is kept and re-assigned across the moved order, preserving the
+ * container's position in the project's global ordering. Shared by the list drag (here) and the
+ * board's `use-board-dnd` (Task C), so both write byte-identical patches. `from === to` or an
+ * out-of-range index yields no patches.
+ */
+export function reorderChildOrder(
+  group: Task[],
+  from: number,
+  to: number,
+): Array<{ id: string; child_order: number }> {
+  if (from === -1 || to === -1 || from === to) return []
+  const orders = group.map((t) => t.child_order)
+  const patches: Array<{ id: string; child_order: number }> = []
+  for (const [i, task] of arrayMove(group, from, to).entries()) {
+    const nextOrder = orders[i]
+    if (nextOrder !== undefined && task.child_order !== nextOrder) {
+      patches.push({ id: task.id, child_order: nextOrder })
+    }
+  }
+  return patches
+}
+
 /** Resolve the container a drop landed in from the `over` id (a container droppable or a task row). */
 function resolveTarget(overId: string, tasks: Task[]): DropTarget | null {
   if (overId === ROOT_DROP_ID) return { sectionId: null, overTask: undefined }
@@ -149,13 +173,8 @@ export function useProjectDnd(projectId: string): {
       )
       const from = group.findIndex((t) => t.id === activeId)
       const to = group.findIndex((t) => t.id === overId)
-      if (from === -1 || to === -1 || from === to) return
-      const orders = group.map((t) => t.child_order)
-      for (const [i, task] of arrayMove(group, from, to).entries()) {
-        const nextOrder = orders[i]
-        if (nextOrder !== undefined && task.child_order !== nextOrder) {
-          update.mutate({ id: task.id, patch: { child_order: nextOrder }, silent: true })
-        }
+      for (const patch of reorderChildOrder(group, from, to)) {
+        update.mutate({ id: patch.id, patch: { child_order: patch.child_order }, silent: true })
       }
       return
     }
