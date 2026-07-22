@@ -7,14 +7,15 @@ import { openQuickAdd, quickAdd, SEL } from './helpers'
  *
  *  - Space opens the centered dialog ONLY from a neutral focus (body / non-interactive), and stays
  *    inert on a focused control (a task checkbox keeps toggling) and inside inputs (keeps typing).
- *  - `a` / `Shift+A` open the inline composer at the bottom / top of the focused list view, seeded
- *    with that row's context; in a non-list view they fall back to the centered dialog.
+ *  - `a` / `Shift+A` open the inline composer at the bottom / top of the focused list view, with
+ *    that row's context PRESET; in a non-list view they fall back to the centered dialog.
  *  - Enter inside the composer saves and keeps it open with the context re-applied (save-and-new).
  *
  * The centered dialog is `role="dialog"` named "Quick add task"; the inline composer is the
  * `[data-slot="inline-composer"]` card. Asserting the one that appears is asserting WHERE the
- * composer opened. The composer carries its context AS TEXT (text is the single source of truth),
- * so the seeded input value is the load-bearing assertion, not a chip screenshot.
+ * composer opened. The context is a Todoist-style preset held OUTSIDE the text — the input stays
+ * empty and the chips display the preset — so the load-bearing assertions are an empty input plus
+ * the chip value (the date chip's aria-label is its value, e.g. "Today", or "Date" when unset).
  */
 
 const dialogOf = (page: Page) => page.getByRole('dialog', { name: SEL.quickAddDialog })
@@ -93,23 +94,27 @@ test.describe('Quick Add entry points', () => {
     const dialog = dialogOf(page)
     const composer = composerOf(page)
     const composerInput = () => composer.getByRole('textbox', { name: SEL.quickAddInput })
+    const dateChip = () => composer.locator('[data-chip="date"]')
 
-    // Shift+A → the TOP row (the earliest day); each day seeds its own ISO date into the composer.
+    // Shift+A → the TOP row (the earliest day). The day is a PRESET: the input stays empty and
+    // the date chip carries the day as its value (aria-label ≠ the unset "Date" placeholder).
     await page.keyboard.press('Shift+A')
     await expect(composer).toBeVisible()
     await expect(dialog).toBeHidden()
-    await expect(composerInput()).toHaveValue(/^\d{4}-\d{2}-\d{2} $/)
-    const topDate = (await composerInput().inputValue()).trim()
+    await expect(composerInput()).toHaveValue('')
+    await expect(dateChip()).not.toHaveAttribute('aria-label', 'Date')
+    const topDay = await dateChip().getAttribute('aria-label')
     await page.keyboard.press('Escape')
     await expect(composer).toBeHidden()
 
-    // a → the BOTTOM row (a later day) → a later ISO date (ISO strings sort chronologically).
+    // a → the BOTTOM row (a later day) → a different day preset on the chip, input still empty.
     await page.keyboard.press('a')
     await expect(composer).toBeVisible()
     await expect(dialog).toBeHidden()
-    await expect(composerInput()).toHaveValue(/^\d{4}-\d{2}-\d{2} $/)
-    const bottomDate = (await composerInput().inputValue()).trim()
-    expect(topDate < bottomDate).toBe(true)
+    await expect(composerInput()).toHaveValue('')
+    await expect(dateChip()).not.toHaveAttribute('aria-label', 'Date')
+    const bottomDay = await dateChip().getAttribute('aria-label')
+    expect(bottomDay).not.toBe(topDay)
 
     await page.keyboard.press('Escape')
     await expect(composer).toBeHidden()
@@ -129,12 +134,13 @@ test.describe('Quick Add entry points', () => {
     const composer = composerOf(page)
     const input = composer.getByRole('textbox', { name: SEL.quickAddInput })
 
-    // `a` on Inbox opens the composer inline (not the centered dialog), seeded with the #Inbox
-    // context expressed as text.
+    // `a` on Inbox opens the composer inline (not the centered dialog). The #Inbox context is a
+    // PRESET: the input stays empty; the project chip carries "Inbox" as its value.
     await page.keyboard.press('a')
     await expect(composer).toBeVisible()
     await expect(dialog).toBeHidden()
-    await expect(input).toHaveValue('#Inbox ')
+    await expect(input).toHaveValue('')
+    await expect(composer.getByRole('button', { name: 'Inbox' })).toBeVisible()
     await expect(input).toBeFocused()
 
     const stamp = Date.now()
@@ -142,13 +148,14 @@ test.describe('Quick Add entry points', () => {
     const second = `Inline chain ${stamp} B`
 
     await page.keyboard.type(first)
-    await expect(input).toHaveValue(`#Inbox ${first}`)
+    await expect(input).toHaveValue(first)
     await input.press('Enter')
 
-    // Save-and-new: the task is created, the composer stays open, and the context is re-applied.
+    // Save-and-new: the task is created, the composer stays open, and the preset is re-applied.
     await expect(page.getByText(first).first()).toBeVisible()
     await expect(composer).toBeVisible()
-    await expect(input).toHaveValue('#Inbox ')
+    await expect(input).toHaveValue('')
+    await expect(composer.getByRole('button', { name: 'Inbox' })).toBeVisible()
 
     // A second add chains through the same open composer.
     await page.keyboard.type(second)

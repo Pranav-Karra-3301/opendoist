@@ -165,6 +165,7 @@ function DateChip({ rc }: { rc: RenderCtx }) {
   return (
     <Popover>
       <PopoverTrigger
+        data-chip="date"
         aria-label={chipAria(value, 'Date')}
         className={cn(chipBase, dueChip ? 'text-text-primary' : 'text-text-secondary')}
         style={dueChip ? { color: `var(${DUE_TONE_VAR[dueChip.tone]})` } : undefined}
