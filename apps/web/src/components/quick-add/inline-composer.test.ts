@@ -142,3 +142,38 @@ describe('composerSubmitText → parseQuickAdd round-trip (what the server saves
     expect(parsed.title).toBe('')
   })
 })
+
+describe('typed /section vs a section-row context', () => {
+  const names = { projectName: 'Work', sectionName: 'Backlog' }
+
+  it('a typed /section keeps the context section OUT of the submit line and wins server-side', () => {
+    const { parsed, activeTokens } = parse('buy milk /Other')
+    const line = composerSubmitText(
+      { text: 'buy milk /Other', ignored: [] },
+      parsed,
+      activeTokens,
+      names,
+    )
+    expect(line).toBe('#Work buy milk /Other')
+    const round = parseQuickAdd(line, ctx)
+    expect(round.project).toBe('Work')
+    expect(round.section).toBe('Other')
+    expect(round.title).toBe('buy milk')
+  })
+
+  it('the chips hide the context section when a /section was typed', () => {
+    const { parsed } = parse('buy milk /Other')
+    const merged = applyComposerContext(parsed, names)
+    expect(merged.project).toBe('Work')
+    expect(merged.section).toBeNull()
+  })
+
+  it('without a typed /section the context section rides along', () => {
+    const { parsed, activeTokens } = parse('buy milk')
+    const line = composerSubmitText({ text: 'buy milk', ignored: [] }, parsed, activeTokens, names)
+    const round = parseQuickAdd(line, ctx)
+    expect(round.project).toBe('Work')
+    expect(round.section).toBe('Backlog')
+    expect(round.title).toBe('buy milk')
+  })
+})

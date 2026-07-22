@@ -303,9 +303,24 @@ export function applyComposerContext(
 
   const project = parsed.project ?? projectName ?? null
   const section =
-    parsed.project !== null ? parsed.section : project !== null ? (sectionName ?? null) : null
+    parsed.project !== null
+      ? parsed.section
+      : project !== null && !typedSectionIntent(parsed)
+        ? (sectionName ?? null)
+        : null
 
   return { ...parsed, due, project, section }
+}
+
+/**
+ * Did the user type a `/section` of their own? Without a `#project` token the parser emits NO
+ * section token (the bare `/name` stays in the title), so token presence alone can't tell — also
+ * match a sigil-shaped `/word` in the residual title. When this is true the context section must
+ * stay out of the submit line: the server keeps only the LAST section sigil and dumps the loser
+ * into the title, so injecting the context one would pollute the saved title.
+ */
+function typedSectionIntent(parsed: ParsedQuickAdd): boolean {
+  return parsed.tokens.some((t) => t.kind === 'section') || /(^|\s)\/\S/.test(parsed.title)
 }
 
 /**
@@ -336,7 +351,10 @@ export function composerSubmitText(
   const prefix: string[] = []
   if (projectName !== undefined && parsed.project === null) {
     prefix.push(sigilToken('#', projectName))
-    if (sectionName !== undefined) prefix.push(sigilToken('/', sectionName))
+    // A typed `/section` must win against the prefixed project — see typedSectionIntent.
+    if (sectionName !== undefined && !typedSectionIntent(parsed)) {
+      prefix.push(sigilToken('/', sectionName))
+    }
   }
   if (dueDate !== undefined && cleared.due !== true && parsed.due === null) {
     prefix.push(dueDate)
