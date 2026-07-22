@@ -44,6 +44,7 @@ describe('formatDueChip', () => {
   it('maps every tone to a CSS var', () => {
     expect(DUE_TONE_VAR).toEqual({
       overdue: '--od-date-overdue',
+      missed: '--od-warning',
       today: '--od-date-today',
       tomorrow: '--od-date-tomorrow',
       weekend: '--od-date-weekend',
@@ -51,5 +52,41 @@ describe('formatDueChip', () => {
       week: '--od-text-secondary',
       future: '--od-text-secondary',
     })
+  })
+})
+
+describe('missed tone (same-day timed due whose time passed)', () => {
+  it('a today+timed due earlier than nowTime paints missed', () => {
+    const chip = formatDueChip({ date: '2026-07-22', time: '16:18' }, '2026-07-22', '17:00')
+    expect(chip.tone).toBe('missed')
+    expect(chip.label).toBe('Today 4:18pm')
+  })
+
+  it('a today+timed due later than nowTime stays today-green', () => {
+    expect(formatDueChip({ date: '2026-07-22', time: '17:30' }, '2026-07-22', '17:00').tone).toBe(
+      'today',
+    )
+  })
+
+  it('the exact current minute is not yet missed', () => {
+    expect(formatDueChip({ date: '2026-07-22', time: '17:00' }, '2026-07-22', '17:00').tone).toBe(
+      'today',
+    )
+  })
+
+  it('an all-day today due never misses', () => {
+    expect(formatDueChip({ date: '2026-07-22', time: null }, '2026-07-22', '23:59').tone).toBe(
+      'today',
+    )
+  })
+
+  it('a past DATE stays hard-overdue red, time or not', () => {
+    expect(formatDueChip({ date: '2026-07-21', time: '23:00' }, '2026-07-22', '00:01').tone).toBe(
+      'overdue',
+    )
+  })
+
+  it('without nowTime the tone stays date-only (pickers/composers)', () => {
+    expect(formatDueChip({ date: '2026-07-22', time: '01:00' }, '2026-07-22').tone).toBe('today')
   })
 })

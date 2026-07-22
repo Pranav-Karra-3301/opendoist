@@ -1,10 +1,11 @@
-import { dateInTz } from '@opendoist/core'
+import { dateInTz, timeInTz } from '@opendoist/core'
 import { CalendarDays, Clock, Flag, Repeat, Tag } from 'lucide-react'
 import { useLabels } from '@/api/hooks/labels'
 import { useProjects } from '@/api/hooks/projects'
 import type { Task } from '@/api/schemas'
 import { DUE_TONE_VAR, type DueTone, formatDueChip } from '@/lib/format-date'
 import { useParseCtx } from '@/lib/parse-context'
+import { useMinuteNow } from '@/lib/use-minute-now'
 
 export interface TaskMetaProps {
   task: Task
@@ -28,8 +29,9 @@ export function contextualDueChip(
   due: { date: string; time: string | null },
   todayIso: string,
   hideDueChipWhen: string | undefined,
+  nowTime?: string,
 ): { label: string; tone: DueTone } | null {
-  const chip = formatDueChip(due, todayIso)
+  const chip = formatDueChip(due, todayIso, nowTime)
   if (hideDueChipWhen === undefined || due.date !== hideDueChipWhen) return chip
   if (due.time === null) return null
   // format-date's `timeLabel` isn't exported (and format-date.ts is out of this file set),
@@ -62,14 +64,18 @@ function durationLabel(minutes: number): string {
  * carries no metadata so rows stay one line.
  */
 export function TaskMeta({ task, showProject, hideDueChipWhen }: TaskMetaProps) {
+  // Shared minute tick: `ctx.now` is fresh per render, so subscribing is what makes a green
+  // "Today 4:18pm" flip to the missed tone at 4:19 without any interaction.
+  useMinuteNow()
   const ctx = useParseCtx()
   const today = dateInTz(ctx.now, ctx.timezone)
+  const nowTime = timeInTz(ctx.now, ctx.timezone)
   const projects = useProjects().data
   const labels = useLabels().data
 
   const due = task.due
   const project = showProject ? projects?.find((p) => p.id === task.project_id) : undefined
-  const dueChip = due === null ? null : contextualDueChip(due, today, hideDueChipWhen)
+  const dueChip = due === null ? null : contextualDueChip(due, today, hideDueChipWhen, nowTime)
   const hasMeta =
     dueChip !== null ||
     task.deadline_date !== null ||

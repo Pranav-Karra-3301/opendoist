@@ -3,11 +3,22 @@
  * no timezone conversions happen here; callers pass today's date in the user's zone.
  */
 
-export type DueTone = 'overdue' | 'today' | 'tomorrow' | 'week' | 'weekend' | 'nextweek' | 'future'
+export type DueTone =
+  | 'overdue'
+  | 'missed'
+  | 'today'
+  | 'tomorrow'
+  | 'week'
+  | 'weekend'
+  | 'nextweek'
+  | 'future'
 
-/** FROZEN tone → CSS var map. `week`/`future` reuse text-secondary (no own Todoist color). */
+/** FROZEN tone → CSS var map. `week`/`future` reuse text-secondary (no own Todoist color);
+ *  `missed` (same-day timed due whose time already passed) paints warning orange — softer than
+ *  the hard next-day-overdue red (owner decision 2026-07-22). */
 export const DUE_TONE_VAR: Record<DueTone, string> = {
   overdue: '--od-date-overdue',
+  missed: '--od-warning',
   today: '--od-date-today',
   tomorrow: '--od-date-tomorrow',
   weekend: '--od-date-weekend',
@@ -83,10 +94,15 @@ function timeLabel(time: string): string {
  * past → overdue `Jul 2` · today/tomorrow words · next 7 days → weekday name
  * (weekend tone on Sat/Sun) · 8–14 days → `Mon, Jul 27` · beyond → `Jul 30`.
  * A non-null time appends ` 4pm`-style.
+ *
+ * `nowTime` (wall-clock `HH:mm` in the user's zone) upgrades a SAME-DAY timed due whose
+ * time already passed to the `missed` tone; omit it (pickers, composers) to keep plain
+ * date tones.
  */
 export function formatDueChip(
   due: { date: string; time: string | null },
   todayIso: string,
+  nowTime?: string,
 ): { label: string; tone: DueTone } {
   const target = parseIso(due.date)
   const today = parseIso(todayIso)
@@ -98,7 +114,7 @@ export function formatDueChip(
     tone = 'overdue'
     label = monthDayLabel(target, today.y)
   } else if (diff === 0) {
-    tone = 'today'
+    tone = due.time !== null && nowTime !== undefined && due.time < nowTime ? 'missed' : 'today'
     label = 'Today'
   } else if (diff === 1) {
     tone = 'tomorrow'

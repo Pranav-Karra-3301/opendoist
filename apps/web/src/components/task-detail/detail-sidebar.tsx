@@ -15,6 +15,7 @@ import {
   type Priority,
   parseQuickAdd,
   resolveNaturalDate,
+  timeInTz,
 } from '@opendoist/core'
 import { Calendar, Check, Clock, Flag, Hash, Plus, Repeat, Tag, Target } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
@@ -218,7 +219,13 @@ function DateField({ task }: { task: Task }) {
   const preset = (date: string, label: string) =>
     applyDue({ date, time: null, string: label, recurrence: null })
 
-  const chip = task.due ? formatDueChip({ date: task.due.date, time: task.due.time }, today) : null
+  const chip = task.due
+    ? formatDueChip(
+        { date: task.due.date, time: task.due.time },
+        today,
+        timeInTz(ctx.now, ctx.timezone),
+      )
+    : null
   const nextWeek = nextWeekdayOnOrAfter(addDaysIso(today, 1), ctx.nextWeekDay)
   const nextWeekend = nextWeekdayOnOrAfter(addDaysIso(today, 1), ctx.weekendDay)
   const tomorrow = addDaysIso(today, 1)
