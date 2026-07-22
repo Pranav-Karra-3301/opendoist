@@ -369,6 +369,33 @@
   --accent-dark-selected-text: #edb5c6;
 }
 
+/* ---------- nested [data-accent] scopes (Settings accent swatches) ----------
+   The mode blocks above CONCRETIZE --od-accent* at <html> (custom-property substitution runs
+   where the property is defined, then the resolved COLOR inherits), so an inner data-accent that
+   only redefines the --accent-* family would never re-resolve them. Re-declare the family→token
+   mapping on any [data-accent] element so a nested scope previews ITS OWN accent. Order + the
+   compound html selectors keep the app-level cascade intact: on <html> these repeat the existing
+   mappings verbatim, and the (0,2,0) dark selectors outrank the (0,1,0) light rule. */
+[data-accent] {
+  --od-accent: var(--accent-light);
+  --od-accent-hover: var(--accent-light-hover);
+  --od-accent-disabled: var(--accent-light-disabled);
+  --od-accent-soft: var(--accent-light-soft);
+  --od-selected: var(--accent-light-selected);
+  --od-selected-text: var(--accent-light-selected-text);
+}
+[data-mode="dark"] [data-accent],
+.system-dark [data-accent],
+[data-mode="dark"][data-accent],
+.system-dark[data-accent] {
+  --od-accent: var(--accent-dark);
+  --od-accent-hover: var(--accent-dark-hover);
+  --od-accent-disabled: var(--accent-dark-disabled);
+  --od-accent-soft: var(--accent-dark-soft);
+  --od-selected: var(--accent-dark-selected);
+  --od-selected-text: var(--accent-dark-selected-text);
+}
+
 /* ---------- bridge semantic vars into Tailwind utilities ---------- */
 @theme inline {
   --color-bg: var(--od-bg);
