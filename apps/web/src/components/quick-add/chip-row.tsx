@@ -50,6 +50,10 @@ export interface ChipRowProps {
   ctx: ParseContext
   /** replace the whole text and place the caret (defaults to end of text) */
   onEdit: (text: string, caret?: number) => void
+  /** A chip cleared a value that may live OUTSIDE the text (a list-row context preset, e.g. the
+   *  inline composer's Today date). Text edits still happen via onEdit; hosts without presets
+   *  (the dialog) omit this. */
+  onClearContext?: (kind: 'due') => void
 }
 
 /** Icon + display name for each customizable chip; shared with the Settings preview + row list. */
@@ -148,6 +152,7 @@ interface RenderCtx {
   labeled: boolean
   insert: (snippet: string, caretBack?: number) => void
   rewrite: (next: string) => void
+  clearContext: (kind: 'due') => void
 }
 
 function DateChip({ rc }: { rc: RenderCtx }) {
@@ -160,6 +165,7 @@ function DateChip({ rc }: { rc: RenderCtx }) {
   return (
     <Popover>
       <PopoverTrigger
+        data-chip="date"
         aria-label={chipAria(value, 'Date')}
         className={cn(chipBase, dueChip ? 'text-text-primary' : 'text-text-secondary')}
         style={dueChip ? { color: `var(${DUE_TONE_VAR[dueChip.tone]})` } : undefined}
@@ -178,7 +184,14 @@ function DateChip({ rc }: { rc: RenderCtx }) {
           Next week
         </MenuItem>
         {rc.parsed.due && (
-          <MenuItem onSelect={() => rc.rewrite(setDueText(rc.text, rc.activeTokens, ''))}>
+          <MenuItem
+            onSelect={() => {
+              // Strip any typed token AND clear a context preset (the inline composer's
+              // list-row date lives outside the text).
+              rc.rewrite(setDueText(rc.text, rc.activeTokens, ''))
+              rc.clearContext('due')
+            }}
+          >
             <span className="text-danger">No date</span>
           </MenuItem>
         )}
@@ -380,7 +393,7 @@ function ProjectChip({ rc }: { rc: RenderCtx }) {
   )
 }
 
-export function ChipRow({ text, parsed, activeTokens, ctx, onEdit }: ChipRowProps) {
+export function ChipRow({ text, parsed, activeTokens, ctx, onEdit, onClearContext }: ChipRowProps) {
   const { settings } = useUserSettings()
   const { visible, hidden } = partitionChips(normalizeChips(settings.quickAdd.chips))
 
@@ -400,6 +413,7 @@ export function ChipRow({ text, parsed, activeTokens, ctx, onEdit }: ChipRowProp
     labeled: settings.quickAdd.labeled,
     insert,
     rewrite,
+    clearContext: (kind) => onClearContext?.(kind),
   }
 
   return (

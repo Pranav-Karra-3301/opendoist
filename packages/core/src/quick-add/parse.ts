@@ -107,6 +107,7 @@ export function parseQuickAdd(input: string, ctx: ParseContext): ParsedQuickAdd 
 
   // 5. due: an `every …` recurrence phrase takes precedence; otherwise the first date span
   let due: Due | null = null
+  let dueDateCertain = true
   let durationMin: number | null = null
   if (ctx.smartDate) {
     const rec = findRecurrenceSpan(masked, ctx)
@@ -134,6 +135,7 @@ export function parseQuickAdd(input: string, ctx: ParseContext): ParsedQuickAdd 
         const dueEnd = split ? span.start + split.coreLength : span.end
         const dueText = head.slice(span.start, dueEnd)
         due = { date: span.date, time: span.time, string: dueText, recurrence: null }
+        dueDateCertain = span.dateCertain
         tokens.push({ kind: 'due', start: span.start, end: dueEnd, text: dueText })
         if (split && span.durationMin !== null) {
           durationMin = span.durationMin
@@ -164,6 +166,7 @@ export function parseQuickAdd(input: string, ctx: ParseContext): ParsedQuickAdd 
     title,
     tokens: finalTokens,
     due,
+    dueDateCertain,
     durationMin,
     // brace deadlines carry an optional resolved wall-clock time ({next friday 5pm} → { date, time });
     // date-only phrases ({march 30}) keep time null (Task B)

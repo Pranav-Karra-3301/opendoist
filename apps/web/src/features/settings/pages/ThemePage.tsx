@@ -33,7 +33,7 @@ const APPEARANCE_OPTIONS: { value: Appearance; label: string; Icon: LucideIcon }
 
 const ACCENT_LABELS: Record<AccentName, string> = {
   kale: 'Kale',
-  todoist: 'Todoist',
+  todoist: 'Red',
   moonstone: 'Moonstone',
   tangerine: 'Tangerine',
   blueberry: 'Blueberry',

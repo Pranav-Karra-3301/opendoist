@@ -8,16 +8,18 @@
  * `onClose` means "restore that row".
  *
  * It reuses `QuickAddInput` + `ChipRow` (the SAME caret-anchored autocomplete and chip pickers as
- * the dialog) so text stays the single source of truth — never a parallel state tree. The anchoring
- * `context` is expressed AS TEXT via {@link initialTextFromContext}: `#project` (+ `/section`) for
- * Inbox/Project rows, or the ISO `dueDate` for Today/Upcoming rows. Because the context lives in the
- * text, Enter saves through the same `/tasks/quick` path the dialog uses (the server re-parses the
- * whole line), keeps the composer open, and re-applies the context (Todoist save-and-new). A
- * detokenized draft can't ride the re-parsing endpoint, so — exactly like the dialog — it falls
- * back to the structured `/tasks` create built by `toCreatePayload`. Esc, the Cancel button, or a
- * blur with no task name typed calls `onClose`.
+ * the dialog), and TYPED text stays the single source of truth for everything the user wrote. The
+ * anchoring `context` (Today/Upcoming date, project/section) is a Todoist-style PRESET: it never
+ * appears in the input, the chips display it (via {@link applyComposerContext}), an explicit token
+ * overrides it, and the date chip's "No date" clears it. On save the quick path submits the typed
+ * line plus the non-overridden context re-expressed as tokens ({@link composerSubmitText}), so the
+ * server's `/tasks/quick` re-parse — reminders included — still sees one plain line; save-and-new
+ * keeps the composer open with the preset re-applied. A detokenized draft can't ride the
+ * re-parsing endpoint, so — exactly like the dialog — it falls back to the structured `/tasks`
+ * create built from the context-merged parse. Esc, the Cancel button, or a blur with no task name
+ * typed calls `onClose`.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useProjectMutations } from '@/api/hooks/projects'
 import { useTaskMutations } from '@/api/hooks/tasks'
 import { useParseCtx } from '@/lib/parse-context'
@@ -26,6 +28,9 @@ import { useAutocompleteResources } from './autocomplete'
 import { ChipRow } from './chip-row'
 import { QuickAddInput, type QuickAddInputHandle } from './quick-add-input'
 import {
+  applyComposerContext,
+  type ComposerContextNames,
+  composerSubmitText,
   EMPTY_QUICK_ADD_STATE,
   needsStructuredSubmit,
   parseState,
@@ -33,40 +38,6 @@ import {
   type QuickAddState,
   toCreatePayload,
 } from './quick-add-model'
-
-/** Resolved context names (IDs mapped to display names) that seed the composer's text. */
-export interface ComposerContextNames {
-  projectName?: string
-  sectionName?: string
-  dueDate?: string
-}
-
-/** Quote a sigil name that contains whitespace so a multi-word project/section survives the
- *  parser's `#"…"` / `/"…"` grammar; embedded quotes are dropped (they can't round-trip). */
-function sigilToken(sigil: '#' | '/', name: string): string {
-  const clean = name.replace(/"/g, '')
-  return /\s/.test(clean) ? `${sigil}"${clean}"` : `${sigil}${clean}`
-}
-
-/**
- * Map a list-row context to the composer's INITIAL TEXT. Text is the single source of truth, so the
- * anchoring context is expressed as tokens the parser re-reads: `#project` (+ `/section`, honoured
- * only beside a project) for Inbox/Project rows, or the ISO `dueDate` for Today/Upcoming rows. A
- * trailing space keeps the caret clear of the tokens so the next keystroke starts the title. Empty
- * context → empty text.
- */
-export function initialTextFromContext(ctx: ComposerContextNames): string {
-  const parts: string[] = []
-  const project = ctx.projectName?.trim()
-  const section = ctx.sectionName?.trim()
-  const dueDate = ctx.dueDate?.trim()
-  if (project) {
-    parts.push(sigilToken('#', project))
-    if (section) parts.push(sigilToken('/', section))
-  }
-  if (dueDate) parts.push(dueDate)
-  return parts.length === 0 ? '' : `${parts.join(' ')} `
-}
 
 export interface InlineComposerContext {
   projectId?: string
@@ -94,32 +65,30 @@ export function InlineComposer({
   const sectionName = context.sectionId
     ? resources.sections.find((s) => s.id === context.sectionId)?.name
     : undefined
-  const initialText = useMemo(
-    () => initialTextFromContext({ projectName, sectionName, dueDate: context.dueDate }),
+  const names: ComposerContextNames = useMemo(
+    () => ({ projectName, sectionName, dueDate: context.dueDate }),
     [projectName, sectionName, context.dueDate],
   )
 
   const [state, setState] = useState<QuickAddState>(EMPTY_QUICK_ADD_STATE)
+  // The date preset survives typing but not an explicit chip "No date" (Todoist parity).
+  const [contextDueCleared, setContextDueCleared] = useState(false)
   const { parsed, activeTokens } = useMemo(() => parseState(state, ctx), [state, ctx])
+  /** What the chips show and the structured path saves: typed values + non-overridden context. */
+  const merged = useMemo(
+    () => applyComposerContext(parsed, names, { due: contextDueCleared }),
+    [parsed, names, contextDueCleared],
+  )
 
   const setText = (text: string): void =>
     setState((s) => pruneIgnored({ text, ignored: s.ignored }, ctx))
 
-  /** Re-seed the input with the context text, caret parked past the tokens (drives focus too).
-   *  The `''` reset first clears any detokenized spans and guarantees the value changes so the
-   *  input's caret-restore layout effect fires. */
-  const resetToContext = useCallback((): void => {
+  /** Save-and-new: back to an empty input with the context preset re-applied. */
+  const resetComposer = (): void => {
     setState(EMPTY_QUICK_ADD_STATE)
-    inputRef.current?.setValueWithCaret(initialText, initialText.length)
-  }, [initialText])
-
-  // Seed the composer once its context text is known (project names may resolve a beat after mount).
-  const seededFor = useRef<string | null>(null)
-  useEffect(() => {
-    if (initialText === '' || seededFor.current === initialText) return
-    seededFor.current = initialText
-    resetToContext()
-  }, [initialText, resetToContext])
+    setContextDueCleared(false)
+    inputRef.current?.setValueWithCaret('', 0)
+  }
 
   const canSubmit = parsed.title.trim() !== ''
 
@@ -127,26 +96,30 @@ export function InlineComposer({
     if (!canSubmit) return
     try {
       if (needsStructuredSubmit(state)) {
-        const { payload, missing } = toCreatePayload(parsed, {
+        const { payload, missing } = toCreatePayload(merged, {
           projects: resources.projects,
           sections: resources.sections,
           labels: resources.labels,
         })
         for (const name of missing.projects) {
           const created = await projectMut.create.mutateAsync({ name })
-          if (parsed.project && parsed.project.toLowerCase() === name.toLowerCase()) {
+          if (merged.project && merged.project.toLowerCase() === name.toLowerCase()) {
             payload.project_id = created.id
           }
         }
         await taskMut.create.mutateAsync(payload)
       } else {
-        await taskMut.quickAdd.mutateAsync({ text: state.text })
+        await taskMut.quickAdd.mutateAsync({
+          text: composerSubmitText(state, parsed, activeTokens, names, {
+            due: contextDueCleared,
+          }),
+        })
       }
     } catch {
       // The mutation surfaces the failure via toast; keep the draft so the user can retry.
       return
     }
-    if (keepOpen) resetToContext()
+    if (keepOpen) resetComposer()
     else onClose()
   }
 
@@ -180,7 +153,7 @@ export function InlineComposer({
           value={state.text}
           onChange={setText}
           activeTokens={activeTokens}
-          projectContext={parsed.project}
+          projectContext={merged.project}
           resources={resources}
           onIgnoreToken={(token) =>
             setState((s) => ({
@@ -202,10 +175,13 @@ export function InlineComposer({
       <div className="mt-3 px-[3px]">
         <ChipRow
           text={state.text}
-          parsed={parsed}
+          parsed={merged}
           activeTokens={activeTokens}
           ctx={ctx}
           onEdit={(text, caret) => inputRef.current?.setValueWithCaret(text, caret)}
+          onClearContext={(kind) => {
+            if (kind === 'due') setContextDueCleared(true)
+          }}
         />
       </div>
       <div className="mt-3 flex items-center justify-end gap-2">

@@ -12,6 +12,9 @@ export interface DateSpan extends ResolvedDate {
   end: number
   text: string
   durationMin: number | null
+  /** false when the DATE was implied rather than written — a standalone time ("4:18pm")
+   *  resolved to today/tomorrow. Lets composers substitute a view-context date. */
+  dateCertain: boolean
 }
 
 const pad = (n: number) => String(n).padStart(2, '0')
@@ -366,6 +369,7 @@ function toSpans(text: string, cands: Candidate[]): DateSpan[] {
       end,
       text: text.slice(c.start, end),
       durationMin,
+      dateCertain: c.dateCertain,
     })
   }
   return spans
