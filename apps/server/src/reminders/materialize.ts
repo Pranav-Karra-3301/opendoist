@@ -87,7 +87,11 @@ function parseDue(dueJson: string | null): Due | null {
  * uncomplete, delete, or recurring-advance.
  *
  * Rules:
- * - Recompute each row's `fire_at_utc`; if it changed, reset `fired_at = null` (re-arm).
+ * - Recompute each row's `fire_at_utc`; if it changed, reset `fired_at = null` (re-arm) —
+ *   EXCEPT a relative instant that is already past at sync time, which is claimed instead
+ *   (`fired_at = now`): a reminder born in the past (task created/edited after its moment)
+ *   must not fire late. Rows whose instant is unchanged are never touched, so armed-overdue
+ *   rows still get the scheduler's downtime catch-up.
  * - On a completed non-recurring task or a soft-deleted task, relative/auto rows are nulled
  *   (absolute/recurring rows keep their own instant).
  * - Maintain the auto rows for a task that is alive with a timed due: always one at-time row
@@ -182,13 +186,17 @@ export async function syncTaskReminders(db: Db, taskId: string): Promise<void> {
 
   // ---- Pass 2: recompute fire instants for every surviving row ----
   const finalRows = db.select().from(reminders).where(eq(reminders.taskId, taskId)).all()
+  const syncNow = nowIso()
   for (const r of finalRows) {
     const input = { type: r.type, minuteOffset: r.minuteOffset, due: parseDue(r.dueJson) }
     const nextFireAt =
       r.type === 'relative' && suppressRelative ? null : computeFireAt(input, taskDue, timezone)
     if (nextFireAt !== r.fireAtUtc) {
+      // A relative instant that lands in the past is claimed at birth: no late notification.
+      // (Recurring rows are excluded — the scheduler's claim-and-advance owns their rollover.)
+      const bornPast = r.type === 'relative' && nextFireAt !== null && nextFireAt <= syncNow
       db.update(reminders)
-        .set({ fireAtUtc: nextFireAt, firedAt: null, updatedAt: nowIso() })
+        .set({ fireAtUtc: nextFireAt, firedAt: bornPast ? syncNow : null, updatedAt: syncNow })
         .where(eq(reminders.id, r.id))
         .run()
     }

@@ -27,6 +27,11 @@ function one<T>(items: T[]): T {
   return head
 }
 
+/** A due date safely in the future (relative reminders born in the past are claimed at sync). */
+function futureDate(daysAhead = 2): string {
+  return new Date(Date.now() + daysAhead * 86_400_000).toISOString().slice(0, 10)
+}
+
 function absoluteDue(date: string, time: string | null): string {
   return JSON.stringify(
     DueSchema.parse({ date, time, string: `${date} ${time}`, recurrence: null }),
@@ -237,13 +242,11 @@ describe('advanceRecurringReminder', () => {
 })
 
 describe('syncTaskReminders — recompute + re-arm', () => {
-  test('recomputes fire_at_utc and resets fired_at when the instant changes', async () => {
+  test('recomputes fire_at_utc and resets fired_at when the instant changes (future due)', async () => {
     const db = await freshDb()
     const { userId } = await seedUser(db, { autoReminderMinutes: null })
-    const { id: taskId } = await seedTask(db, userId, {
-      dueDate: '2026-07-16',
-      dueTime: '17:00',
-    })
+    const due = futureDate()
+    const { id: taskId } = await seedTask(db, userId, { dueDate: due, dueTime: '17:00' })
     // Seed a manual relative reminder whose stored instant is deliberately stale + already fired.
     await seedReminder(db, {
       userId,
@@ -259,10 +262,53 @@ describe('syncTaskReminders — recompute + re-arm', () => {
     expect(row.fireAtUtc).toBe(
       computeFireAt(
         { type: 'relative', minuteOffset: 30, due: null },
-        { date: '2026-07-16', time: '17:00' },
+        { date: due, time: '17:00' },
         NY,
       ),
     )
+    expect(row.firedAt).toBeNull()
+  })
+
+  test('a relative instant recomputed into the PAST is claimed at sync, not re-armed', async () => {
+    const db = await freshDb()
+    const { userId } = await seedUser(db, { autoReminderMinutes: null })
+    // Timed due earlier than now: the reminder moment has already passed at sync time.
+    const { id: taskId } = await seedTask(db, userId, {
+      dueDate: '2026-07-16',
+      dueTime: '17:00',
+    })
+    await seedReminder(db, { userId, taskId, type: 'relative', minuteOffset: 30 })
+    await syncTaskReminders(db, taskId)
+    const row = one(remindersOf(db, taskId).filter((r) => !r.isAuto))
+    expect(row.fireAtUtc).not.toBeNull()
+    expect(row.firedAt).not.toBeNull() // born-past → claimed, the scheduler never dispatches it
+  })
+
+  test('an armed overdue reminder with an UNCHANGED instant stays armed (downtime catch-up)', async () => {
+    const db = await freshDb()
+    const { userId } = await seedUser(db, { autoReminderMinutes: null })
+    const { id: taskId } = await seedTask(db, userId, {
+      dueDate: '2026-07-16',
+      dueTime: '17:00',
+    })
+    const correct = computeFireAt(
+      { type: 'relative', minuteOffset: 30, due: null },
+      { date: '2026-07-16', time: '17:00' },
+      NY,
+    )
+    // Armed before the instant passed (e.g. the server was down when it came due) — the sync
+    // must NOT touch it; the scheduler's catch-up/stale logic owns it.
+    await seedReminder(db, {
+      userId,
+      taskId,
+      type: 'relative',
+      minuteOffset: 30,
+      fireAtUtc: correct,
+      firedAt: null,
+    })
+    await syncTaskReminders(db, taskId)
+    const row = one(remindersOf(db, taskId).filter((r) => !r.isAuto))
+    expect(row.fireAtUtc).toBe(correct)
     expect(row.firedAt).toBeNull()
   })
 
@@ -363,10 +409,8 @@ describe('syncTaskReminders — auto reminders', () => {
   test('creates the at-time row plus the heads-up row for a timed task', async () => {
     const db = await freshDb()
     const { userId } = await seedUser(db, { autoReminderMinutes: 30 })
-    const { id: taskId } = await seedTask(db, userId, {
-      dueDate: '2026-07-16',
-      dueTime: '17:00',
-    })
+    const due = futureDate()
+    const { id: taskId } = await seedTask(db, userId, { dueDate: due, dueTime: '17:00' })
     await syncTaskReminders(db, taskId)
     const auto = remindersOf(db, taskId).filter((r) => r.isAuto)
     expect(autoOffsets(db, taskId)).toEqual([0, 30])
@@ -376,11 +420,28 @@ describe('syncTaskReminders — auto reminders', () => {
       expect(row.fireAtUtc).toBe(
         computeFireAt(
           { type: 'relative', minuteOffset: row.minuteOffset, due: null },
-          { date: '2026-07-16', time: '17:00' },
+          { date: due, time: '17:00' },
           NY,
         ),
       )
     }
+  })
+
+  test('a heads-up already in the past at creation is claimed; the at-time row still arms', async () => {
+    const db = await freshDb()
+    // UTC settings so the UTC-derived wall clock below really is "now + 2 minutes".
+    const { userId } = await seedUser(db, { timezone: 'UTC', autoReminderMinutes: 30 })
+    // Due ~2 minutes from now: the 30-min heads-up moment is long gone, the due itself is not.
+    const soon = new Date(Date.now() + 2 * 60_000)
+    const dueDate = soon.toISOString().slice(0, 10)
+    const dueTime = soon.toISOString().slice(11, 16)
+    const { id: taskId } = await seedTask(db, userId, { dueDate, dueTime })
+    await syncTaskReminders(db, taskId)
+    const rows = remindersOf(db, taskId).filter((r) => r.isAuto)
+    const headsUp = one(rows.filter((r) => r.minuteOffset === 30))
+    const atTime = one(rows.filter((r) => r.minuteOffset === 0))
+    expect(headsUp.firedAt).not.toBeNull() // born-past → claimed, no late notification
+    expect(atTime.firedAt).toBeNull() // still fires at the due minute
   })
 
   test('does not create auto rows for an all-day task', async () => {
