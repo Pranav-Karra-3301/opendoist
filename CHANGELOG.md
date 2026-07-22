@@ -1,6 +1,17 @@
 # Changelog
 
 All notable changes to OpenDoist.
+## [0.2.0] - 2026-07-22
+
+### Documentation
+- Plan the Views & Chrome pass (owner feedback)
+- Plan the Settings modal polish (Todoist-style two-pane)
+- Expand stage-2 plan to Settings & Theme (user-menu entry + appearance×accent)
+
+### Features
+- *(web)* Views & Chrome pass — sidebar chrome, Display menu, task-row polish, subtask fix
+- *(web)* Settings & Theme pass — modal polish, user-menu entry, appearance×accent theme
+- *(reminders)* Always add an at-time automatic reminder
 ## [0.1.1] - 2026-07-20
 
 ### Bug Fixes
@@ -13,6 +24,9 @@ All notable changes to OpenDoist.
 ### Features
 - *(web)* Quick Add UX pass — positioning, calendar, deadline time, chip pickers
 - *(web)* Quick Add entry-point semantics — Space opener + inline composers
+
+### Maintenance
+- *(release)* V0.1.1
 ## [0.1.0] - 2026-07-18
 
 ### Bug Fixes
