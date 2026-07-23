@@ -1,6 +1,11 @@
 # Changelog
 
 All notable changes to OpenTask.
+## [0.4.1] - 2026-07-23
+
+### Features
+- *(desktop)* Seamless macOS window chrome + dedicated updater feed (v0.2.0)
+- *(reminders)* Lead-aware notification copy — "Due in 30 min" / "Due now"
 ## [0.4.0] - 2026-07-23
 
 ### Documentation
@@ -9,6 +14,9 @@ All notable changes to OpenTask.
 ### Features
 - *(web)* Board layout — kanban renderer over the existing grouped pipeline
 - Rebrand OpenDoist to OpenTask
+
+### Maintenance
+- *(release)* V0.4.0
 ## [0.3.2] - 2026-07-22
 
 ### Features
