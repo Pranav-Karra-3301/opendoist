@@ -48,7 +48,7 @@ it('GET /api/v1/openapi.json serves the OpenAPI document', async () => {
   const res = await t.get('/api/v1/openapi.json')
   expect(res.status).toBe(200)
   const doc = await json<{ info: { title: string } }>(res)
-  expect(doc.info.title).toBe('OpenDoist API')
+  expect(doc.info.title).toBe('OpenTask API')
 })
 
 it('GET /api/v1/docs serves Scalar HTML', async () => {

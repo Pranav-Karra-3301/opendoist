@@ -49,7 +49,7 @@ function MessageToast({ toast }: { toast: Toast }) {
         type="button"
         aria-label="Dismiss"
         onClick={() => dismiss(toast.id)}
-        className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-white/70 transition-colors duration-150 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+        className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-white/70 transition-colors duration-150 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
       >
         <X size={16} aria-hidden="true" />
       </button>

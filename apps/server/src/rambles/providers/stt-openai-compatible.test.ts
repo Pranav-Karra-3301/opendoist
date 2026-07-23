@@ -129,12 +129,12 @@ describe('createOpenAiCompatibleStt', () => {
     const fetch = mockFetch(jsonRes({ text: 'hi' }))
     await createOpenAiCompatibleStt(BASE_CFG, fetch).transcribe(AUDIO, {
       language: 'pt',
-      prompt: 'OpenDoist, ramble',
+      prompt: 'OpenTask, ramble',
     })
 
     const body = fetch.mock.calls[0]?.[1]?.body as FormData
     expect(body.get('language')).toBe('pt')
-    expect(body.get('prompt')).toBe('OpenDoist, ramble')
+    expect(body.get('prompt')).toBe('OpenTask, ramble')
   })
 
   it('omits language and prompt entries when opts are absent', async () => {

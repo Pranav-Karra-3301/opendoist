@@ -41,7 +41,7 @@ export function PermissionPreprompt({
             </div>
             <DialogTitle>Get notified when reminders fire</DialogTitle>
             <DialogDescription>
-              OpenDoist can push a notification the moment a task reminder is due — even while this
+              OpenTask can push a notification the moment a task reminder is due — even while this
               tab sits in the background. You can turn it off anytime in Settings.
             </DialogDescription>
           </DialogHeader>

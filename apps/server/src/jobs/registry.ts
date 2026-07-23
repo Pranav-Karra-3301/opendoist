@@ -34,7 +34,7 @@ export function startJobs(deps: JobDeps): { stop: () => void } {
     }
   }
 
-  // backup.nightly — cron from OPENDOIST_BACKUP_CRON (default '0 3 * * *').
+  // backup.nightly — cron from OPENTASK_BACKUP_CRON (default '0 3 * * *').
   crons.push(
     new Cron(
       config.backupCron,

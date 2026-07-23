@@ -1,3 +1,4 @@
+import { existsSync, renameSync } from 'node:fs'
 import { join } from 'node:path'
 import Database from 'better-sqlite3'
 import { type BetterSQLite3Database, drizzle } from 'drizzle-orm/better-sqlite3'
@@ -36,7 +37,25 @@ interface Holder {
 }
 
 /** Reaches the swappable Holder behind a db/sqlite proxy (used by close/reopen only). */
-const HOLDER = Symbol('opendoist.db.holder')
+const HOLDER = Symbol('opentask.db.holder')
+
+/**
+ * Resolve the SQLite path inside `dataDir`, migrating a legacy OpenDoist-era `opendoist.db`
+ * (plus its `-wal`/`-shm` sidecars) to `opentask.db` by rename the first time the renamed app
+ * boots on an old data dir. Must run BEFORE the file is opened — sidecars only move safely while
+ * the database is closed. A data dir that already has `opentask.db` is never touched.
+ */
+export function resolveDbPath(dataDir: string): string {
+  const next = join(dataDir, 'opentask.db')
+  const legacy = join(dataDir, 'opendoist.db')
+  if (!existsSync(next) && existsSync(legacy)) {
+    renameSync(legacy, next)
+    for (const suffix of ['-wal', '-shm']) {
+      if (existsSync(legacy + suffix)) renameSync(legacy + suffix, next + suffix)
+    }
+  }
+  return next
+}
 
 const MIGRATIONS_DIR = join(import.meta.dirname, '../../drizzle')
 

@@ -73,7 +73,7 @@ export function getOrCreateVapidKeys(config?: {
 }): VapidKeys {
   const { dataDir, publicUrl } = config ?? loadConfig()
   const secrets = ensureDataDirAndSecrets(dataDir)
-  const subject = publicUrl?.startsWith('https://') ? publicUrl : 'mailto:admin@opendoist.local'
+  const subject = publicUrl?.startsWith('https://') ? publicUrl : 'mailto:admin@opentask.local'
   return {
     publicKey: secrets.vapidPublicKey,
     privateKey: secrets.vapidPrivateKey,

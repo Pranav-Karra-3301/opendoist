@@ -1,4 +1,4 @@
-import type { Priority } from '@opendoist/core'
+import type { Priority } from '@opentask/core'
 import { ApiError, AuthError, NetworkError } from './errors'
 
 // DTOs are the CLI-consumed subset of the server's wire shapes (AS-BUILT reconciled against
@@ -144,7 +144,7 @@ export class ApiClient {
     if (res.status === 401)
       throw new AuthError(
         'unauthorized (401): token missing, expired, or revoked',
-        'run `opendoist login` with a fresh od_ token from Settings → Integrations (if a working token suddenly gets 401s, the server may be rate-limiting API keys)',
+        'run `opentask login` with a fresh ot_ token from Settings → Integrations (if a working token suddenly gets 401s, the server may be rate-limiting API keys)',
       )
     if (res.status === 403)
       throw new AuthError(
@@ -165,9 +165,9 @@ export class ApiClient {
     try {
       return (await res.json()) as T
     } catch {
-      // 2xx but not JSON — an SPA catch-all or some other website, not an OpenDoist API.
+      // 2xx but not JSON — an SPA catch-all or some other website, not an OpenTask API.
       throw new ApiError(
-        `${method} ${path} returned ${res.status} with a non-JSON body — not an OpenDoist server?`,
+        `${method} ${path} returned ${res.status} with a non-JSON body — not an OpenTask server?`,
         res.status,
         null,
       )

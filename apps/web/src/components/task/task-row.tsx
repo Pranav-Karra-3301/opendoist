@@ -52,7 +52,7 @@ function RowActionButton({
         event.stopPropagation()
         onClick()
       }}
-      className="flex size-7 items-center justify-center rounded-sm text-text-secondary transition-colors hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+      className="flex size-7 items-center justify-center rounded-sm text-text-secondary transition-colors hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
     >
       {children}
     </button>
@@ -120,7 +120,7 @@ function RowView({
       style={{ paddingLeft: 5 + depth * 24, ...(drag?.style ?? {}) }}
       className={cn(
         'group/row relative flex min-h-[42px] items-start gap-1.5 rounded-sm border-border-subtle border-b py-2 pr-[38px]',
-        focused && 'bg-[var(--od-row-focus-bg)] shadow-[inset_0_0_0_1px_var(--od-row-focus-ring)]',
+        focused && 'bg-[var(--ot-row-focus-bg)] shadow-[inset_0_0_0_1px_var(--ot-row-focus-ring)]',
         selected && 'bg-selected',
         drag?.isDragging && 'z-10 opacity-60 shadow-drag',
       )}
@@ -131,7 +131,7 @@ function RowView({
         <button
           type="button"
           aria-label="Reorder task"
-          className="-ml-1 mt-0.5 flex size-4 shrink-0 cursor-grab touch-none items-center justify-center rounded-sm text-text-tertiary opacity-0 transition-opacity hover:text-text-primary focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)] active:cursor-grabbing group-hover/row:opacity-100 group-focus-within/row:opacity-100"
+          className="-ml-1 mt-0.5 flex size-4 shrink-0 cursor-grab touch-none items-center justify-center rounded-sm text-text-tertiary opacity-0 transition-opacity hover:text-text-primary focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)] active:cursor-grabbing group-hover/row:opacity-100 group-focus-within/row:opacity-100"
           {...drag.attributes}
           {...drag.listeners}
         >
@@ -148,7 +148,7 @@ function RowView({
               event.stopPropagation()
               collapse.onToggle()
             }}
-            className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-sm text-text-tertiary hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+            className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-sm text-text-tertiary hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
           >
             {collapse.collapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
           </button>
@@ -177,7 +177,7 @@ function RowView({
           onClick={handleTitleClick}
           onDoubleClick={openDetail}
           className={cn(
-            'block max-w-full cursor-pointer truncate text-left text-body focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]',
+            'block max-w-full cursor-pointer truncate text-left text-body focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]',
             completed ? 'text-text-tertiary line-through' : 'text-text-primary',
           )}
         >
@@ -192,7 +192,7 @@ function RowView({
       <div
         className={cn(
           'absolute top-1.5 right-1.5 flex items-center gap-0.5 pl-2 transition-opacity',
-          selected ? 'bg-selected' : focused ? 'bg-[var(--od-row-focus-bg)]' : 'bg-bg',
+          selected ? 'bg-selected' : focused ? 'bg-[var(--ot-row-focus-bg)]' : 'bg-bg',
           popoverOpen
             ? 'opacity-100'
             : 'opacity-0 group-hover/row:opacity-100 group-focus-within/row:opacity-100',

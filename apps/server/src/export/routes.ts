@@ -13,7 +13,7 @@ import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
 import type { AppEnv } from '../app'
 import { problem } from '../lib/problem'
 import { buildCsvFiles, zipCsvFiles } from './csv-export'
-import { buildJsonExport, OpendoistExportSchema } from './json-export'
+import { buildJsonExport, OpentaskExportSchema } from './json-export'
 
 const security: Record<string, string[]>[] = [{ cookieAuth: [] }, { bearerAuth: [] }]
 
@@ -46,7 +46,7 @@ const jsonExportRoute = createRoute({
     'soft-deleted rows and attachment file bytes are not. Requires a session or `read_write` token.',
   responses: {
     200: {
-      content: { 'application/json': { schema: OpendoistExportSchema } },
+      content: { 'application/json': { schema: OpentaskExportSchema } },
       description: 'The export document (served as a file download)',
     },
     401: problemResponse('Unauthorized'),
@@ -92,7 +92,7 @@ export const exportRouter = () => {
     const { db } = c.get('deps')
 
     const doc = buildJsonExport({ db, userId: auth.userId })
-    c.header('content-disposition', `attachment; filename="opendoist-export-${today()}.json"`)
+    c.header('content-disposition', `attachment; filename="opentask-export-${today()}.json"`)
     return c.json(doc, 200)
   })
 
@@ -107,7 +107,7 @@ export const exportRouter = () => {
       status: 200,
       headers: {
         'content-type': 'application/zip',
-        'content-disposition': `attachment; filename="opendoist-export-${today()}.zip"`,
+        'content-disposition': `attachment; filename="opentask-export-${today()}.zip"`,
       },
     })
   })

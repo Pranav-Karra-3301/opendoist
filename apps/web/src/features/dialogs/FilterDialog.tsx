@@ -5,7 +5,7 @@
  * No phase-4 filters hook exists, so create/update POST/PATCH `/filters` inline (the server
  * re-validates the query and 409s are surfaced inline) and invalidate the `['filters']` cache.
  */
-import { parseFilter } from '@opendoist/core'
+import { parseFilter } from '@opentask/core'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { z } from 'zod'

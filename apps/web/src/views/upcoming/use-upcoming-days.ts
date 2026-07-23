@@ -10,8 +10,8 @@
  * selectors (no view-specific query).
  */
 
-import type { Weekday } from '@opendoist/core'
-import { addDaysIso, dateInTz, diffDays, isoWeekday } from '@opendoist/core'
+import type { Weekday } from '@opentask/core'
+import { addDaysIso, dateInTz, diffDays, isoWeekday } from '@opentask/core'
 import { useEffect, useMemo } from 'react'
 import { create } from 'zustand'
 import { useActiveTasks } from '@/api/hooks/tasks'

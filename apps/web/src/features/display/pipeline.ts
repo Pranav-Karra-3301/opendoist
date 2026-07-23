@@ -16,7 +16,7 @@ import {
   type ParseContext,
   sortTasks,
   type ViewPrefs,
-} from '@opendoist/core'
+} from '@opentask/core'
 import type { Task } from '@/api/schemas'
 import { toFilterTaskView } from '@/lib/api/phase5'
 

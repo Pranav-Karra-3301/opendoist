@@ -36,7 +36,7 @@ const problemResponse = (description: string) => ({
 const JobStartedSchema = z.object({ jobId: z.string() })
 const ModeSchema = z.enum(['dry-run', 'apply'])
 
-/** Backup-zip upload cap (256 MiB) — deliberately NOT the attachments OPENDOIST_UPLOAD_MAX_MB cap. */
+/** Backup-zip upload cap (256 MiB) — deliberately NOT the attachments OPENTASK_UPLOAD_MAX_MB cap. */
 const CSV_IMPORT_MAX_BYTES = 256 * 1024 * 1024
 
 const csvImportRoute = createRoute({

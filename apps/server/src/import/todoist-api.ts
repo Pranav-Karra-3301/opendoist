@@ -2,7 +2,7 @@
  * Todoist live-API importer — phase 9 FROZEN signature (plan Task A Step 5), implemented by Task F.
  * Plain `fetchImpl ?? fetch` cursor-pagination loops against the unified Todoist API v1
  * (dossier §1.9) — no SDK, no db access. Produces one normalized ImportPlan; the shared
- * `applyImportPlan` (Task E) writes it. Priority is inverted to OpenDoist convention (1 = highest)
+ * `applyImportPlan` (Task E) writes it. Priority is inverted to OpenTask convention (1 = highest)
  * here so a plan is always in our convention.
  */
 import type { ImportCounts, ImportPlan, ImportProgress } from './types'
@@ -157,7 +157,7 @@ async function fetchPaged<T>(
 
 /** ---- Field mapping ------------------------------------------------------------------- */
 
-/** Todoist stores 4 = urgent; OpenDoist stores 1 = highest, so `ours = 5 − theirs`, clamped. */
+/** Todoist stores 4 = urgent; OpenTask stores 1 = highest, so `ours = 5 − theirs`, clamped. */
 function mapPriority(priority?: number): PlanTask['priority'] {
   const theirs = typeof priority === 'number' && Number.isFinite(priority) ? priority : 1
   const ours = Math.min(4, Math.max(1, Math.round(5 - theirs)))

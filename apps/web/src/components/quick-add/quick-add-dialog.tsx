@@ -29,7 +29,7 @@ import {
 } from './quick-add-model'
 
 function paletteVar(color: string): string {
-  return `var(--od-palette-${color.replaceAll('_', '-')})`
+  return `var(--ot-palette-${color.replaceAll('_', '-')})`
 }
 
 export function QuickAddDialog() {
@@ -241,7 +241,7 @@ export function QuickAddDialog() {
         ) : (
           <div className="flex items-center justify-between gap-3 border-border border-t px-4 py-3">
             <Popover>
-              <PopoverTrigger className="inline-flex h-8 items-center gap-2 rounded-sm px-2 text-copy text-text-secondary hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]">
+              <PopoverTrigger className="inline-flex h-8 items-center gap-2 rounded-sm px-2 text-copy text-text-secondary hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]">
                 <span
                   className="size-2.5 rounded-full"
                   style={{ backgroundColor: paletteVar(targetProject?.color ?? 'grey') }}

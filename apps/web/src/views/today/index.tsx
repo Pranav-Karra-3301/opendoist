@@ -12,7 +12,7 @@
  * the group/sort/filter pipeline (dossier §1.8: group-by applies within the day block),
  * and `showCompleted` appends recently completed tasks.
  */
-import { dateInTz, viewKey } from '@opendoist/core'
+import { dateInTz, viewKey } from '@opentask/core'
 import { Plus, Sun } from 'lucide-react'
 import { useState } from 'react'
 import { useActiveTasks } from '@/api/hooks/tasks'
@@ -70,7 +70,7 @@ function AddTaskRow({ context }: { context: InlineComposerContext }) {
     <button
       type="button"
       onClick={() => setOpen(true)}
-      className="group flex h-9 w-full items-center gap-2 rounded-sm px-[5px] text-left text-body text-text-secondary transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+      className="group flex h-9 w-full items-center gap-2 rounded-sm px-[5px] text-left text-body text-text-secondary transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
     >
       <Plus size={18} className="text-accent" aria-hidden />
       Add task

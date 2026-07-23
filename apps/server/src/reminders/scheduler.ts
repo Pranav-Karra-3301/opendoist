@@ -4,7 +4,7 @@
  * recurring reminders to their next instant. Claiming happens before any work so overlapping ticks
  * (or a crash mid-dispatch) can never double-fire a reminder.
  */
-import type { Due } from '@opendoist/core'
+import type { Due } from '@opentask/core'
 import { Cron } from 'croner'
 import { and, eq, isNotNull, isNull, lte } from 'drizzle-orm'
 import type { Db } from '../db/db'

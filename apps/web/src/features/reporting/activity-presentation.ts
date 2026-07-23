@@ -14,7 +14,7 @@ import {
   isoWeekday,
   type KnownActivityType,
   timeInTz,
-} from '@opendoist/core'
+} from '@opentask/core'
 
 /** Lucide icon *names* (resolved to components in ActivityFeed) — kept as strings so
  *  this module never imports React/lucide and stays testable in the node env. */

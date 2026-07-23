@@ -2,7 +2,7 @@ import { expect, type Locator, type Page, test } from '@playwright/test'
 import { openQuickAdd, SEL } from './helpers'
 
 /**
- * Quick Add UX pass — Task F chip pickers (plan 2026-07-18-opendoist-quickadd-ux §Task F).
+ * Quick Add UX pass — Task F chip pickers (plan 2026-07-18-opentask-quickadd-ux §Task F).
  *
  * The Deadline / Reminders / Duration chips are real pickers that COMPOSE token spans in the input
  * (text stays the single source of truth) instead of dumping `{}` / `!` / `for ` sigils. Each spec

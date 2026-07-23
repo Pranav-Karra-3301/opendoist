@@ -23,7 +23,7 @@ import { restoreFromZip } from './restore'
 
 const info = (over: Partial<BackupInfo> = {}): BackupInfo => ({
   id: 'b1',
-  filename: 'opendoist-backup-2026-07-17.zip',
+  filename: 'opentask-backup-2026-07-17.zip',
   kind: 'manual',
   sizeBytes: 1234,
   includesAttachments: true,
@@ -59,7 +59,7 @@ describe('backups routes — auth', () => {
   it('refuses a read-scope token even on GET (a backup is the whole database)', async () => {
     const t = await make()
     const ro = await t.deps.auth.api.createApiKey({
-      body: { name: 'ro', userId: t.userId, permissions: { opendoist: ['read'] } },
+      body: { name: 'ro', userId: t.userId, permissions: { opentask: ['read'] } },
     })
     const res = await t.request('/api/v1/backups', {
       headers: { authorization: `Bearer ${ro.key}` },
@@ -145,15 +145,15 @@ describe('backups routes — download', () => {
   it('streams a real backup file with zip headers', async () => {
     const t = await make()
     const dir = mkdtempSync(join(tmpdir(), 'od-dl-'))
-    const file = join(dir, 'opendoist-backup-2026-07-17.zip')
+    const file = join(dir, 'opentask-backup-2026-07-17.zip')
     writeFileSync(file, Buffer.from('PK pretend-zip-bytes'))
     vi.mocked(backupFilePath).mockReturnValue(file)
     try {
-      const res = await t.get('/api/v1/backups/opendoist-backup-2026-07-17.zip/download')
+      const res = await t.get('/api/v1/backups/opentask-backup-2026-07-17.zip/download')
       expect(res.status).toBe(200)
       expect(res.headers.get('content-type')).toBe('application/zip')
       expect(res.headers.get('content-disposition')).toBe(
-        'attachment; filename="opendoist-backup-2026-07-17.zip"',
+        'attachment; filename="opentask-backup-2026-07-17.zip"',
       )
       expect(await res.text()).toBe('PK pretend-zip-bytes')
     } finally {
@@ -163,8 +163,8 @@ describe('backups routes — download', () => {
 
   it('404s when the resolved file does not exist', async () => {
     const t = await make()
-    vi.mocked(backupFilePath).mockReturnValue('/no/such/opendoist-backup-2026-07-17.zip')
-    expect((await t.get('/api/v1/backups/opendoist-backup-2026-07-17.zip/download')).status).toBe(
+    vi.mocked(backupFilePath).mockReturnValue('/no/such/opentask-backup-2026-07-17.zip')
+    expect((await t.get('/api/v1/backups/opentask-backup-2026-07-17.zip/download')).status).toBe(
       404,
     )
   })
@@ -184,13 +184,13 @@ describe('backups routes — restore', () => {
   it('restores and returns the pre-restore snapshot filename', async () => {
     const t = await make()
     vi.mocked(restoreFromZip).mockResolvedValue({
-      preRestoreBackup: 'opendoist-prerestore-2026-07-17-030000.zip',
+      preRestoreBackup: 'opentask-prerestore-2026-07-17-030000.zip',
     })
     const res = await postZip(t)
     expect(res.status).toBe(200)
     expect(await json<{ restored: boolean; preRestoreBackup: string }>(res)).toEqual({
       restored: true,
-      preRestoreBackup: 'opendoist-prerestore-2026-07-17-030000.zip',
+      preRestoreBackup: 'opentask-prerestore-2026-07-17-030000.zip',
     })
     expect(vi.mocked(restoreFromZip)).toHaveBeenCalledOnce()
   })
@@ -209,7 +209,7 @@ describe('backups routes — restore', () => {
   it('surfaces a 400 for an invalid backup zip', async () => {
     const t = await make()
     vi.mocked(restoreFromZip).mockRejectedValue(
-      new HTTPException(400, { message: 'backup zip is missing opendoist.db' }),
+      new HTTPException(400, { message: 'backup zip is missing opentask.db' }),
     )
     const res = await postZip(t)
     expect(res.status).toBe(400)

@@ -16,7 +16,7 @@ export class CliError extends Error {
   }
 }
 export class AuthError extends CliError {
-  constructor(message: string, hint: string | null = 'run `opendoist login` to (re)authenticate') {
+  constructor(message: string, hint: string | null = 'run `opentask login` to (re)authenticate') {
     super(message, { exitCode: 2, code: 'auth', hint })
     this.name = 'AuthError'
   }

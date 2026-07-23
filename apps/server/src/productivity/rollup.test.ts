@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { addDaysIso, dateInTz, instantFor } from '@opendoist/core'
+import { addDaysIso, dateInTz, instantFor } from '@opentask/core'
 import { and, eq } from 'drizzle-orm'
 import { describe, expect, it } from 'vitest'
 import { SettingsSchema } from '../api/schemas'
@@ -18,8 +18,8 @@ const WED = '2026-07-15'
 const noon = (date: string) => instantFor(date, '12:00', TZ)
 
 function makeHarness(): { db: Db; close: () => void } {
-  const dir = mkdtempSync(join(tmpdir(), 'opendoist-rollup-'))
-  const { db, sqlite } = openDb(join(dir, 'opendoist.db'))
+  const dir = mkdtempSync(join(tmpdir(), 'opentask-rollup-'))
+  const { db, sqlite } = openDb(join(dir, 'opentask.db'))
   return {
     db,
     close: () => {

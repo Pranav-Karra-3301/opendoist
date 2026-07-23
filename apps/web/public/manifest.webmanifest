@@ -1,6 +1,6 @@
 {
-  "name": "OpenDoist",
-  "short_name": "OpenDoist",
+  "name": "OpenTask",
+  "short_name": "OpenTask",
   "description": "Self-hosted, single-user, keyboard-first task manager.",
   "id": "/",
   "start_url": "/",

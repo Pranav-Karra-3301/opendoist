@@ -12,7 +12,7 @@
  * prefs deviate from defaults the tree rendering is replaced by the group/sort/filter
  * pipeline, and `showCompleted` appends the inbox's completed tasks.
  */
-import { viewKey } from '@opendoist/core'
+import { viewKey } from '@opentask/core'
 import { Inbox, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useProjects } from '@/api/hooks/projects'
@@ -45,7 +45,7 @@ function AddTaskRow({ context }: { context: InlineComposerContext }) {
     <button
       type="button"
       onClick={() => setOpen(true)}
-      className="group flex h-9 w-full items-center gap-2 rounded-sm px-[5px] text-left text-body text-text-secondary transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+      className="group flex h-9 w-full items-center gap-2 rounded-sm px-[5px] text-left text-body text-text-secondary transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
     >
       <Plus size={18} className="text-accent" aria-hidden />
       Add task

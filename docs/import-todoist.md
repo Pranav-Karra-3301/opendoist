@@ -1,12 +1,12 @@
 # Import from Todoist
 
-Bring your existing Todoist data into OpenDoist. There are two ways to do it — an
+Bring your existing Todoist data into OpenTask. There are two ways to do it — an
 offline backup file or a live API token — and both do the same thing under the
 hood: fetch or parse your data, normalize it, and create the equivalent
 projects, sections, labels, tasks, and comments in your account.
 
 Importing is **additive and non-destructive**: it only ever _creates_ new items.
-Nothing already in OpenDoist is edited or deleted, and every import can be
+Nothing already in OpenTask is edited or deleted, and every import can be
 **previewed** first so you see exactly what will be created before anything is
 written.
 
@@ -22,7 +22,7 @@ written.
 
 ## Two ways to import
 
-Open **Settings → Import** in OpenDoist. You will see up to two sources:
+Open **Settings → Import** in OpenTask. You will see up to two sources:
 
 | Source | Tab | When to use it |
 | --- | --- | --- |
@@ -30,7 +30,7 @@ Open **Settings → Import** in OpenDoist. You will see up to two sources:
 | Todoist API | **API token** | Pull your _current_ data straight from Todoist. |
 
 Only the sources your instance advertises in `GET /api/v1/info` →
-`available_importers` are offered. OpenDoist ships both `todoist-csv` (the backup
+`available_importers` are offered. OpenTask ships both `todoist-csv` (the backup
 ZIP) and `todoist-api` (the live token).
 
 Whichever you pick, the import runs as a background job and produces the same
@@ -43,7 +43,7 @@ everything Todoist can export, with no token required.
 
 1. In **Todoist**: go to **Settings → Backups → Download** and save the latest
    backup `.zip`.
-2. In **OpenDoist**: open **Settings → Import**, choose the **Backup file** tab,
+2. In **OpenTask**: open **Settings → Import**, choose the **Backup file** tab,
    click **Choose .zip file**, and select the download.
 3. Click **Preview import** to see what would be created, or **Import** to create
    it.
@@ -59,7 +59,7 @@ reflects your current data.
 
 1. In **Todoist**: go to **Settings → Integrations → Developer** and copy your
    API token.
-2. In **OpenDoist**: open **Settings → Import**, choose the **API token** tab, and
+2. In **OpenTask**: open **Settings → Import**, choose the **API token** tab, and
    paste it.
 3. Click **Preview import** or **Import**.
 
@@ -72,7 +72,7 @@ the underlying endpoint also accepts an optional `baseUrl`; see
 
 Both sources offer the same two buttons:
 
-- **Preview import** runs a **dry run**: OpenDoist fetches and parses everything
+- **Preview import** runs a **dry run**: OpenTask fetches and parses everything
   and shows exactly what it _would_ create — but writes nothing.
 - **Import** runs the real thing (an **apply**), behind a confirm dialog:
   _"Imports add to your existing data. Nothing is deleted."_
@@ -100,7 +100,7 @@ Two behaviors worth knowing:
   uncompletable.
 
 **Not carried over:** reminders, saved filters, and any board/calendar view
-layout. OpenDoist recreates reminders itself from a task's due time (via your
+layout. OpenTask recreates reminders itself from a task's due time (via your
 **Settings → Reminders** auto-reminder), its saved-filter grammar differs from
 Todoist's, and it has no board or calendar view (both are
 [non-goals](configuration.md) for now). None of these block the import — your
@@ -112,24 +112,24 @@ projects, tasks, labels, and comments come across regardless.
 
 This is the one conversion worth understanding. Both apps call their most-urgent
 level "P1", but the numbers they store are **reversed**: Todoist's API stores
-`4 = urgent`, while OpenDoist stores `1 = highest`. The importer flips them so the
+`4 = urgent`, while OpenTask stores `1 = highest`. The importer flips them so the
 urgency you meant is preserved:
 
-| In Todoist (label · API value) | In OpenDoist |
+| In Todoist (label · API value) | In OpenTask |
 | --- | --- |
 | P1 — urgent · API `4` | **p1** — highest |
 | P2 · API `3` | **p2** |
 | P3 · API `2` | **p3** |
 | P4 — default · API `1` | **p4** — default |
 
-The rule is `opendoist = 5 − todoist`. You never do this by hand — it is
-automatic on both import paths. (For why OpenDoist stores `1 = highest`, see the
+The rule is `opentask = 5 − todoist`. You never do this by hand — it is
+automatic on both import paths. (For why OpenTask stores `1 = highest`, see the
 [FAQ](faq.md) and the [API reference](api.md).)
 
 ### Due dates and recurrence
 
 A task's natural-language due phrase — `"every Monday"`, `"tomorrow 5pm"` — is
-kept as text and **re-parsed by OpenDoist's own date engine** at import time. That
+kept as text and **re-parsed by OpenTask's own date engine** at import time. That
 means recurring tasks stay recurring, and relative dates and time zones resolve
 exactly the way they do when you type into Quick Add. Date-only dues stay
 date-only; timed dues keep their wall-clock time.
@@ -144,13 +144,13 @@ date-only; timed dues keep their wall-clock time.
 
 ## What gets dropped
 
-Anything OpenDoist can't represent is **skipped rather than silently mangled**,
+Anything OpenTask can't represent is **skipped rather than silently mangled**,
 and each skip is listed in the report so you know precisely what didn't come
 across. These per-item skips appear in the report with a reason:
 
 | Skipped item | Reason shown |
 | --- | --- |
-| Collaborators on a shared project | `collaborators dropped` — OpenDoist is single-user, so the project imports but its sharing does not |
+| Collaborators on a shared project | `collaborators dropped` — OpenTask is single-user, so the project imports but its sharing does not |
 | Assignee (a task's "responsible" user) | `assignee dropped` — the task imports, unassigned |
 | A file attached to a comment | `attachment dropped` — the comment text imports; the file does not |
 | A note with no parent task (backup CSV) | `orphan note dropped` — nothing to attach it to |
@@ -161,13 +161,13 @@ One case is **rescued instead of dropped**: a sub-task whose parent can't be
 resolved is imported as a top-level task (and noted as
 `subtask promoted to top-level`), so it is never lost.
 
-Because OpenDoist is single-user by design, **sharing, assignees, and teams are
+Because OpenTask is single-user by design, **sharing, assignees, and teams are
 [out of scope](configuration.md)** — dropping collaborators and assignees is
 expected, not a failure.
 
 ## The import report
 
-After a preview or an import, OpenDoist shows a report with:
+After a preview or an import, OpenTask shows a report with:
 
 - **A counts table** — for each entity type (projects, sections, labels, tasks,
   comments), how many were **Found** in the source versus **To create** (preview)
@@ -184,7 +184,7 @@ an **Import now** button to apply the very same plan.
 
 The Settings UI is a thin wrapper over three endpoints, so you can drive an import
 from a script. All three require an authenticated session cookie or a
-`read_write` `od_` token (see the [API reference](api.md)):
+`read_write` `ot_` token (see the [API reference](api.md)):
 
 ```
 POST /api/v1/import/todoist-csv    multipart form: file=<backup.zip>, mode=dry-run|apply

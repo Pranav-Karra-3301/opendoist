@@ -10,7 +10,7 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { OpenAPIHono } from '@hono/zod-openapi'
-import { parseQuickAdd } from '@opendoist/core'
+import { parseQuickAdd } from '@opentask/core'
 import { and, eq } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { AppDeps, AppEnv } from '../app'
@@ -93,7 +93,7 @@ describe('ramble routes integration', () => {
 
   beforeAll(async () => {
     // 1 MB cap so the oversized-upload case can send 1.5 MB without a huge fixture.
-    t = await createTestApp({ env: { OPENDOIST_UPLOAD_MAX_MB: '1' } })
+    t = await createTestApp({ env: { OPENTASK_UPLOAD_MAX_MB: '1' } })
     app = mountRambleApp(t.deps)
     cookie = t.cookie
     sttMode = 'ok'

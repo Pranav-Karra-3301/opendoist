@@ -3,7 +3,7 @@ import { installMockFetch, page, sampleTask, TEST_URL } from '../test/harness'
 import { ApiClient } from './api'
 import { ApiError, AuthError, NetworkError } from './errors'
 
-const TOKEN = 'od_tok'
+const TOKEN = 'ot_tok'
 
 /** Await a promise expected to reject and return the thrown value; fail if it resolves. */
 async function captureRejection(promise: Promise<unknown>): Promise<unknown> {
@@ -25,7 +25,7 @@ describe('ApiClient.request', () => {
       { method: 'GET', path: '/api/v1/info', body: { version: '0.1.0' } },
     ])
     await new ApiClient(TEST_URL, TOKEN).info()
-    expect(calls[0]?.headers.authorization).toBe('Bearer od_tok')
+    expect(calls[0]?.headers.authorization).toBe('Bearer ot_tok')
   })
 
   it('omits the authorization header when the token is null', async () => {
@@ -55,7 +55,7 @@ describe('ApiClient.request', () => {
     expect(error).toBeInstanceOf(AuthError)
     const authError = error as AuthError
     expect(authError.exitCode).toBe(2)
-    expect(authError.hint).toContain('opendoist login')
+    expect(authError.hint).toContain('opentask login')
     // the server folds api-key rate-limit rejections into plain 401s — mention the possibility
     expect(authError.hint).toContain('rate-limiting')
   })
@@ -153,7 +153,7 @@ describe('ApiClient.request', () => {
     const apiError = error as ApiError
     expect(apiError.status).toBe(200)
     expect(apiError.message).toContain('non-JSON body')
-    expect(apiError.message).toContain('not an OpenDoist server')
+    expect(apiError.message).toContain('not an OpenTask server')
     expect(apiError.message).not.toContain('Unexpected token')
   })
 

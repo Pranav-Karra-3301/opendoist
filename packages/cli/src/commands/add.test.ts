@@ -3,7 +3,7 @@ import { installMockFetch, runCli, sampleTask, stubAuthEnv } from '../test/harne
 
 const QUICK = '/api/v1/tasks/quick'
 
-describe('opendoist add', () => {
+describe('opentask add', () => {
   beforeEach(() => {
     stubAuthEnv()
   })
@@ -29,7 +29,7 @@ describe('opendoist add', () => {
     expect(calls[0]?.url.pathname).toBe(QUICK)
     // raw, unmodified — the CLI never sends parsed fields
     expect(calls[0]?.body).toEqual({ text: 'Submit report tom 4pm p1 #Work' })
-    expect(calls[0]?.headers.authorization).toBe('Bearer od_testtoken123')
+    expect(calls[0]?.headers.authorization).toBe('Bearer ot_testtoken123')
   })
 
   test('prints ✓ added with the created content', async () => {

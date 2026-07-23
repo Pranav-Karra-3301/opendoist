@@ -182,7 +182,7 @@ it('404s a comment on an unknown task', async () => {
 })
 
 it("404s a comment on another user's task", async () => {
-  const t = await make({ env: { OPENDOIST_ALLOW_REGISTRATION: 'true' } })
+  const t = await make({ env: { OPENTASK_ALLOW_REGISTRATION: 'true' } })
   const other = await signupUser(t, 'other@example.com')
   const foreignTask = seedTask(t, other.userId)
   const res = await t.post('/api/v1/comments', { task_id: foreignTask.id, content: 'x' })

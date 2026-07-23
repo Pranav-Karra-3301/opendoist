@@ -1,4 +1,4 @@
-import type { ParseContext } from '@opendoist/core'
+import type { ParseContext } from '@opentask/core'
 import { describe, expect, test } from 'vitest'
 import { buildTaskDrafts } from './confirm'
 import type { ExtractedTask } from './schemas'

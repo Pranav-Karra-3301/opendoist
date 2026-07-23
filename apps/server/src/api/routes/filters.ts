@@ -1,5 +1,5 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
-import { FilterSyntaxError, parseFilter } from '@opendoist/core'
+import { FilterSyntaxError, parseFilter } from '@opentask/core'
 import { and, eq, isNull, max } from 'drizzle-orm'
 import type { Context } from 'hono'
 import type { AppEnv } from '../../app'

@@ -1,4 +1,4 @@
-//! OpenDoist desktop shell (Task A). Owns the tray icon, the global summon shortcut
+//! OpenTask desktop shell (Task A). Owns the tray icon, the global summon shortcut
 //! (Cmd+Shift+Space), the `toggle_quickadd` command shared by both, single-instance,
 //! and plugin registration. The reminders watcher (`src/reminders.rs`, Task D) and the
 //! self-update loop (`src/updater.rs`, Task D/E) are spawned from `setup`.
@@ -54,7 +54,7 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
         .icon(icon)
         .icon_as_template(true)
         .show_menu_on_left_click(false)
-        .tooltip("OpenDoist")
+        .tooltip("OpenTask")
         .on_tray_icon_event(|tray, event| {
             tauri_plugin_positioner::on_tray_event(tray.app_handle(), &event);
             if let TrayIconEvent::Click {

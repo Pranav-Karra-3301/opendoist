@@ -74,13 +74,13 @@ describe('totpSecretFromUri', () => {
   it('extracts the secret param', () => {
     expect(
       totpSecretFromUri(
-        'otpauth://totp/OpenDoist:owner@example.com?secret=JBSWY3DPEHPK3PXP&issuer=OpenDoist',
+        'otpauth://totp/OpenTask:owner@example.com?secret=JBSWY3DPEHPK3PXP&issuer=OpenTask',
       ),
     ).toBe('JBSWY3DPEHPK3PXP')
   })
 
   it('returns null when absent', () => {
-    expect(totpSecretFromUri('otpauth://totp/OpenDoist?issuer=OpenDoist')).toBeNull()
+    expect(totpSecretFromUri('otpauth://totp/OpenTask?issuer=OpenTask')).toBeNull()
   })
 })
 

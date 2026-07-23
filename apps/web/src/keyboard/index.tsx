@@ -20,7 +20,7 @@
  *   suppress the row/nav verbs so they never fire behind an open dialog.
  */
 
-import type { Priority } from '@opendoist/core'
+import type { Priority } from '@opentask/core'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useRouter } from '@tanstack/react-router'
 import { type ReactElement, useCallback } from 'react'

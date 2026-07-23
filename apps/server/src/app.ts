@@ -56,7 +56,11 @@ export interface AuthInfo {
 }
 export type AppEnv = { Variables: { auth: AuthInfo | null; requestId: string; deps: AppDeps } }
 
-/** API-key `permissions` may arrive as a JSON string or an object; only two shapes exist. */
+/**
+ * API-key `permissions` may arrive as a JSON string or an object; only two shapes exist per
+ * namespace. Keys minted before the rebrand stored the `opendoist` namespace — read it as a
+ * fallback so legacy tokens keep their scope.
+ */
 function apiKeyScope(permissions: unknown): 'read' | 'read_write' {
   let parsed: unknown = permissions
   if (typeof parsed === 'string') {
@@ -66,8 +70,9 @@ function apiKeyScope(permissions: unknown): 'read' | 'read_write' {
       return 'read'
     }
   }
-  const opendoist = (parsed as { opendoist?: unknown } | null)?.opendoist
-  return Array.isArray(opendoist) && opendoist.includes('read_write') ? 'read_write' : 'read'
+  const ns = parsed as { opentask?: unknown; opendoist?: unknown } | null
+  const grants = ns?.opentask ?? ns?.opendoist
+  return Array.isArray(grants) && grants.includes('read_write') ? 'read_write' : 'read'
 }
 
 export function createApp(deps: AppDeps): OpenAPIHono<AppEnv> {
@@ -120,10 +125,12 @@ export function createApp(deps: AppDeps): OpenAPIHono<AppEnv> {
   // 4. better-auth endpoints.
   app.on(['GET', 'POST'], '/api/auth/*', (c) => deps.auth.handler(c.req.raw))
 
-  // 5. Auth resolver: `Authorization: Bearer od_…` API keys, else session cookie.
+  // 5. Auth resolver: `Authorization: Bearer ot_…` API keys, else session cookie. Legacy
+  // OpenDoist-minted `od_` keys stay honored — verification is by hash, the prefix is only the
+  // sniff that routes a bearer into API-key verification at all.
   app.use('/api/v1/*', async (c, next) => {
     const header = c.req.header('authorization')
-    if (header?.startsWith('Bearer od_')) {
+    if (header?.startsWith('Bearer ot_') || header?.startsWith('Bearer od_')) {
       try {
         const result = await deps.auth.api.verifyApiKey({
           body: { key: header.slice('Bearer '.length) },
@@ -224,7 +231,7 @@ export function createApp(deps: AppDeps): OpenAPIHono<AppEnv> {
   // 9. OpenAPI document + security schemes.
   app.doc('/api/v1/openapi.json', {
     openapi: '3.1.0',
-    info: { title: 'OpenDoist API', version: deps.config.version },
+    info: { title: 'OpenTask API', version: deps.config.version },
   })
   app.openAPIRegistry.registerComponent('securitySchemes', 'cookieAuth', {
     type: 'apiKey',
@@ -234,11 +241,11 @@ export function createApp(deps: AppDeps): OpenAPIHono<AppEnv> {
   app.openAPIRegistry.registerComponent('securitySchemes', 'bearerAuth', {
     type: 'http',
     scheme: 'bearer',
-    bearerFormat: 'od_…',
+    bearerFormat: 'ot_…',
   })
 
   // 10. Scalar docs UI.
-  app.get('/api/v1/docs', Scalar({ url: '/api/v1/openapi.json', pageTitle: 'OpenDoist API' }))
+  app.get('/api/v1/docs', Scalar({ url: '/api/v1/openapi.json', pageTitle: 'OpenTask API' }))
 
   // 11. Unknown /api paths never fall through to the SPA.
   app.all('/api/*', (c) => problem(c, 404, 'not found'))

@@ -1,5 +1,5 @@
 {
-  "name": "@opendoist/web",
+  "name": "@opentask/web",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -15,7 +15,7 @@
     "@dnd-kit/core": "catalog:",
     "@dnd-kit/sortable": "catalog:",
     "@dnd-kit/utilities": "catalog:",
-    "@opendoist/core": "workspace:*",
+    "@opentask/core": "workspace:*",
     "@tauri-apps/api": "catalog:",
     "@tauri-apps/plugin-autostart": "catalog:",
     "@tauri-apps/plugin-http": "catalog:",

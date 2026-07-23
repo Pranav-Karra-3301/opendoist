@@ -17,14 +17,14 @@ export type DueTone =
  *  `missed` (same-day timed due whose time already passed) paints warning orange — softer than
  *  the hard next-day-overdue red (owner decision 2026-07-22). */
 export const DUE_TONE_VAR: Record<DueTone, string> = {
-  overdue: '--od-date-overdue',
-  missed: '--od-warning',
-  today: '--od-date-today',
-  tomorrow: '--od-date-tomorrow',
-  weekend: '--od-date-weekend',
-  nextweek: '--od-date-next-week',
-  week: '--od-text-secondary',
-  future: '--od-text-secondary',
+  overdue: '--ot-date-overdue',
+  missed: '--ot-warning',
+  today: '--ot-date-today',
+  tomorrow: '--ot-date-tomorrow',
+  weekend: '--ot-date-weekend',
+  nextweek: '--ot-date-next-week',
+  week: '--ot-text-secondary',
+  future: '--ot-text-secondary',
 }
 
 const MONTHS = [

@@ -1,4 +1,4 @@
-import { type Due, type ParseContext, parseRecurrenceText } from '@opendoist/core'
+import { type Due, type ParseContext, parseRecurrenceText } from '@opentask/core'
 import { describe, expect, it } from 'vitest'
 import {
   applyClose,

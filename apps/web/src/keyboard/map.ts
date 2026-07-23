@@ -2,7 +2,7 @@
  * Keyboard map — the single source of truth for BOTH the global bindings
  * (`keyboard/index.tsx`) and the `?` shortcut overlay (`keyboard/shortcut-overlay.tsx`).
  *
- * Adopted from the Todoist web map (dossier §1.6) minus the keys OpenDoist v1 does not
+ * Adopted from the Todoist web map (dossier §1.6) minus the keys OpenTask v1 does not
  * implement — the omission is deliberate and recorded here:
  *   - Collaboration: `Shift+R` (assign), `Shift+S` (share project) — single-user, no sharing.
  *   - Desktop-only globals: `Option/Ctrl+Space` Quick Add, `Option+Shift+R` Quick Ramble,

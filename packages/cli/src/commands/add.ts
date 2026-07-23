@@ -1,4 +1,4 @@
-import { type ParsedQuickAdd, parseQuickAdd } from '@opendoist/core'
+import { type ParsedQuickAdd, parseQuickAdd } from '@opentask/core'
 import type { Command } from 'commander'
 import type { TaskDto } from '../lib/api'
 import { coreParseContext, createContext, io, runAction } from '../lib/context'

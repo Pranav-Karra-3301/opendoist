@@ -16,7 +16,7 @@ import {
   type ViewGroupBy,
   type ViewLayout,
   type ViewSortBy,
-} from '@opendoist/core'
+} from '@opentask/core'
 import {
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
@@ -154,7 +154,7 @@ function LayoutSegment({
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        'flex flex-col items-center gap-1 rounded-sm border px-1 py-2 text-caption transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]',
+        'flex flex-col items-center gap-1 rounded-sm border px-1 py-2 text-caption transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]',
         active
           ? 'border-accent bg-accent-soft font-medium text-accent'
           : 'border-border text-text-tertiary',

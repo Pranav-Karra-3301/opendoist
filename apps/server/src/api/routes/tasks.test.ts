@@ -1,4 +1,4 @@
-import { addDaysIso, dateInTz } from '@opendoist/core'
+import { addDaysIso, dateInTz } from '@opentask/core'
 import { afterEach, expect, it } from 'vitest'
 import { projects, sections } from '../../db/schema'
 import { newId, nowIso } from '../../lib/ids'
@@ -379,7 +379,7 @@ it('returns 404 for a missing task id', async () => {
 })
 
 it("returns 404 for another user's task", async () => {
-  const t = await make({ OPENDOIST_ALLOW_REGISTRATION: 'true' })
+  const t = await make({ OPENTASK_ALLOW_REGISTRATION: 'true' })
   const other = await signupSecond(t.app, 'other@example.com')
   const created = await t.app.request('/api/v1/tasks', {
     method: 'POST',
@@ -405,7 +405,7 @@ it('rejects writes from a read-scoped API key but allows reads', async () => {
   // better-auth 1.6.23 only lets privileged fields (permissions) be set from a server-instance
   // call — i.e. userId in the body, NO session headers. Passing `headers` throws SERVER_ONLY.
   const created = await t.deps.auth.api.createApiKey({
-    body: { name: 't', userId: t.userId, permissions: { opendoist: ['read'] } },
+    body: { name: 't', userId: t.userId, permissions: { opentask: ['read'] } },
   })
   const bearer = `Bearer ${created.key}`
 
@@ -433,7 +433,7 @@ function makeSectionFor(t: TestApp, userId: string, projectId: string, name: str
 }
 
 it("rejects creating a task referencing another tenant's or unknown project/section/parent", async () => {
-  const t = await make({ OPENDOIST_ALLOW_REGISTRATION: 'true' })
+  const t = await make({ OPENTASK_ALLOW_REGISTRATION: 'true' })
   const other = await signupSecond(t.app, 'other@example.com')
   const otherInbox = inboxProjectId(t.deps.db, other.userId)
 
@@ -471,7 +471,7 @@ it("rejects creating a task referencing another tenant's or unknown project/sect
 })
 
 it("rejects PATCHing task references to another tenant's rows or into a parent cycle", async () => {
-  const t = await make({ OPENDOIST_ALLOW_REGISTRATION: 'true' })
+  const t = await make({ OPENTASK_ALLOW_REGISTRATION: 'true' })
   const other = await signupSecond(t.app, 'other@example.com')
   const otherInbox = inboxProjectId(t.deps.db, other.userId)
   const otherSection = makeSectionFor(t, other.userId, otherInbox, 'Their section')
@@ -520,7 +520,7 @@ it('still accepts valid reference updates through PATCH (own project, clearing p
 })
 
 it("rejects moving a task into another tenant's section", async () => {
-  const t = await make({ OPENDOIST_ALLOW_REGISTRATION: 'true' })
+  const t = await make({ OPENTASK_ALLOW_REGISTRATION: 'true' })
   const other = await signupSecond(t.app, 'other@example.com')
   const otherInbox = inboxProjectId(t.deps.db, other.userId)
   const otherSection = makeSectionFor(t, other.userId, otherInbox, 'Their section')

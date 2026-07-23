@@ -5,7 +5,7 @@
  * that refreshes the list. The calendar feed lives in <CalendarFeedCard /> (phase 6 Task M;
  * mounted here by phase 6 Task A).
  */
-import type { ApiToken } from '@opendoist/core'
+import type { ApiToken } from '@opentask/core'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { BookOpen, ExternalLink, FileJson, KeyRound, Plus, Terminal } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
@@ -120,11 +120,11 @@ export default function IntegrationsPage() {
         />
         <SettingRow
           label="Command-line tool"
-          description="Sign the opendoist CLI in with a token created above."
+          description="Sign the opentask CLI in with a token created above."
           control={
             <code className="flex items-center gap-1.5 whitespace-nowrap rounded-sm bg-surface px-2 py-1 font-mono text-caption text-text-secondary">
               <Terminal size={13} aria-hidden="true" className="text-text-tertiary" />
-              {'opendoist login <url> <token>'}
+              {'opentask login <url> <token>'}
             </code>
           }
         />

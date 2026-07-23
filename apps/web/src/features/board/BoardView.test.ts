@@ -6,7 +6,7 @@
  * follow the caller's order, cards are the top-level tasks (subtrees move with their parent), and
  * counts match the list. No DOM — the helpers are pure.
  */
-import type { CompletedTask } from '@opendoist/core'
+import type { CompletedTask } from '@opentask/core'
 import { describe, expect, it } from 'vitest'
 import type { Task } from '@/api/schemas'
 import {

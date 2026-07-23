@@ -13,7 +13,7 @@ describe('problem()', () => {
 
     const body = (await res.json()) as Record<string, unknown>
     expect(body).toEqual({
-      type: 'https://opendoist.dev/problems/not-found',
+      type: 'https://opentask.dev/problems/not-found',
       title: 'not found',
       status: 404,
       detail: 'task missing',
@@ -29,7 +29,7 @@ describe('problem()', () => {
 
     const body = (await res.json()) as Record<string, unknown>
     expect(body).toEqual({
-      type: 'https://opendoist.dev/problems/invalid-filter-query',
+      type: 'https://opentask.dev/problems/invalid-filter-query',
       title: 'invalid filter query',
       status: 400,
       position: 6,

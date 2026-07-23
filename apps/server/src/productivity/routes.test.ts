@@ -2,7 +2,7 @@
  * Task K — Productivity API tests.
  *
  * Core karma math (karmaLevel / computeDailyStreak / computeWeeklyStreak / karmaTrend) lives in
- * `@opendoist/core` and is owned + exhaustively tested by Task B. This suite runs in parallel with
+ * `@opentask/core` and is owned + exhaustively tested by Task B. This suite runs in parallel with
  * Task B, so it mocks exactly those four functions (spreading the real module for everything else)
  * and asserts (a) the route feeds them correctly-shaped inputs and (b) it wires their outputs into
  * the DTO. Everything the route computes itself — SQL rollups, 28-day padding, weekly bucketing,
@@ -16,8 +16,8 @@ const karma = vi.hoisted(() => ({
   computeWeeklyStreak: vi.fn(),
   karmaTrend: vi.fn(),
 }))
-vi.mock('@opendoist/core', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@opendoist/core')>()
+vi.mock('@opentask/core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@opentask/core')>()
   return { ...actual, ...karma }
 })
 
@@ -340,7 +340,7 @@ describe('GET /api/v1/productivity', () => {
 
   it('serves real-time rollups through the router (auth + wiring)', async () => {
     const t = await make()
-    const { dateInTz } = await import('@opendoist/core')
+    const { dateInTz } = await import('@opentask/core')
     const today = dateInTz(new Date().toISOString(), 'UTC')
     seedDay(t.deps.db, t.userId, today, 2, true)
     seedLedger(t.deps.db, t.userId, today, 'completion', 5, 'task-a')

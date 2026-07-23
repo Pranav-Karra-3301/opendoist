@@ -15,8 +15,8 @@
  * drop target (`useDroppable`) — but only when the column `accepts` a drop/reorder, so Overdue and
  * pipeline-sorted grouped columns stay inert. The drop→mutation mapping lives in `use-board-dnd`.
  */
-import type { CompletedTask, Due } from '@opendoist/core'
-import { addDaysIso, dateInTz, nextWeekdayOnOrAfter } from '@opendoist/core'
+import type { CompletedTask, Due } from '@opentask/core'
+import { addDaysIso, dateInTz, nextWeekdayOnOrAfter } from '@opentask/core'
 import {
   Armchair,
   Ban,
@@ -320,7 +320,7 @@ function AddTaskTile({ context }: { context: InlineComposerContext }) {
     <button
       type="button"
       onClick={() => setOpen(true)}
-      className="group flex w-full items-center gap-2 rounded-[10px] px-2 py-2 text-left text-body text-text-secondary transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+      className="group flex w-full items-center gap-2 rounded-[10px] px-2 py-2 text-left text-body text-text-secondary transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
     >
       <Plus size={18} className="text-accent" aria-hidden />
       Add task
@@ -329,7 +329,7 @@ function AddTaskTile({ context }: { context: InlineComposerContext }) {
 }
 
 /**
- * The trailing "Add section" tile (project board): a quiet 10px `--od-hover` rect that expands to
+ * The trailing "Add section" tile (project board): a quiet 10px `--ot-hover` rect that expands to
  * an inline name input and appends a new section (`__end__` semantics — append, no renumber). It
  * shares the project view's `useProjectViewStore` add-section state, so the project header's
  * "Add section" button (and the `s` shortcut) open this same inline input.
@@ -400,7 +400,7 @@ export function AddSectionTile({ projectId }: { projectId: string }) {
       type="button"
       onClick={() => startAddSection('__end__')}
       aria-label="Add section"
-      className="flex w-[280px] shrink-0 items-center gap-2 rounded-[10px] bg-hover px-3 py-2 text-body text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+      className="flex w-[280px] shrink-0 items-center gap-2 rounded-[10px] bg-hover px-3 py-2 text-body text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
     >
       <Plus size={18} aria-hidden />
       Add section

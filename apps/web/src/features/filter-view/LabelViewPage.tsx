@@ -8,7 +8,7 @@
  * colour dot + name and its own Display menu.
  */
 
-import { viewKey } from '@opendoist/core'
+import { viewKey } from '@opentask/core'
 import { useParams } from '@tanstack/react-router'
 import { Tag } from 'lucide-react'
 import { useLabels } from '@/api/hooks/labels'

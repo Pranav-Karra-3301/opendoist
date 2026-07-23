@@ -23,7 +23,7 @@ interface ChatCompletionResponse {
 /**
  * FROZEN extraction system prompt (plan Task E). `due` is kept as the spoken phrase — the server
  * resolves it with core parseQuickAdd/resolveNaturalDate at confirm time, so the LLM never invents
- * ISO dates. Priority is 1 (most urgent) … 4, matching OpenDoist storage.
+ * ISO dates. Priority is 1 (most urgent) … 4, matching OpenTask storage.
  */
 export function buildExtractionSystemPrompt(ctx: ExtractorContext): string {
   const labels = ctx.knownLabels.length > 0 ? ctx.knownLabels.join(', ') : 'none'

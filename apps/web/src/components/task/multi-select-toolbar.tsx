@@ -5,7 +5,7 @@
  * keep the selection; Complete/Delete clear it (their tasks leave the list).
  * FROZEN export (Task A): `MultiSelectToolbar`.
  */
-import type { Due, Priority } from '@opendoist/core'
+import type { Due, Priority } from '@opentask/core'
 import { CalendarDays, CircleCheck, Flag, FolderInput, Trash2, X } from 'lucide-react'
 import { type ReactElement, useMemo, useState } from 'react'
 import { useActiveTasks, useTaskMutations } from '@/api/hooks/tasks'

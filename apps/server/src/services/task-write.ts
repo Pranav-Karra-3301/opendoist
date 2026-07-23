@@ -1,4 +1,4 @@
-import type { RecurrenceSpec } from '@opendoist/core'
+import type { RecurrenceSpec } from '@opentask/core'
 import { and, eq, isNull, max, sql } from 'drizzle-orm'
 import { type Settings, SettingsSchema } from '../api/schemas'
 import type { Db } from '../db/db'

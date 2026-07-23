@@ -1,4 +1,4 @@
-import type { Due } from '@opendoist/core'
+import type { Due } from '@opentask/core'
 import { describe, expect, it } from 'vitest'
 import { toDueInput, toMoveBody } from './schemas'
 

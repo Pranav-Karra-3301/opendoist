@@ -16,7 +16,7 @@ import { expectNoAxeViolations } from './helpers/a11y'
  *
  * Theme coverage: BOTH themes run the FULL axe gate (incl. color-contrast). The dark pass
  * originally had to exclude `color-contrast` for two shortfalls in shared theme tokens
- * (dark `--od-text-tertiary` #808080 ≈ 3.7:1 on the raised surface; white `--od-on-accent`
+ * (dark `--ot-text-tertiary` #808080 ≈ 3.7:1 on the raised surface; white `--ot-on-accent`
  * on the dark accent ≈ 2.7:1). Task O landed both token fixes (#a0a0a0 tertiary, #1e1e1e
  * on-accent), so dark is contrast-enforced again — see `expectNoDarkViolations`.
  */
@@ -155,9 +155,9 @@ test.describe('settings pages a11y', () => {
     // Clear the pre-paint localStorage mirror (both axes + the legacy key) so the reload can only
     // get the appearance from the persisted account setting — a genuine server-persistence check.
     await page.evaluate(() => {
-      localStorage.removeItem('od-appearance')
-      localStorage.removeItem('od-accent')
-      localStorage.removeItem('od-theme')
+      localStorage.removeItem('ot-appearance')
+      localStorage.removeItem('ot-accent')
+      localStorage.removeItem('ot-theme')
     })
     await page.reload()
     const dialog = page.getByRole('dialog', { name: 'Settings' })

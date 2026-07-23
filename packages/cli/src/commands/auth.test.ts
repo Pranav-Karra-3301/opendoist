@@ -22,9 +22,9 @@ beforeEach(() => {
   scratch = mkdtempSync(join(tmpdir(), 'od-cli-auth-'))
   configPath = join(scratch, 'config.json')
   // login/logout must run UNauthenticated: clear env creds, point config at scratch.
-  vi.stubEnv('OPENDOIST_CONFIG_PATH', configPath)
-  vi.stubEnv('OPENDOIST_URL', '')
-  vi.stubEnv('OPENDOIST_TOKEN', '')
+  vi.stubEnv('OPENTASK_CONFIG_PATH', configPath)
+  vi.stubEnv('OPENTASK_URL', '')
+  vi.stubEnv('OPENTASK_TOKEN', '')
   vi.stubEnv('NO_COLOR', '1')
   vi.stubEnv('FORCE_COLOR', '')
 })
@@ -36,26 +36,26 @@ afterEach(() => {
   rmSync(scratch, { recursive: true, force: true })
 })
 
-describe('opendoist login', () => {
+describe('opentask login', () => {
   it('probes /info then /user, saves the config, and greets (interactive)', async () => {
     const calls = installMockFetch([
       { method: 'GET', path: '/api/v1/info', body: { version: '0.1.0' } },
       { method: 'GET', path: '/api/v1/user', body: USER },
       SETTINGS_ROUTE,
     ])
-    vi.spyOn(prompter, 'ask').mockResolvedValueOnce(TEST_URL).mockResolvedValueOnce('od_livetoken')
+    vi.spyOn(prompter, 'ask').mockResolvedValueOnce(TEST_URL).mockResolvedValueOnce('ot_livetoken')
 
     const run = await runCli(['login'])
 
     expect(run.code).toBe(0)
     expect(run.stdout).toContain('✓ logged in')
     expect(run.stdout).toContain('ada@example.com')
-    expect(run.stdout).toContain('OpenDoist v0.1.0')
+    expect(run.stdout).toContain('OpenTask v0.1.0')
     expect(run.stdout).toContain(`config: ${configPath} (0600)`)
     // matching timezones → no advisory
     expect(run.stderr).not.toContain('account timezone')
     // credentials persisted
-    expect(readConfigFile()).toEqual({ url: TEST_URL, token: 'od_livetoken' })
+    expect(readConfigFile()).toEqual({ url: TEST_URL, token: 'ot_livetoken' })
     // probe order: unauthenticated /info, then authenticated /user + /user/settings
     expect(calls.map((c) => `${c.method} ${c.url.pathname}`)).toEqual([
       'GET /api/v1/info',
@@ -63,8 +63,8 @@ describe('opendoist login', () => {
       'GET /api/v1/user/settings',
     ])
     expect(calls[0]?.headers.authorization).toBeUndefined()
-    expect(calls[1]?.headers.authorization).toBe('Bearer od_livetoken')
-    expect(calls[2]?.headers.authorization).toBe('Bearer od_livetoken')
+    expect(calls[1]?.headers.authorization).toBe('Bearer ot_livetoken')
+    expect(calls[2]?.headers.authorization).toBe('Bearer ot_livetoken')
   })
 
   it('accepts --url and --token flags without prompting', async () => {
@@ -74,14 +74,14 @@ describe('opendoist login', () => {
       { method: 'GET', path: '/api/v1/user', body: USER },
     ])
 
-    const run = await runCli(['login', '--url', TEST_URL, '--token', 'od_flagtoken'])
+    const run = await runCli(['login', '--url', TEST_URL, '--token', 'ot_flagtoken'])
 
     expect(run.code).toBe(0)
     expect(ask).not.toHaveBeenCalled()
-    expect(readConfigFile()?.token).toBe('od_flagtoken')
+    expect(readConfigFile()?.token).toBe('ot_flagtoken')
   })
 
-  it('warns about a non-od_ token but still proceeds', async () => {
+  it('warns about a non-ot_ token but still proceeds', async () => {
     installMockFetch([
       { method: 'GET', path: '/api/v1/info', body: { version: '0.1.0' } },
       { method: 'GET', path: '/api/v1/user', body: USER },
@@ -95,7 +95,7 @@ describe('opendoist login', () => {
   })
 
   it('fails with a usage error (exit 1) when the url is empty', async () => {
-    vi.spyOn(prompter, 'ask').mockResolvedValueOnce('').mockResolvedValueOnce('od_token')
+    vi.spyOn(prompter, 'ask').mockResolvedValueOnce('').mockResolvedValueOnce('ot_token')
 
     const run = await runCli(['login'])
 
@@ -109,7 +109,7 @@ describe('opendoist login', () => {
       { method: 'GET', path: '/api/v1/info', body: { version: '0.1.0' } },
       { method: 'GET', path: '/api/v1/user', status: 401, body: { title: 'unauthorized' } },
     ])
-    vi.spyOn(prompter, 'ask').mockResolvedValueOnce(TEST_URL).mockResolvedValueOnce('od_badtoken')
+    vi.spyOn(prompter, 'ask').mockResolvedValueOnce(TEST_URL).mockResolvedValueOnce('ot_badtoken')
 
     const run = await runCli(['login'])
 
@@ -118,9 +118,9 @@ describe('opendoist login', () => {
     expect(readConfigFile()).toBeNull()
   })
 
-  it('exits 1 against a server that is not OpenDoist', async () => {
+  it('exits 1 against a server that is not OpenTask', async () => {
     installMockFetch([{ method: 'GET', path: '/api/v1/info', body: {} }])
-    vi.spyOn(prompter, 'ask').mockResolvedValueOnce(TEST_URL).mockResolvedValueOnce('od_token')
+    vi.spyOn(prompter, 'ask').mockResolvedValueOnce(TEST_URL).mockResolvedValueOnce('ot_token')
 
     const run = await runCli(['login'])
 
@@ -139,10 +139,10 @@ describe('opendoist login', () => {
         }),
     )
 
-    const run = await runCli(['login', '--url', TEST_URL, '--token', 'od_token'])
+    const run = await runCli(['login', '--url', TEST_URL, '--token', 'ot_token'])
 
     expect(run.code).toBe(1)
-    expect(run.stderr).toContain('does not look like an OpenDoist server')
+    expect(run.stderr).toContain('does not look like an OpenTask server')
     expect(run.stderr).toContain('hint:')
     expect(run.stderr).not.toContain('Unexpected token')
     expect(readConfigFile()).toBeNull()
@@ -156,7 +156,7 @@ describe('opendoist login', () => {
       { method: 'GET', path: '/api/v1/user/settings', body: { timezone: 'Pacific/Kiritimati' } },
     ])
 
-    const run = await runCli(['login', '--url', TEST_URL, '--token', 'od_token'])
+    const run = await runCli(['login', '--url', TEST_URL, '--token', 'ot_token'])
 
     expect(run.code).toBe(0)
     expect(run.stdout).toContain('✓ logged in')
@@ -164,7 +164,7 @@ describe('opendoist login', () => {
     expect(run.stderr).toContain(`'${systemTimezone()}'`)
     expect(run.stderr).toContain('quick-add')
     // advisory only — credentials still persisted
-    expect(readConfigFile()?.token).toBe('od_token')
+    expect(readConfigFile()?.token).toBe('ot_token')
   })
 
   it('still logs in cleanly when the settings endpoint is unavailable', async () => {
@@ -174,12 +174,12 @@ describe('opendoist login', () => {
       { method: 'GET', path: '/api/v1/user', body: USER },
     ])
 
-    const run = await runCli(['login', '--url', TEST_URL, '--token', 'od_token'])
+    const run = await runCli(['login', '--url', TEST_URL, '--token', 'ot_token'])
 
     expect(run.code).toBe(0)
     expect(run.stdout).toContain('✓ logged in')
     expect(run.stderr).not.toContain('account timezone')
-    expect(readConfigFile()?.token).toBe('od_token')
+    expect(readConfigFile()?.token).toBe('ot_token')
   })
 
   it('--json emits ok:true with url, version, user, config_path', async () => {
@@ -187,7 +187,7 @@ describe('opendoist login', () => {
       { method: 'GET', path: '/api/v1/info', body: { version: '0.2.0' } },
       { method: 'GET', path: '/api/v1/user', body: USER },
     ])
-    vi.spyOn(prompter, 'ask').mockResolvedValueOnce(TEST_URL).mockResolvedValueOnce('od_token')
+    vi.spyOn(prompter, 'ask').mockResolvedValueOnce(TEST_URL).mockResolvedValueOnce('ot_token')
 
     const run = await runCli(['--json', 'login'])
 
@@ -203,9 +203,9 @@ describe('opendoist login', () => {
   })
 })
 
-describe('opendoist logout', () => {
+describe('opentask logout', () => {
   it('removes the saved config (exit 0)', async () => {
-    writeConfigFile({ url: TEST_URL, token: 'od_token' })
+    writeConfigFile({ url: TEST_URL, token: 'ot_token' })
 
     const run = await runCli(['logout'])
 
@@ -229,16 +229,16 @@ describe('opendoist logout', () => {
     expect(run.stdout).toContain('no saved credentials')
   })
 
-  it('notes a lingering OPENDOIST_TOKEN env var', async () => {
-    vi.stubEnv('OPENDOIST_TOKEN', 'od_env')
+  it('notes a lingering OPENTASK_TOKEN env var', async () => {
+    vi.stubEnv('OPENTASK_TOKEN', 'ot_env')
 
     const run = await runCli(['logout'])
 
-    expect(run.stderr).toContain('OPENDOIST_TOKEN is still set')
+    expect(run.stderr).toContain('OPENTASK_TOKEN is still set')
   })
 })
 
-describe('opendoist whoami', () => {
+describe('opentask whoami', () => {
   it('reports the user, server, and env credential source (--json)', async () => {
     stubAuthEnv()
     installMockFetch([
@@ -268,7 +268,7 @@ describe('opendoist whoami', () => {
 
     expect(run.code).toBe(0)
     expect(run.stdout).toContain('ada@example.com (Ada)')
-    expect(run.stdout).toContain(`server: ${TEST_URL} — OpenDoist v0.1.0`)
+    expect(run.stdout).toContain(`server: ${TEST_URL} — OpenTask v0.1.0`)
     expect(run.stdout).toContain('credentials: env')
   })
 

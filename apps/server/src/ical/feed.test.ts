@@ -1,4 +1,4 @@
-import { addDaysIso, dateInTz, diffDays, isoWeekday, type RecurrenceSpec } from '@opendoist/core'
+import { addDaysIso, dateInTz, diffDays, isoWeekday, type RecurrenceSpec } from '@opentask/core'
 import { describe, expect, it } from 'vitest'
 import { ICAL_WINDOW } from '../reminders/contracts'
 import { buildTasksCalendar, feedEtag, type IcalTaskRow } from './feed'
@@ -93,8 +93,8 @@ describe('buildTasksCalendar', () => {
 
   it('emits VCALENDAR headers with the frozen prodId, name and ttl', () => {
     expect(body.startsWith('BEGIN:VCALENDAR')).toBe(true)
-    expect(body).toContain('PRODID:-//opendoist//tasks//EN')
-    expect(body).toContain('NAME:OpenDoist — Tasks')
+    expect(body).toContain('PRODID:-//opentask//tasks//EN')
+    expect(body).toContain('NAME:OpenTask — Tasks')
     expect(body).toContain('X-PUBLISHED-TTL:PT1H')
   })
 
@@ -104,7 +104,7 @@ describe('buildTasksCalendar', () => {
 
   it('renders the timed event as a UTC instant with a duration-derived DTEND', () => {
     // 17:00 EDT = 21:00Z; +45 min = 21:45Z
-    expect(body).toContain('UID:task-t1@opendoist')
+    expect(body).toContain('UID:task-t1@opentask')
     expect(body).toContain('DTSTART:20260716T210000Z')
     expect(body).toContain('DTEND:20260716T214500Z')
     expect(body).toContain('CATEGORIES:money,home')
@@ -112,7 +112,7 @@ describe('buildTasksCalendar', () => {
   })
 
   it('renders the date-only event as DTSTART;VALUE=DATE with a per-task UID', () => {
-    expect(body).toContain('UID:task-t2@opendoist')
+    expect(body).toContain('UID:task-t2@opentask')
     expect(body).toContain('DTSTART;VALUE=DATE:20260720')
   })
 
@@ -127,9 +127,9 @@ describe('buildTasksCalendar', () => {
   })
 
   it('expands the recurrence to Mon/Fri occurrences only, within the window, with stable UIDs', () => {
-    const uids = [...body.matchAll(/UID:task-r1-(\d{8})@opendoist/g)].map((m) => m[1] as string)
+    const uids = [...body.matchAll(/UID:task-r1-(\d{8})@opentask/g)].map((m) => m[1] as string)
     expect(uids.length).toBe(recurringCount)
-    expect(body).toContain('UID:task-r1-20260717@opendoist')
+    expect(body).toContain('UID:task-r1-20260717@opentask')
     for (const yyyymmdd of uids) {
       const iso = fromCompact(yyyymmdd)
       expect([1, 5]).toContain(isoWeekday(iso))
@@ -139,7 +139,7 @@ describe('buildTasksCalendar', () => {
   })
 
   it('applies DST correctly across the fall-back boundary (EDT→EST)', () => {
-    const uids = [...body.matchAll(/UID:task-r1-(\d{8})@opendoist/g)].map((m) => m[1] as string)
+    const uids = [...body.matchAll(/UID:task-r1-(\d{8})@opentask/g)].map((m) => m[1] as string)
     // Summer occurrence: 09:00 EDT (UTC-4) → 13:00Z
     expect(body).toContain('DTSTART:20260717T130000Z')
     // Winter occurrence: 09:00 EST (UTC-5) → 14:00Z (any December occurrence is firmly in EST)
@@ -150,7 +150,7 @@ describe('buildTasksCalendar', () => {
 
   it('starts the recurrence no earlier than the window start', () => {
     expect(WINDOW_START).toBe('2026-06-15')
-    expect(body).not.toContain('UID:task-r1-20260615@opendoist')
+    expect(body).not.toContain('UID:task-r1-20260615@opentask')
   })
 })
 

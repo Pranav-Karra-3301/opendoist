@@ -25,7 +25,7 @@ import {
   groupTasks,
   sortTasks,
   type ViewPrefs,
-} from '@opendoist/core'
+} from '@opentask/core'
 import type { ReactNode } from 'react'
 import { useProjects } from '@/api/hooks/projects'
 import { useSections } from '@/api/hooks/sections'

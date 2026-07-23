@@ -68,7 +68,7 @@ it('serves images inline', async () => {
 })
 
 it('rejects uploads larger than the configured cap with 413', async () => {
-  const t = await make({ env: { OPENDOIST_UPLOAD_MAX_MB: '1' } })
+  const t = await make({ env: { OPENTASK_UPLOAD_MAX_MB: '1' } })
   const big = new Uint8Array(Math.floor(1.5 * 1024 * 1024))
   const res = await upload(t, new File([big], 'big.bin', { type: 'application/octet-stream' }))
   expect(res.status).toBe(413)

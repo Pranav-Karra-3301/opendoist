@@ -1,4 +1,4 @@
-import type { FilterContext, FilterTaskView } from '@opendoist/core'
+import type { FilterContext, FilterTaskView } from '@opentask/core'
 import { describe, expect, it } from 'vitest'
 import { computeQueryState } from './QueryEditor'
 

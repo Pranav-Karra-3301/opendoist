@@ -58,7 +58,7 @@ function resolveProjectRef(projects: ProjectDto[], ref: string): ProjectDto {
   if (byName.length === 1) return byName[0] as ProjectDto
   if (byName.length === 0) {
     throw new CliError(`no project named "${ref}"`, {
-      hint: 'run `opendoist projects` to list projects',
+      hint: 'run `opentask projects` to list projects',
     })
   }
   throw new CliError(`multiple projects named "${ref}" — pass the project id instead`)
@@ -146,7 +146,7 @@ export function registerProjectCommands(program: Command): void {
         if (projectRef === undefined || projectRef === '') {
           throw new UsageError(
             "missing required option '--project <projectRef>'",
-            'e.g. opendoist sections add "Admin" --project Work',
+            'e.g. opentask sections add "Admin" --project Work',
           )
         }
         const ctx = createContext(command)

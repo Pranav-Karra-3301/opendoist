@@ -8,7 +8,7 @@
  * joins them), so the row shows a checked priority circle, strike-through content, and the
  * completion timestamp.
  */
-import type { CompletedTask } from '@opendoist/core'
+import type { CompletedTask } from '@opentask/core'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { Check } from 'lucide-react'
 import { useMemo } from 'react'
@@ -104,11 +104,11 @@ function CompletedRow({
         type="button"
         aria-label="Mark as not completed"
         onClick={() => onUncomplete(task.id)}
-        className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+        className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
       >
         <span
           className="flex size-[18px] items-center justify-center rounded-full"
-          style={{ backgroundColor: `var(--od-p${task.priority})` }}
+          style={{ backgroundColor: `var(--ot-p${task.priority})` }}
         >
           <Check size={12} strokeWidth={3} className="text-white" aria-hidden />
         </span>

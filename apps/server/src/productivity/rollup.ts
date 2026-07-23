@@ -20,7 +20,7 @@ import {
   isoWeekday,
   KARMA_POINTS,
   type Weekday,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { and, eq, gte, inArray, isNotNull, lte, sql } from 'drizzle-orm'
 import type { Db } from '../db/db'
 import { dayStats, karmaLedger, tasks } from '../db/schema'

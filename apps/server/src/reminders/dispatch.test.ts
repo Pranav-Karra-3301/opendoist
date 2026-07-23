@@ -1,4 +1,4 @@
-import { UserSettingsSchema } from '@opendoist/core'
+import { UserSettingsSchema } from '@opentask/core'
 import { eq } from 'drizzle-orm'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { notificationChannels, pushSubscriptions, userSettings } from '../db/schema'

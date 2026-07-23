@@ -4,7 +4,7 @@
  * before handling Enter / Cmd+Enter / Escape. The parent owns the text; this component owns caret
  * restoration for both autocomplete inserts and imperative chip edits.
  */
-import type { QuickAddToken } from '@opendoist/core'
+import type { QuickAddToken } from '@opentask/core'
 import type { KeyboardEvent, ReactNode, Ref } from 'react'
 import { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
 import { RichTextarea, type RichTextareaHandle } from 'rich-textarea'
@@ -16,22 +16,22 @@ function tokenColorVar(token: QuickAddToken): string {
   switch (token.kind) {
     case 'due':
     case 'duration':
-      return '--od-date-today'
+      return '--ot-date-today'
     case 'deadline':
-      return '--od-date-overdue'
+      return '--ot-date-overdue'
     case 'reminder':
-      return '--od-warning'
+      return '--ot-warning'
     case 'project':
     case 'section':
-      return '--od-accent'
+      return '--ot-accent'
     case 'label':
-      return '--od-info'
+      return '--ot-info'
     case 'priority': {
       const digit = /([1-4])/.exec(token.text)?.[1] ?? '4'
-      return `--od-p${digit}`
+      return `--ot-p${digit}`
     }
     default:
-      return '--od-text-tertiary'
+      return '--ot-text-tertiary'
   }
 }
 

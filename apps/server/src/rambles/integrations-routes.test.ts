@@ -10,22 +10,22 @@ import type { FetchLike } from './providers/types'
 import { IntegrationsGetSchema } from './schemas'
 
 // secret-crypto's getEncryptionKey() resolves the data dir from the environment (boot path); each
-// test points OPENDOIST_DATA_DIR at its temp dir so encryption uses the same secrets.json the app
+// test points OPENTASK_DATA_DIR at its temp dir so encryption uses the same secrets.json the app
 // deps loaded, and restores the original afterwards.
-const ORIGINAL_DATA_DIR = process.env.OPENDOIST_DATA_DIR
+const ORIGINAL_DATA_DIR = process.env.OPENTASK_DATA_DIR
 
 let apps: TestApp[] = []
 async function make(env?: Record<string, string>): Promise<TestApp> {
   const t = await createTestApp(env ? { env } : undefined)
   apps.push(t)
-  process.env.OPENDOIST_DATA_DIR = t.dataDir
+  process.env.OPENTASK_DATA_DIR = t.dataDir
   return t
 }
 afterEach(() => {
   for (const t of apps) t.close()
   apps = []
-  if (ORIGINAL_DATA_DIR === undefined) delete process.env.OPENDOIST_DATA_DIR
-  else process.env.OPENDOIST_DATA_DIR = ORIGINAL_DATA_DIR
+  if (ORIGINAL_DATA_DIR === undefined) delete process.env.OPENTASK_DATA_DIR
+  else process.env.OPENTASK_DATA_DIR = ORIGINAL_DATA_DIR
 })
 
 /**

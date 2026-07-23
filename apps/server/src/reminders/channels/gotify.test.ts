@@ -1,4 +1,4 @@
-import type { Priority } from '@opendoist/core'
+import type { Priority } from '@opentask/core'
 import { describe, expect, type Mock, test, vi } from 'vitest'
 import type { ChannelDeps, GotifyConfig, ReminderPayload } from '../contracts'
 import { gotifyAdapter } from './gotify'
@@ -76,7 +76,7 @@ describe('gotifyAdapter', () => {
     expect(fetchMock.mock.calls[0]?.[0]).toBe('https://g.example.com/message')
   })
 
-  test('maps every OpenDoist priority to the frozen Gotify importance', async () => {
+  test('maps every OpenTask priority to the frozen Gotify importance', async () => {
     const cases: Array<[Priority, number]> = [
       [1, 8],
       [2, 6],

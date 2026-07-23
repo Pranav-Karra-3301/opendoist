@@ -32,14 +32,14 @@ describe('SCOPE_OPTIONS', () => {
 
 describe('tokenHint', () => {
   it('appends an ellipsis to the token start', () => {
-    expect(tokenHint('od_3fa9')).toBe('od_3fa9…')
+    expect(tokenHint('ot_3fa9')).toBe('ot_3fa9…')
   })
   it('does not double the ellipsis', () => {
-    expect(tokenHint('od_3fa9…')).toBe('od_3fa9…')
+    expect(tokenHint('ot_3fa9…')).toBe('ot_3fa9…')
   })
-  it('falls back to the od_ prefix when the start is empty', () => {
-    expect(tokenHint('')).toBe('od_…')
-    expect(tokenHint('   ')).toBe('od_…')
+  it('falls back to the ot_ prefix when the start is empty', () => {
+    expect(tokenHint('')).toBe('ot_…')
+    expect(tokenHint('   ')).toBe('ot_…')
   })
 })
 
@@ -72,7 +72,7 @@ describe('canCreateToken', () => {
 })
 
 describe('BEARER_EXAMPLE', () => {
-  it('documents the od_ bearer header', () => {
-    expect(BEARER_EXAMPLE).toContain('Bearer od_')
+  it('documents the ot_ bearer header', () => {
+    expect(BEARER_EXAMPLE).toContain('Bearer ot_')
   })
 })

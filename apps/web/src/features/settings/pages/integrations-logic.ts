@@ -29,12 +29,12 @@ export function scopeLabel(scope: TokenScope): string {
 }
 
 /**
- * Identifying hint for a token from its stored `start` (e.g. `od_3fa9` → `od_3fa9…`).
+ * Identifying hint for a token from its stored `start` (e.g. `ot_3fa9` → `ot_3fa9…`).
  * Never the secret — the full value only exists in the create response. Falls back to the
- * `od_` prefix, and never doubles the ellipsis.
+ * `ot_` prefix, and never doubles the ellipsis.
  */
 export function tokenHint(start: string): string {
-  const base = start.trim().length > 0 ? start.trim() : 'od_'
+  const base = start.trim().length > 0 ? start.trim() : 'ot_'
   return base.endsWith('…') ? base : `${base}…`
 }
 
@@ -64,4 +64,4 @@ export function canCreateToken(name: string): boolean {
 }
 
 /** Bearer-header example shown in the empty state. */
-export const BEARER_EXAMPLE = 'Authorization: Bearer od_…'
+export const BEARER_EXAMPLE = 'Authorization: Bearer ot_…'

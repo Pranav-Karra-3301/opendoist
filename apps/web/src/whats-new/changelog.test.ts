@@ -3,7 +3,7 @@ import { type ChangelogEntry, parseChangelog, selectChangelogEntry } from './cha
 
 const FIXTURE = `# Changelog
 
-All notable changes to OpenDoist.
+All notable changes to OpenTask.
 
 ## [Unreleased]
 

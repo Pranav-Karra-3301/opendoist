@@ -3,7 +3,7 @@
  * `key` is core's viewKey(kind, id); writes replace the whole per-key ViewPrefs object
  * (matching the server's per-key-replace PATCH semantics inside viewPrefs).
  */
-import { DEFAULT_VIEW_PREFS, type ViewPrefs } from '@opendoist/core'
+import { DEFAULT_VIEW_PREFS, type ViewPrefs } from '@opentask/core'
 import { useUserSettings } from '../settings/useSettings'
 export function useViewPrefs(key: string) {
   const { settings, update } = useUserSettings()

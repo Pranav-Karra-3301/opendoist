@@ -1,18 +1,18 @@
 /**
  * `pnpm seed` — demo dataset loader (Phase 10 Task J).
  *
- * Implements the FROZEN SEED DATASET (plan Task A Step 10) against a real OpenDoist database:
+ * Implements the FROZEN SEED DATASET (plan Task A Step 10) against a real OpenTask database:
  * one demo user, four projects (+ two Work sections), five labels, two filters, the frozen
  * Quick Add tasks (parsed through core `parseQuickAdd`, persisted through the SAME service path
  * the `POST /tasks/quick` route uses), a small subtask tree, and six completed tasks back-dated
  * across the past five days so the activity feed and karma/day_stats rollup have history.
  *
  * Behaviour:
- *   - Reads `OPENDOIST_DATA_DIR` (via `loadConfig`) and opens the DB exactly like the server does
+ *   - Reads `OPENTASK_DATA_DIR` (via `loadConfig`) and opens the DB exactly like the server does
  *     (`openDb` runs migrations on open, so a fresh data dir is migrated automatically).
  *   - Idempotency: if any non-Inbox project already exists it prints the already-has-data line and
  *     exits 0 unless `--force` is passed. Unknown flags exit 2.
- *   - The demo user (`demo@opendoist.local` / `opendoist-demo`) is created via better-auth's
+ *   - The demo user (`demo@opentask.local` / `opentask-demo`) is created via better-auth's
  *     server-side API only when the instance has zero users; on later runs it is reused.
  *   - `--verify` re-opens the DB and asserts the seeded counts, exiting non-zero on mismatch.
  *
@@ -34,12 +34,12 @@ import {
   parseQuickAdd,
   type ReminderDraft,
   UserSettingsSchema,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { and, count, eq, isNotNull, isNull, max } from 'drizzle-orm'
 import { createAuth } from './auth'
 import { type Config, loadConfig } from './config'
 import { user } from './db/auth-schema'
-import { type Db, openDb } from './db/db'
+import { type Db, openDb, resolveDbPath } from './db/db'
 import {
   activityLog,
   filters,
@@ -59,8 +59,8 @@ import { ensureDataDirAndSecrets } from './secrets'
 import { resolveProject, resolveSection } from './services/quick-resolve'
 import { type CreateTaskInput, createTask, getSettings } from './services/task-write'
 
-const DEMO_EMAIL = 'demo@opendoist.local'
-const DEMO_PASSWORD = 'opendoist-demo'
+const DEMO_EMAIL = 'demo@opentask.local'
+const DEMO_PASSWORD = 'opentask-demo'
 const DEMO_NAME = 'Demo'
 /** Frozen dataset timezone — all relative dues resolve here so screenshots stay "today"-correct. */
 const TZ = 'America/New_York'
@@ -528,7 +528,7 @@ async function runSeed(
       console.error(
         `seed: instance has ${totalUsers} user(s) but no ${DEMO_EMAIL}; refusing to seed`,
       )
-      console.error('seed: start from an empty OPENDOIST_DATA_DIR to create the demo user')
+      console.error('seed: start from an empty OPENTASK_DATA_DIR to create the demo user')
       return 1
     }
     const auth = createAuth(db, config, sessionSecret)
@@ -646,7 +646,7 @@ async function main(): Promise<number> {
 
   const config = loadConfig()
   const secrets = ensureDataDirAndSecrets(config.dataDir)
-  const { db, sqlite } = openDb(join(config.dataDir, 'opendoist.db'))
+  const { db, sqlite } = openDb(resolveDbPath(config.dataDir))
   try {
     if (verify) return runVerify(db) ? 0 : 1
     return await runSeed(db, config, secrets.sessionSecret, force)

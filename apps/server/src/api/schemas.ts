@@ -1,5 +1,5 @@
 import { z } from '@hono/zod-openapi'
-import { HmTimeSchema } from '@opendoist/core'
+import { HmTimeSchema } from '@opentask/core'
 
 export const PALETTE = [
   'berry_red',
@@ -134,15 +134,15 @@ export const ActivityDtoSchema = z.object({
   payload: ActivityPayloadSchema,
   at: z.string(),
 })
-export type { UserSettings as Settings } from '@opendoist/core'
+export type { UserSettings as Settings } from '@opentask/core'
 /** CANONICAL user-settings wire document for GET/PATCH /api/v1/user/settings.
- *  Re-homed in @opendoist/core as `UserSettingsSchema` (plan phase 5 Task A Step 1 / Task B Step 1);
+ *  Re-homed in @opentask/core as `UserSettingsSchema` (plan phase 5 Task A Step 1 / Task B Step 1);
  *  the server imports that single definition so web, server, and core share ONE schema. Byte-compatible
  *  with the phase-3 document — same keys/enums/defaults (8 themes + separate autoDark, timeFormat
  *  default '12h', dateFormat 'MDY' | 'DMY' default 'MDY'). DELIBERATE camelCase exception to the
  *  snake_case wire rule: a client-owned preferences blob persisted verbatim in user_settings.settings.
  *  Later phases may not re-key, re-default, or re-declare any field. */
-export { UserSettingsSchema as SettingsSchema } from '@opendoist/core'
+export { UserSettingsSchema as SettingsSchema } from '@opentask/core'
 export const DueInputSchema = z
   .object({
     string: z.string().optional(),

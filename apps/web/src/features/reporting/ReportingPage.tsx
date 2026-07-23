@@ -3,7 +3,7 @@
  * filter row (project + date range; event types on the Activity tab only). Filter state
  * lives here and is projected into the per-tab query params.
  */
-import { dateInTz } from '@opendoist/core'
+import { dateInTz } from '@opentask/core'
 import { useMemo, useState } from 'react'
 import { ODErrorBoundary } from '@/components/feedback'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'

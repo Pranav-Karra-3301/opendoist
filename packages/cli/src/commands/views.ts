@@ -5,7 +5,7 @@ import {
   type FilterTaskView,
   filterTasks,
   parseFilter,
-} from '@opendoist/core'
+} from '@opentask/core'
 import type { Command } from 'commander'
 import type { ProjectDto, TaskDto } from '../lib/api'
 import {
@@ -130,7 +130,7 @@ function runFilter(ctx: CommandContext, query: string): Promise<TaskDto[]> {
   return runFilterDetailed(ctx, query).then((run) => run.matched)
 }
 
-/** `opendoist list` — open tasks grouped by project (inbox first, then child_order). */
+/** `opentask list` — open tasks grouped by project (inbox first, then child_order). */
 async function listByProject(ctx: CommandContext): Promise<void> {
   const [tasks, projects] = await Promise.all([ctx.api.listTasks(), ctx.api.listProjects()])
   if (ctx.json) {
@@ -156,7 +156,7 @@ async function listByProject(ctx: CommandContext): Promise<void> {
   io.out(blocks.length === 0 ? 'No tasks.' : blocks.join('\n\n'))
 }
 
-/** `opendoist list <query>` — one group headed by the query, project column shown. */
+/** `opentask list <query>` — one group headed by the query, project column shown. */
 async function listByFilter(ctx: CommandContext, query: string): Promise<void> {
   const { matched, projects } = await runFilterDetailed(ctx, query)
   const rows = sortTasks(matched)
@@ -170,7 +170,7 @@ async function listByFilter(ctx: CommandContext, query: string): Promise<void> {
   io.out(body === '' ? header : `${header}\n${body}`)
 }
 
-/** `opendoist today` — overdue + due-today, split on `due.date < today`. */
+/** `opentask today` — overdue + due-today, split on `due.date < today`. */
 async function todayView(ctx: CommandContext): Promise<void> {
   const rows = sortTasks(await runFilter(ctx, 'overdue | today'))
   if (ctx.json) {
@@ -189,7 +189,7 @@ async function todayView(ctx: CommandContext): Promise<void> {
   io.out(blocks.join('\n\n'))
 }
 
-/** `opendoist upcoming [--days n]` — overdue, then one group per calendar day within the window. */
+/** `opentask upcoming [--days n]` — overdue, then one group per calendar day within the window. */
 async function upcomingView(ctx: CommandContext, daysAhead: number): Promise<void> {
   const rows = sortTasks(await runFilter(ctx, `overdue | next ${daysAhead} days`))
   if (ctx.json) {

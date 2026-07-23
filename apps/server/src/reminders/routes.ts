@@ -1,5 +1,5 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
-import { DueSchema } from '@opendoist/core'
+import { DueSchema } from '@opentask/core'
 import { and, eq, isNull } from 'drizzle-orm'
 import { IdSchema } from '../api/schemas'
 import type { AppEnv } from '../app'
@@ -181,7 +181,7 @@ export const remindersRoutes = () => {
     const { db, config } = c.get('deps')
     const base = (config.publicUrl ?? 'http://localhost:7968').replace(/\/+$/, '')
     const payload: ReminderPayload = {
-      title: 'Test notification from OpenDoist',
+      title: 'Test notification from OpenTask',
       body: 'Reminders are working.',
       url: base,
       tag: 'reminder-test',

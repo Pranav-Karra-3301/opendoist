@@ -17,7 +17,7 @@ import {
   type QuickAddChipId,
   type QuickAddPrefs,
   type QuickAddToken,
-} from '@opendoist/core'
+} from '@opentask/core'
 import {
   AlignLeft,
   Bell,
@@ -69,7 +69,7 @@ export const QUICK_ADD_CHIP_META: Record<QuickAddChipId, { name: string; Icon: L
 
 /** Chip pill styling, shared with the Settings preview so it renders exactly like the composer. */
 export const chipBase =
-  'inline-flex h-6 shrink-0 cursor-pointer items-center gap-1 rounded-sm border border-border px-2 text-caption transition-colors duration-150 hover:bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]'
+  'inline-flex h-6 shrink-0 cursor-pointer items-center gap-1 rounded-sm border border-border px-2 text-caption transition-colors duration-150 hover:bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]'
 
 /** Visible chip text: the value when set, otherwise the name (hidden entirely when icons-only). */
 function chipText(labeled: boolean, value: string | null, name: string): string | null {
@@ -213,7 +213,7 @@ function PriorityChip({ rc }: { rc: RenderCtx }) {
         <Flag
           size={12}
           aria-hidden
-          style={set ? { color: `var(--od-p${rc.parsed.priority})` } : undefined}
+          style={set ? { color: `var(--ot-p${rc.parsed.priority})` } : undefined}
         />
         {label ? <span>{label}</span> : null}
       </PopoverTrigger>
@@ -227,7 +227,7 @@ function PriorityChip({ rc }: { rc: RenderCtx }) {
             <Flag
               size={16}
               aria-hidden
-              style={p < 4 ? { color: `var(--od-p${p})` } : { color: 'var(--od-p4)' }}
+              style={p < 4 ? { color: `var(--ot-p${p})` } : { color: 'var(--ot-p4)' }}
             />
             Priority {p}
           </MenuItem>
@@ -256,7 +256,7 @@ function DeadlineChip({ rc }: { rc: RenderCtx }) {
         data-chip="deadline"
         aria-label={chipAria(value, 'Deadline')}
         className={cn(chipBase, value ? 'text-text-primary' : 'text-text-secondary')}
-        style={value ? { color: 'var(--od-date-overdue)' } : undefined}
+        style={value ? { color: 'var(--ot-date-overdue)' } : undefined}
       >
         <Target size={12} aria-hidden />
         {label ? <span>{label}</span> : null}
@@ -327,7 +327,7 @@ function DurationChip({ rc }: { rc: RenderCtx }) {
         data-chip="duration"
         aria-label={chipAria(value, 'Duration')}
         className={cn(chipBase, value ? 'text-text-primary' : 'text-text-secondary')}
-        style={value ? { color: 'var(--od-date-today)' } : undefined}
+        style={value ? { color: 'var(--ot-date-today)' } : undefined}
       >
         <Timer size={12} aria-hidden />
         {label ? <span>{label}</span> : null}

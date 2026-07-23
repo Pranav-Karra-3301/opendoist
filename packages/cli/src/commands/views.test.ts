@@ -1,4 +1,4 @@
-import { addDaysIso, dateInTz } from '@opendoist/core'
+import { addDaysIso, dateInTz } from '@opentask/core'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { DueDto, TaskDto } from '../lib/api'
 import {
@@ -24,7 +24,7 @@ afterEach(() => {
   vi.unstubAllEnvs()
 })
 
-describe('opendoist today', () => {
+describe('opentask today', () => {
   it('groups Overdue before Today, excludes future tasks, and fetches only tasks/projects/sections', async () => {
     stubAuthEnv()
     const tasks: TaskDto[] = [
@@ -94,7 +94,7 @@ describe('opendoist today', () => {
   })
 })
 
-describe('opendoist upcoming', () => {
+describe('opentask upcoming', () => {
   it('--days 3 includes a today+2 task and excludes a today+10 task', async () => {
     stubAuthEnv()
     const tasks: TaskDto[] = [
@@ -137,7 +137,7 @@ describe('opendoist upcoming', () => {
   })
 })
 
-describe('opendoist list', () => {
+describe('opentask list', () => {
   it('groups by project with the inbox first', async () => {
     stubAuthEnv()
     const projects = [

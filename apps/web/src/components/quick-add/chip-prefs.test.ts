@@ -1,4 +1,4 @@
-import { DEFAULT_USER_SETTINGS, QUICK_ADD_CHIP_IDS } from '@opendoist/core'
+import { DEFAULT_USER_SETTINGS, QUICK_ADD_CHIP_IDS } from '@opentask/core'
 import { describe, expect, it } from 'vitest'
 import {
   type ChipPref,

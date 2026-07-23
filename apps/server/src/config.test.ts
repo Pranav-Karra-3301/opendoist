@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { loadConfig } from './config'
+import { findLegacyEnv, loadConfig } from './config'
 
 describe('loadConfig defaults', () => {
   test('empty env yields the documented defaults', () => {
@@ -26,19 +26,19 @@ describe('loadConfig defaults', () => {
 describe('loadConfig overrides', () => {
   test('a full env round-trips every field', () => {
     const c = loadConfig({
-      OPENDOIST_PUBLIC_URL: 'https://tasks.example.com',
-      OPENDOIST_PORT: '8080',
-      OPENDOIST_DATA_DIR: '/custom/data',
-      OPENDOIST_WEB_DIST: '/custom/web',
-      OPENDOIST_ALLOW_REGISTRATION: 'true',
-      OPENDOIST_DISABLE_UPDATE_CHECK: 'yes',
-      OPENDOIST_LOG_LEVEL: 'debug',
-      OPENDOIST_TRUST_PROXY: '1',
-      OPENDOIST_UPLOAD_MAX_MB: '50',
-      OPENDOIST_BACKUP_RETENTION: '30',
-      OPENDOIST_BACKUP_INCLUDE_ATTACHMENTS: 'false',
-      OPENDOIST_BACKUP_CRON: '0 4 * * *',
-      OPENDOIST_VERSION: '1.2.3',
+      OPENTASK_PUBLIC_URL: 'https://tasks.example.com',
+      OPENTASK_PORT: '8080',
+      OPENTASK_DATA_DIR: '/custom/data',
+      OPENTASK_WEB_DIST: '/custom/web',
+      OPENTASK_ALLOW_REGISTRATION: 'true',
+      OPENTASK_DISABLE_UPDATE_CHECK: 'yes',
+      OPENTASK_LOG_LEVEL: 'debug',
+      OPENTASK_TRUST_PROXY: '1',
+      OPENTASK_UPLOAD_MAX_MB: '50',
+      OPENTASK_BACKUP_RETENTION: '30',
+      OPENTASK_BACKUP_INCLUDE_ATTACHMENTS: 'false',
+      OPENTASK_BACKUP_CRON: '0 4 * * *',
+      OPENTASK_VERSION: '1.2.3',
     })
     expect(c).toMatchObject({
       publicUrl: 'https://tasks.example.com',
@@ -57,30 +57,30 @@ describe('loadConfig overrides', () => {
     })
   })
 
-  test('OPENDOIST_TRUST_PROXY truthiness table (1/true/yes case-insensitive)', () => {
+  test('OPENTASK_TRUST_PROXY truthiness table (1/true/yes case-insensitive)', () => {
     for (const v of ['1', 'true', 'yes', 'TRUE', 'Yes', 'YES']) {
-      expect(loadConfig({ OPENDOIST_TRUST_PROXY: v }).trustProxy, v).toBe(true)
+      expect(loadConfig({ OPENTASK_TRUST_PROXY: v }).trustProxy, v).toBe(true)
     }
     for (const v of ['0', 'false', 'no', 'off', '']) {
-      expect(loadConfig({ OPENDOIST_TRUST_PROXY: v }).trustProxy, v).toBe(false)
+      expect(loadConfig({ OPENTASK_TRUST_PROXY: v }).trustProxy, v).toBe(false)
     }
   })
 })
 
 describe('loadConfig OIDC', () => {
   test('materializes only when issuer + client id + secret are all present', () => {
-    expect(loadConfig({ OPENDOIST_OIDC_ISSUER: 'https://id.example.com' }).oidc).toBeNull()
+    expect(loadConfig({ OPENTASK_OIDC_ISSUER: 'https://id.example.com' }).oidc).toBeNull()
     expect(
       loadConfig({
-        OPENDOIST_OIDC_ISSUER: 'https://id.example.com',
-        OPENDOIST_OIDC_CLIENT_ID: 'client',
+        OPENTASK_OIDC_ISSUER: 'https://id.example.com',
+        OPENTASK_OIDC_CLIENT_ID: 'client',
       }).oidc,
     ).toBeNull()
 
     const full = loadConfig({
-      OPENDOIST_OIDC_ISSUER: 'https://id.example.com',
-      OPENDOIST_OIDC_CLIENT_ID: 'client',
-      OPENDOIST_OIDC_CLIENT_SECRET: 'secret',
+      OPENTASK_OIDC_ISSUER: 'https://id.example.com',
+      OPENTASK_OIDC_CLIENT_ID: 'client',
+      OPENTASK_OIDC_CLIENT_SECRET: 'secret',
     })
     expect(full.oidc).toEqual({
       issuer: 'https://id.example.com',
@@ -90,10 +90,10 @@ describe('loadConfig OIDC', () => {
     })
 
     const named = loadConfig({
-      OPENDOIST_OIDC_ISSUER: 'https://id.example.com',
-      OPENDOIST_OIDC_CLIENT_ID: 'client',
-      OPENDOIST_OIDC_CLIENT_SECRET: 'secret',
-      OPENDOIST_OIDC_NAME: 'Corp SSO',
+      OPENTASK_OIDC_ISSUER: 'https://id.example.com',
+      OPENTASK_OIDC_CLIENT_ID: 'client',
+      OPENTASK_OIDC_CLIENT_SECRET: 'secret',
+      OPENTASK_OIDC_NAME: 'Corp SSO',
     })
     expect(named.oidc?.name).toBe('Corp SSO')
   })
@@ -101,6 +101,37 @@ describe('loadConfig OIDC', () => {
 
 describe('loadConfig validation', () => {
   test('a non-numeric port fails zod validation', () => {
-    expect(() => loadConfig({ OPENDOIST_PORT: 'abc' })).toThrow()
+    expect(() => loadConfig({ OPENTASK_PORT: 'abc' })).toThrow()
+  })
+})
+
+describe('legacy OPENDOIST_* fallback', () => {
+  test('legacy names load when the OPENTASK_* spelling is unset', () => {
+    const c = loadConfig({
+      OPENDOIST_PORT: '9000',
+      OPENDOIST_DATA_DIR: '/legacy/data',
+      OPENDOIST_TRUST_PROXY: 'true',
+      OPENDOIST_STT_PROVIDER: 'whisper',
+      OPENDOIST_OIDC_ISSUER: 'https://id.example.com',
+      OPENDOIST_OIDC_CLIENT_ID: 'cid',
+      OPENDOIST_OIDC_CLIENT_SECRET: 'sec',
+    })
+    expect(c.port).toBe(9000)
+    expect(c.dataDir).toBe('/legacy/data')
+    expect(c.trustProxy).toBe(true)
+    expect(c.stt?.provider).toBe('whisper')
+    expect(c.oidc?.issuer).toBe('https://id.example.com')
+  })
+
+  test('OPENTASK_* wins over a legacy value for the same setting', () => {
+    const c = loadConfig({ OPENTASK_PORT: '8001', OPENDOIST_PORT: '9000' })
+    expect(c.port).toBe(8001)
+  })
+
+  test('findLegacyEnv lists only OPENDOIST_* keys, sorted', () => {
+    expect(
+      findLegacyEnv({ OPENDOIST_PORT: '1', OPENTASK_PORT: '2', PATH: '/bin', OPENDOIST_A: 'x' }),
+    ).toEqual(['OPENDOIST_A', 'OPENDOIST_PORT'])
+    expect(findLegacyEnv({ OPENTASK_PORT: '2' })).toEqual([])
   })
 })

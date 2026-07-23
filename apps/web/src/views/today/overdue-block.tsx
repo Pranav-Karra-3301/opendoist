@@ -14,14 +14,14 @@
  * so Task B's per-write undo wiring stays quiet and only the single bulk entry appears.
  */
 
-import type { Due, ParseContext } from '@opendoist/core'
+import type { Due, ParseContext } from '@opentask/core'
 import {
   addDaysIso,
   dateInTz,
   isoWeekday,
   nextWeekdayOnOrAfter,
   resolveNaturalDate,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { Armchair, Ban, CalendarArrowUp, CalendarClock, CalendarDays, Sun } from 'lucide-react'
 import { type ReactNode, useId, useState } from 'react'
 import { useTaskMutations } from '@/api/hooks/tasks'

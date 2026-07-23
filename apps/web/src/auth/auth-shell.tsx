@@ -6,7 +6,7 @@
 import type { ReactNode } from 'react'
 
 /**
- * OpenDoist brand glyph (Glyphy "List", CC BY 3.0 — see assets/brand/ATTRIBUTION.md),
+ * OpenTask brand glyph (Glyphy "List", CC BY 3.0 — see assets/brand/ATTRIBUTION.md),
  * inlined as `currentColor` paths so it needs no served asset and inherits the active
  * theme accent. `apps/web` serves no `/assets` brand file yet, so this embedded mark is
  * the "brand icon present" branch of the Task C spec.
@@ -17,7 +17,7 @@ export function BrandMark({ className }: { className?: string }) {
       viewBox="0 0 100 100"
       fill="currentColor"
       role="img"
-      aria-label="OpenDoist"
+      aria-label="OpenTask"
       className={className}
     >
       <path d="m18.75 29.688h-9.375c-0.86328 0-1.5625-0.69922-1.5625-1.5625v-14.062c0-3.4492 2.8008-6.25 6.25-6.25s6.25 2.8008 6.25 6.25v14.062c0 0.86328-0.69922 1.5625-1.5625 1.5625z" />

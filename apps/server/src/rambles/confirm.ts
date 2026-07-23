@@ -4,7 +4,7 @@ import {
   type Priority,
   parseQuickAdd,
   resolveNaturalDate,
-} from '@opendoist/core'
+} from '@opentask/core'
 import type { ExtractedTask } from './schemas'
 import type { TaskDraft } from './types'
 

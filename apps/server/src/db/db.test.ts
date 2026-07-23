@@ -1,8 +1,8 @@
-import { mkdtempSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, test } from 'vitest'
-import { openDb } from './db'
+import { openDb, resolveDbPath } from './db'
 
 type Sqlite = ReturnType<typeof openDb>['sqlite']
 
@@ -13,7 +13,7 @@ afterEach(() => {
 
 function open(): { sqlite: Sqlite } {
   const dir = mkdtempSync(join(tmpdir(), 'od-db-'))
-  const { sqlite } = openDb(join(dir, 'opendoist.db'))
+  const { sqlite } = openDb(join(dir, 'opentask.db'))
   cleanups.push(() => {
     sqlite.close()
     rmSync(dir, { recursive: true, force: true })
@@ -95,5 +95,40 @@ describe('tasks_fts triggers', () => {
     sqlite.prepare('UPDATE tasks SET content = ? WHERE id = ?').run('summon the dragon', 't1')
     expect(match('unicorn').length).toBe(0)
     expect(match('dragon').length).toBe(1)
+  })
+})
+
+describe('resolveDbPath legacy migration', () => {
+  test('renames an OpenDoist-era opendoist.db (with sidecars) to opentask.db', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'od-legacy-'))
+    cleanups.push(() => rmSync(dir, { recursive: true, force: true }))
+    writeFileSync(join(dir, 'opendoist.db'), 'db')
+    writeFileSync(join(dir, 'opendoist.db-wal'), 'wal')
+    writeFileSync(join(dir, 'opendoist.db-shm'), 'shm')
+
+    expect(resolveDbPath(dir)).toBe(join(dir, 'opentask.db'))
+    expect(existsSync(join(dir, 'opentask.db'))).toBe(true)
+    expect(existsSync(join(dir, 'opentask.db-wal'))).toBe(true)
+    expect(existsSync(join(dir, 'opentask.db-shm'))).toBe(true)
+    expect(existsSync(join(dir, 'opendoist.db'))).toBe(false)
+    expect(existsSync(join(dir, 'opendoist.db-wal'))).toBe(false)
+  })
+
+  test('an existing opentask.db is never touched, even beside a legacy file', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'od-legacy-'))
+    cleanups.push(() => rmSync(dir, { recursive: true, force: true }))
+    writeFileSync(join(dir, 'opentask.db'), 'new')
+    writeFileSync(join(dir, 'opendoist.db'), 'old')
+
+    expect(resolveDbPath(dir)).toBe(join(dir, 'opentask.db'))
+    expect(readFileSync(join(dir, 'opentask.db'), 'utf8')).toBe('new')
+    expect(existsSync(join(dir, 'opendoist.db'))).toBe(true)
+  })
+
+  test('an empty data dir resolves to opentask.db without creating anything', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'od-legacy-'))
+    cleanups.push(() => rmSync(dir, { recursive: true, force: true }))
+    expect(resolveDbPath(dir)).toBe(join(dir, 'opentask.db'))
+    expect(existsSync(join(dir, 'opentask.db'))).toBe(false)
   })
 })

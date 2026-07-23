@@ -1,9 +1,8 @@
-import { join } from 'node:path'
 import { serve } from '@hono/node-server'
 import { createApp } from './app'
 import { createAuth } from './auth'
-import { loadConfig } from './config'
-import { openDb } from './db/db'
+import { findLegacyEnv, loadConfig } from './config'
+import { openDb, resolveDbPath } from './db/db'
 import { EventBus } from './events/bus'
 import { startJobs } from './jobs/registry'
 import { createLogger } from './logger'
@@ -12,8 +11,14 @@ import { ensureDataDirAndSecrets } from './secrets'
 
 const config = loadConfig()
 const logger = createLogger(config)
+const legacyEnv = findLegacyEnv()
+if (legacyEnv.length > 0)
+  logger.warn(
+    { vars: legacyEnv },
+    'legacy OPENDOIST_* environment variables are honored but deprecated — rename to OPENTASK_*',
+  )
 const secrets = ensureDataDirAndSecrets(config.dataDir)
-const { db, sqlite } = openDb(join(config.dataDir, 'opendoist.db'))
+const { db, sqlite } = openDb(resolveDbPath(config.dataDir))
 const auth = createAuth(db, config, secrets.sessionSecret)
 const bus = new EventBus()
 const app = createApp({ config, db, sqlite, secrets, bus, auth, logger })
@@ -23,11 +28,11 @@ const scheduler = process.env.VITEST ? null : startReminderScheduler(db, default
 
 // phase 9: nightly backup + productivity reconcile + daily update check (croner registry)
 if (config.disableUpdateCheck)
-  logger.info('update.check job disabled (OPENDOIST_DISABLE_UPDATE_CHECK)')
+  logger.info('update.check job disabled (OPENTASK_DISABLE_UPDATE_CHECK)')
 const jobs = process.env.VITEST ? null : startJobs({ db, sqlite, config, logger })
 
 const server = serve({ fetch: app.fetch, port: config.port, hostname: '0.0.0.0' }, () => {
-  logger.info(`opendoist v${config.version} listening on :${config.port}`)
+  logger.info(`opentask v${config.version} listening on :${config.port}`)
 })
 
 const shutdown = () => {

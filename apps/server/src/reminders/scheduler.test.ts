@@ -1,4 +1,4 @@
-import { dateInTz, timeInTz } from '@opendoist/core'
+import { dateInTz, timeInTz } from '@opentask/core'
 import { eq } from 'drizzle-orm'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { reminders } from '../db/schema'

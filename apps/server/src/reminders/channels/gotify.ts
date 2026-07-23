@@ -1,12 +1,12 @@
 // Task G (phase 6) — Gotify channel adapter.
 // Native Gotify push: a single JSON POST to `<server>/message` authenticated with the
-// application token (`X-Gotify-Key`), mapping OpenDoist priority to Gotify importance and
+// application token (`X-Gotify-Key`), mapping OpenTask priority to Gotify importance and
 // carrying a click-through URL via message extras. One attempt, 10 s timeout, no retries;
 // consecutive-failure bookkeeping / auto-disable lives in the dispatcher (Task D), not here.
-import type { Priority } from '@opendoist/core'
+import type { Priority } from '@opentask/core'
 import { type ChannelAdapter, GotifyConfigSchema } from '../contracts'
 
-/** Frozen map: OpenDoist p1..p4 → Gotify importance (0 quiet … 8 highest). */
+/** Frozen map: OpenTask p1..p4 → Gotify importance (0 quiet … 8 highest). */
 const GOTIFY_PRIORITY: Record<Priority, number> = { 1: 8, 2: 6, 3: 4, 4: 2 }
 
 const TIMEOUT_MS = 10_000

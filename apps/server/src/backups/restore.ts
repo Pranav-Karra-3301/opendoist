@@ -19,7 +19,7 @@ import type { BackupDeps } from './engine'
 import { createBackup } from './engine'
 import { withMaintenanceLock } from './lock'
 
-/** Open the extracted db read-only and prove it is a healthy OpenDoist database. Throws 400. */
+/** Open the extracted db read-only and prove it is a healthy OpenTask database. Throws 400. */
 function verifyRestoreDb(dbFile: string): void {
   let db: InstanceType<typeof Database> | undefined
   try {
@@ -35,7 +35,7 @@ function verifyRestoreDb(dbFile: string): void {
       .get()
     if (tasksTable === undefined) {
       throw new HTTPException(400, {
-        message: 'backup verification failed: no tasks table (not an OpenDoist backup)',
+        message: 'backup verification failed: no tasks table (not an OpenTask backup)',
       })
     }
   } catch (err) {
@@ -70,13 +70,20 @@ export async function restoreFromZip(
       const zip = new StreamZip.async({ file: zipPath })
       try {
         const entries = await zip.entries()
-        if (entries['opendoist.db'] === undefined) {
-          throw new HTTPException(400, { message: 'backup zip is missing opendoist.db' })
+        // Accept the legacy OpenDoist-era entry name too so pre-rebrand backups stay restorable.
+        const dbEntry =
+          entries['opentask.db'] !== undefined
+            ? 'opentask.db'
+            : entries['opendoist.db'] !== undefined
+              ? 'opendoist.db'
+              : null
+        if (dbEntry === null) {
+          throw new HTTPException(400, { message: 'backup zip is missing opentask.db' })
         }
         hasAttachments = Object.keys(entries).some(
           (name) => name.startsWith('attachments/') && !name.endsWith('/'),
         )
-        await zip.extract('opendoist.db', join(workDir, 'opendoist.db'))
+        await zip.extract(dbEntry, join(workDir, 'opentask.db'))
         if (hasAttachments) {
           mkdirSync(join(workDir, 'attachments'), { recursive: true })
           await zip.extract('attachments/', join(workDir, 'attachments'))
@@ -84,7 +91,7 @@ export async function restoreFromZip(
       } finally {
         await zip.close()
       }
-      verifyRestoreDb(join(workDir, 'opendoist.db'))
+      verifyRestoreDb(join(workDir, 'opentask.db'))
     } catch (err) {
       if (err instanceof HTTPException) throw err
       throw new HTTPException(400, { message: `invalid backup zip: ${(err as Error).message}` })
@@ -94,7 +101,7 @@ export async function restoreFromZip(
     return await withMaintenanceLock(async () => {
       const pre = await createBackup(deps, { kind: 'pre_restore' })
 
-      const liveDb = join(dataDir, 'opendoist.db')
+      const liveDb = join(dataDir, 'opentask.db')
       const liveAttachments = join(dataDir, 'attachments')
       /** LIFO undo steps, run in reverse if the swap fails after it began. */
       const undo: Array<() => void> = []
@@ -105,7 +112,7 @@ export async function restoreFromZip(
         for (const suffix of ['', '-wal', '-shm']) {
           const src = liveDb + suffix
           if (existsSync(src)) {
-            const aside = join(workDir, `live-opendoist.db${suffix}`)
+            const aside = join(workDir, `live-opentask.db${suffix}`)
             renameSync(src, aside)
             undo.push(() => {
               if (existsSync(src)) rmSync(src, { force: true })
@@ -114,7 +121,7 @@ export async function restoreFromZip(
           }
         }
         // Put the verified db in place.
-        renameSync(join(workDir, 'opendoist.db'), liveDb)
+        renameSync(join(workDir, 'opentask.db'), liveDb)
         undo.push(() => {
           if (existsSync(liveDb)) rmSync(liveDb, { force: true })
         })

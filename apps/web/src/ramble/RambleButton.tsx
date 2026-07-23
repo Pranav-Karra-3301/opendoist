@@ -157,9 +157,9 @@ export function RambleButton() {
   }
 
   const ringStyle: React.CSSProperties = reducedMotion
-    ? { boxShadow: '0 0 0 2px var(--od-accent)', opacity: 0.6 }
+    ? { boxShadow: '0 0 0 2px var(--ot-accent)', opacity: 0.6 }
     : {
-        boxShadow: '0 0 0 2px var(--od-accent)',
+        boxShadow: '0 0 0 2px var(--ot-accent)',
         transform: `scale(${1 + level * 0.5})`,
         opacity: 0.35 + level * 0.5,
       }

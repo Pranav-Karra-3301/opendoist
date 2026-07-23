@@ -188,7 +188,7 @@ export function InlineComposer({
         <button
           type="button"
           onClick={onClose}
-          className="h-8 rounded-sm px-3 text-copy text-text-secondary hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+          className="h-8 rounded-sm px-3 text-copy text-text-secondary hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
         >
           Cancel
         </button>

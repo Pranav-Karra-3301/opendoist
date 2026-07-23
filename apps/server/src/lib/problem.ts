@@ -18,7 +18,7 @@ export function problem(
 ) {
   return c.json(
     {
-      type: `https://opendoist.dev/problems/${title.toLowerCase().replaceAll(' ', '-')}`,
+      type: `https://opentask.dev/problems/${title.toLowerCase().replaceAll(' ', '-')}`,
       title,
       status,
       ...(detail ? { detail } : {}),

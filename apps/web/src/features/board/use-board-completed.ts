@@ -9,7 +9,7 @@
  * render it shows the first page; `completedForColumn` (BoardView) distributes the rows onto
  * columns by section / due day.
  */
-import type { CompletedTask } from '@opendoist/core'
+import type { CompletedTask } from '@opentask/core'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useTaskMutations } from '@/api/hooks/tasks'
 import { completedKey } from '@/features/display/CompletedSection'

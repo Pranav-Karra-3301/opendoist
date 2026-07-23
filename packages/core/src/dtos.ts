@@ -111,12 +111,12 @@ export const ApiTokenSchema = z.object({
   id: z.string(),
   name: z.string(),
   scope: ApiTokenScopeSchema,
-  /** first 8 chars of the token for identification, e.g. 'od_3fa9…' */
-  start: z.string().default('od_'),
+  /** first 8 chars of the token for identification, e.g. 'ot_3fa9…' */
+  start: z.string().default('ot_'),
   createdAt: z.string(),
   lastUsedAt: z.string().nullable().default(null),
 })
 export type ApiToken = z.infer<typeof ApiTokenSchema>
 /** returned ONLY from POST /tokens; `token` is shown once and never retrievable again */
-export const CreatedApiTokenSchema = ApiTokenSchema.extend({ token: z.string().regex(/^od_/) })
+export const CreatedApiTokenSchema = ApiTokenSchema.extend({ token: z.string().regex(/^ot_/) })
 export type CreatedApiToken = z.infer<typeof CreatedApiTokenSchema>

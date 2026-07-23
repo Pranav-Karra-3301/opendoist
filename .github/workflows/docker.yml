@@ -13,7 +13,7 @@ on:
         default: ''
 
 env:
-  IMAGE: ghcr.io/pranav-karra-3301/opendoist
+  IMAGE: ghcr.io/pranav-karra-3301/opentask
 
 jobs:
   smoke:
@@ -22,8 +22,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
       - uses: docker/build-push-action@v6
-        with: { context: ., load: true, push: false, tags: 'opendoist:smoke' }
-      - run: bash scripts/smoke-docker.sh opendoist:smoke
+        with: { context: ., load: true, push: false, tags: 'opentask:smoke' }
+      - run: bash scripts/smoke-docker.sh opentask:smoke
 
   build:
     needs: [smoke]
@@ -64,7 +64,7 @@ jobs:
           context: .
           push: true
           tags: ${{ env.IMAGE }}:${{ steps.version.outputs.version }}-${{ matrix.arch }}
-          build-args: OPENDOIST_VERSION=${{ steps.version.outputs.version }}
+          build-args: OPENTASK_VERSION=${{ steps.version.outputs.version }}
           cache-from: type=registry,ref=${{ env.IMAGE }}-build-cache:${{ matrix.arch }}
           cache-to: type=registry,ref=${{ env.IMAGE }}-build-cache:${{ matrix.arch }},mode=max
 

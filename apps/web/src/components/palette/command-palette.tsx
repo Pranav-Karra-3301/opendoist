@@ -89,7 +89,7 @@ async function handleLogout(): Promise<void> {
 
 /** kebab-cased CSS custom property for a snake_cased server color name. */
 function colorVar(color: string): string {
-  return `var(--od-palette-${color.replace(/_/g, '-')})`
+  return `var(--ot-palette-${color.replace(/_/g, '-')})`
 }
 
 function ColorDot({ color }: { color: string }) {

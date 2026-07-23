@@ -5,7 +5,7 @@
  * untouched prefs). The composer chip row (components/quick-add/chip-row.tsx) reads the same prefs;
  * the preview strip renders them with the shared chip visuals. Implements plan Task Q.
  */
-import type { QuickAddChipId } from '@opendoist/core'
+import type { QuickAddChipId } from '@opentask/core'
 import { GripVertical } from 'lucide-react'
 import {
   type ChipPref,
@@ -55,7 +55,7 @@ function ChipSettingRow({
       <button
         type="button"
         aria-label={`Reorder ${name}`}
-        className="flex size-6 shrink-0 cursor-grab items-center justify-center rounded-sm text-text-tertiary outline-none transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)] active:cursor-grabbing"
+        className="flex size-6 shrink-0 cursor-grab items-center justify-center rounded-sm text-text-tertiary outline-none transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)] active:cursor-grabbing"
         {...attributes}
         {...listeners}
       >

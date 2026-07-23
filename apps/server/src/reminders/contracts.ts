@@ -4,7 +4,7 @@
  * from here and may not redefine any of these shapes. DTO casing is snake_case, matching
  * the as-built phase-3 wire convention.
  */
-import { DueSchema, HmTimeSchema, IsoDateSchema, PrioritySchema } from '@opendoist/core'
+import { DueSchema, HmTimeSchema, IsoDateSchema, PrioritySchema } from '@opentask/core'
 import { z } from 'zod'
 
 /* ---------- reminder DTOs ---------- */
@@ -174,7 +174,7 @@ export const ICAL_WINDOW = { backDays: 31, forwardDays: 186, maxEvents: 500 } as
 
 /* ---------- shared pure helpers (implemented here, tested in contracts.test.ts by Task B) ---------- */
 /** Deep link into the SPA. Phase 4 Task A Step 9 registers `/task/:id` as the CANONICAL task
- *  deep-link route (it opens the app with the detail dialog); phase 8's `opendoist open` uses the
+ *  deep-link route (it opens the app with the detail dialog); phase 8's `opentask open` uses the
  *  same URL. AS-BUILT (verified 2026-07-16): `/task/$taskId` exists in apps/web/src/router.tsx. */
 export function taskDeepLink(publicUrl: string | null, taskId: string): string {
   const base = (publicUrl ?? 'http://localhost:7968').replace(/\/+$/, '')

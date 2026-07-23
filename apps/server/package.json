@@ -1,10 +1,10 @@
 {
-  "name": "@opendoist/server",
+  "name": "@opentask/server",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "OPENDOIST_DATA_DIR=./data tsx watch src/index.ts",
+    "dev": "OPENTASK_DATA_DIR=./data tsx watch src/index.ts",
     "start": "tsx src/index.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
@@ -13,7 +13,7 @@
     "seed": "tsx src/seed.ts"
   },
   "dependencies": {
-    "@opendoist/core": "workspace:*",
+    "@opentask/core": "workspace:*",
     "hono": "catalog:",
     "@hono/node-server": "catalog:",
     "@hono/zod-openapi": "catalog:",

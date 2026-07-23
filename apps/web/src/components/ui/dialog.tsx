@@ -1,6 +1,6 @@
 /**
  * shadcn-compatible Dialog on @base-ui/react (the Radix registry output was replaced per
- * plan Task A Step 8 fallback — same export surface, OpenDoist tokens).
+ * plan Task A Step 8 fallback — same export surface, OpenTask tokens).
  * FROZEN by Task A — later tasks import, never edit.
  */
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
@@ -78,7 +78,7 @@ export function DialogContent({
           <DialogPrimitive.Close
             data-slot="dialog-close"
             aria-label="Close"
-            className="absolute top-3 right-3 flex size-7 cursor-pointer items-center justify-center rounded-sm text-text-secondary transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+            className="absolute top-3 right-3 flex size-7 cursor-pointer items-center justify-center rounded-sm text-text-secondary transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
           >
             <X size={16} aria-hidden="true" />
           </DialogPrimitive.Close>

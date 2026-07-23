@@ -47,7 +47,7 @@ export default function AboutPage() {
 
   return (
     <div className="max-w-2xl">
-      <SettingsSection title="About" description="OpenDoist — self-hosted tasks, done properly.">
+      <SettingsSection title="About" description="OpenTask — self-hosted tasks, done properly.">
         <SettingRow
           label="Version"
           control={

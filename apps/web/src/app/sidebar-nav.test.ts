@@ -1,4 +1,4 @@
-import { DEFAULT_USER_SETTINGS } from '@opendoist/core'
+import { DEFAULT_USER_SETTINGS } from '@opentask/core'
 import { describe, expect, it } from 'vitest'
 import { isNavVisible, NAV_VISIBILITY_FLAG, SIDEBAR_NAV_ORDER } from './sidebar-nav'
 

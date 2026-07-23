@@ -60,7 +60,7 @@ const EXTRACTION_DISABLED_DETAIL = 'Extraction disabled — rambles become a sin
 
 /**
  * The env-default provider slots, built from the already-parsed config: loadConfig() is the single
- * source of truth for the `OPENDOIST_STT_*` and `OPENDOIST_LLM_*` vars. provider-config uses this as
+ * source of truth for the `OPENTASK_STT_*` and `OPENTASK_LLM_*` vars. provider-config uses this as
  * the fallback beneath a per-user override; building it from `deps.config` (not process.env) keeps
  * it overridable in tests.
  */

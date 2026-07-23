@@ -17,7 +17,7 @@ export function ScrollArea({
       className={cn('relative overflow-hidden', className)}
       {...props}
     >
-      <ScrollAreaPrimitive.Viewport className="size-full overscroll-contain rounded-[inherit] outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]">
+      <ScrollAreaPrimitive.Viewport className="size-full overscroll-contain rounded-[inherit] outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]">
         {children}
       </ScrollAreaPrimitive.Viewport>
       <ScrollBar />
@@ -43,7 +43,7 @@ export function ScrollBar({
       )}
       {...props}
     >
-      <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-[var(--od-scrollbar-thumb)]" />
+      <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-[var(--ot-scrollbar-thumb)]" />
     </ScrollAreaPrimitive.Scrollbar>
   )
 }

@@ -11,7 +11,7 @@ import {
   DEFAULT_PARSE_CONTEXT_SETTINGS,
   type ParseContext,
   UserSettingsSchema,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { eq } from 'drizzle-orm'
 import { user } from '../db/auth-schema'
 import { type Db, openDb } from '../db/db'
@@ -24,7 +24,7 @@ export type ReminderRow = typeof reminders.$inferSelect
 
 /** Real sqlite DB in a temp dir, fully migrated. Always call `close()` (also removes the dir). */
 export async function makeTestDb(): Promise<{ db: Db; close: () => void }> {
-  const dir = mkdtempSync(join(tmpdir(), 'opendoist-reminders-'))
+  const dir = mkdtempSync(join(tmpdir(), 'opentask-reminders-'))
   const { db, sqlite } = openDb(join(dir, 'test.db'))
   return {
     db,

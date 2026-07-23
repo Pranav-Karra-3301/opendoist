@@ -3,7 +3,7 @@
  * multi-select toolbar, and the task-detail sidebar (frozen export — Task H imports it).
  * P1–P3 render a filled flag in the priority color; P4 is an outline flag in tertiary.
  */
-import type { Priority } from '@opendoist/core'
+import type { Priority } from '@opentask/core'
 import { Check, Flag } from 'lucide-react'
 import type { ReactElement } from 'react'
 

@@ -157,7 +157,7 @@ describe('parseTodoistBackupZip', () => {
   let zipPath: string
 
   beforeAll(async () => {
-    dir = mkdtempSync(join(tmpdir(), 'opendoist-import-'))
+    dir = mkdtempSync(join(tmpdir(), 'opentask-import-'))
     zipPath = join(dir, 'todoist-backup.zip')
     await zipFiles(zipPath, [
       { name: 'Work [220474322].csv', content: workCsv },

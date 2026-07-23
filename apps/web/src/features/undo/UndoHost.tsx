@@ -101,7 +101,7 @@ function UndoToast({
       <button
         type="button"
         onClick={onUndo}
-        className="shrink-0 cursor-pointer rounded-sm px-1.5 py-1 font-medium text-accent text-copy transition-colors duration-150 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+        className="shrink-0 cursor-pointer rounded-sm px-1.5 py-1 font-medium text-accent text-copy transition-colors duration-150 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
       >
         Undo
       </button>
@@ -109,7 +109,7 @@ function UndoToast({
         type="button"
         aria-label="Dismiss"
         onClick={onDismiss}
-        className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-white/70 transition-colors duration-150 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+        className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-white/70 transition-colors duration-150 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
       >
         <X size={16} aria-hidden="true" />
       </button>

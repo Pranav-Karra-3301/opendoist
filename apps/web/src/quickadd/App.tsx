@@ -1,7 +1,7 @@
 /**
  * The desktop Quick Add popover (Task C). A lean, single-purpose capture surface for the
  * frameless, transparent Tauri popover window (summoned by the tray icon or Cmd+Shift+Space):
- * it reuses the web app's live-highlighting Quick Add input + the `@opendoist/core` parser,
+ * it reuses the web app's live-highlighting Quick Add input + the `@opentask/core` parser,
  * and submits the raw text to `/api/v1/tasks/quick` through the desktop `ApiSession` (the
  * `api` client already routes desktop requests over the tauri-plugin-http transport with the
  * paired bearer token — see api/client.ts + api/desktop-session.ts).
@@ -12,7 +12,7 @@
  * #projects/@labels), so the popover submits exactly what the user typed and never runs the
  * structured-submit path.
  */
-import { DEFAULT_PARSE_CONTEXT_SETTINGS, type ParseContext, parseQuickAdd } from '@opendoist/core'
+import { DEFAULT_PARSE_CONTEXT_SETTINGS, type ParseContext, parseQuickAdd } from '@opentask/core'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { z } from 'zod'
 import { ApiError, api, apiAllPages, endpoints } from '@/api/client'
@@ -228,10 +228,10 @@ export function App({ initialText = '' }: { initialText?: string } = {}) {
         <div className="qa-card qa-card--message">
           <p className="qa-message-title">Not connected</p>
           <p className="qa-message-body">
-            Open OpenDoist and pair this app with your instance to capture tasks from here.
+            Open OpenTask and pair this app with your instance to capture tasks from here.
           </p>
           <button type="button" className="qa-open-main" onClick={() => void openMainWindow()}>
-            Open OpenDoist
+            Open OpenTask
           </button>
         </div>
       </div>

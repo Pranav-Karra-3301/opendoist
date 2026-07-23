@@ -47,7 +47,7 @@ function Breadcrumb({ task }: { task: Task }) {
   const project = projects?.find((p) => p.id === task.project_id)
   const section = sections?.find((s) => s.id === task.section_id)
   const linkCls =
-    'inline-flex items-center gap-1 rounded-sm px-1 py-0.5 outline-none transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]'
+    'inline-flex items-center gap-1 rounded-sm px-1 py-0.5 outline-none transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]'
 
   return (
     <nav
@@ -65,8 +65,8 @@ function Breadcrumb({ task }: { task: Task }) {
             className="size-2.5 shrink-0 rounded-full"
             style={{
               backgroundColor: project
-                ? `var(--od-palette-${project.color.replaceAll('_', '-')})`
-                : 'var(--od-text-tertiary)',
+                ? `var(--ot-palette-${project.color.replaceAll('_', '-')})`
+                : 'var(--ot-text-tertiary)',
             }}
             aria-hidden="true"
           />
@@ -113,7 +113,7 @@ function EditableContent({ task }: { task: Task }) {
         type="button"
         onClick={() => setEditing(true)}
         className={cn(
-          'w-full rounded-sm px-1 py-0.5 text-left font-medium text-subtitle text-text-primary outline-none hover:bg-hover focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]',
+          'w-full rounded-sm px-1 py-0.5 text-left font-medium text-subtitle text-text-primary outline-none hover:bg-hover focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]',
           completed && 'text-text-tertiary line-through',
         )}
       >
@@ -168,7 +168,7 @@ function EditableDescription({ task }: { task: Task }) {
       <button
         type="button"
         onClick={() => setEditing(true)}
-        className="mt-1 w-full rounded-sm px-1 py-0.5 text-left text-copy outline-none hover:bg-hover focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+        className="mt-1 w-full rounded-sm px-1 py-0.5 text-left text-copy outline-none hover:bg-hover focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
       >
         {task.description === '' ? (
           <span className="text-text-tertiary">Description</span>

@@ -7,7 +7,7 @@ import { expect, test } from '@playwright/test'
  * storageState = the owner's cookie). The token test creates a uniquely-named token and
  * revokes it at the end, leaving the fixture exactly as found. Task X's gate additionally
  * curls a Bearer request with a freshly-minted token; this spec covers the UI contract:
- * create shows `od_…` once, Done collapses to the hint, revoke removes the row.
+ * create shows `ot_…` once, Done collapses to the hint, revoke removes the row.
  */
 
 test.describe.configure({ mode: 'serial', retries: 0 })
@@ -28,12 +28,12 @@ test('create a token (shown once), then revoke it', async ({ page }) => {
   await createDialog.getByRole('radio', { name: 'Read & write' }).check()
   await createDialog.getByRole('button', { name: 'Create token' }).click()
 
-  // Phase 2: the full secret is revealed exactly once and starts with the od_ prefix.
+  // Phase 2: the full secret is revealed exactly once and starts with the ot_ prefix.
   const revealed = page.getByRole('dialog', { name: 'Copy your token' })
   await expect(revealed).toBeVisible()
   await expect(revealed.getByText('This token is shown only once — store it now.')).toBeVisible()
   const tokenValue = await revealed.getByLabel('API token').inputValue()
-  expect(tokenValue).toMatch(/^od_/)
+  expect(tokenValue).toMatch(/^ot_/)
 
   await revealed.getByRole('button', { name: 'Done' }).click()
   await expect(page.getByRole('dialog', { name: 'Copy your token' })).toBeHidden()
@@ -41,7 +41,7 @@ test('create a token (shown once), then revoke it', async ({ page }) => {
   // After Done the list shows only the hint — the full secret is nowhere on the page.
   const row = settings.getByRole('row', { name: new RegExp(tokenName) })
   await expect(row).toBeVisible()
-  await expect(row.getByText(/^od_.+…$/)).toBeVisible()
+  await expect(row.getByText(/^ot_.+…$/)).toBeVisible()
   await expect(settings.getByText(tokenValue, { exact: true })).toHaveCount(0)
 
   // Revoke → confirm → the row disappears.

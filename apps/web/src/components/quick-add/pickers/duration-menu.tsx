@@ -5,7 +5,7 @@
  * due the menu shows a hint instead of presets. Presets plus a custom-minutes field; the footer
  * teaches `for 45min`.
  */
-import type { Due, QuickAddToken } from '@opendoist/core'
+import type { Due, QuickAddToken } from '@opentask/core'
 import { type ReactElement, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { replaceRange } from '../quick-add-model'

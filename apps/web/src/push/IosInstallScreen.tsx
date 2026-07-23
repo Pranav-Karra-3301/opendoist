@@ -52,9 +52,9 @@ export function IosInstallScreen({ open, onClose }: { open: boolean; onClose: ()
             <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-accent-soft text-accent">
               <Bell size={20} aria-hidden="true" />
             </div>
-            <DialogTitle>Install OpenDoist to get reminders</DialogTitle>
+            <DialogTitle>Install OpenTask to get reminders</DialogTitle>
             <DialogDescription>
-              On iPhone and iPad, push notifications work only when OpenDoist is added to your Home
+              On iPhone and iPad, push notifications work only when OpenTask is added to your Home
               Screen. It takes a few seconds:
             </DialogDescription>
           </DialogHeader>
@@ -69,7 +69,7 @@ export function IosInstallScreen({ open, onClose }: { open: boolean; onClose: ()
               <span className="font-medium text-text-primary">Add to Home Screen</span>.
             </Step>
             <Step index={3} icon={Bell}>
-              Open OpenDoist from its new Home Screen icon, then turn on notifications here in
+              Open OpenTask from its new Home Screen icon, then turn on notifications here in
               Settings.
             </Step>
           </ol>
@@ -80,7 +80,7 @@ export function IosInstallScreen({ open, onClose }: { open: boolean; onClose: ()
               to="/settings/$page"
               params={{ page: 'notifications' }}
               onClick={onClose}
-              className="font-medium text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+              className="font-medium text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
             >
               ntfy notification channel
             </Link>{' '}

@@ -4,7 +4,7 @@
  * sidebar component. Only these five primary items honour the show-flags; Favourites and the
  * project tree render unconditionally.
  */
-import type { SidebarPrefs } from '@opendoist/core'
+import type { SidebarPrefs } from '@opentask/core'
 
 export type SidebarNavId = 'inbox' | 'today' | 'upcoming' | 'filters-labels' | 'reporting'
 

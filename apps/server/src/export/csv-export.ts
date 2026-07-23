@@ -31,7 +31,7 @@ export interface CsvTask {
   childOrder: number
   content: string
   description: string
-  /** OpenDoist convention (1 = highest); emitted as `5 - priority` */
+  /** OpenTask convention (1 = highest); emitted as `5 - priority` */
   priority: number
   dueString: string | null
   dueDate: string | null
@@ -92,7 +92,7 @@ function taskRow(task: CsvTask, depth: number): string {
     'task',
     content,
     task.description,
-    String(5 - task.priority), // OpenDoist 1=highest → Todoist 4=urgent
+    String(5 - task.priority), // OpenTask 1=highest → Todoist 4=urgent
     String(depth + 1), // INDENT is 1-based
     '', // AUTHOR — single-user export, left blank
     '', // RESPONSIBLE — no assignees

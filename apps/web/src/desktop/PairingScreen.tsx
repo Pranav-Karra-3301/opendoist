@@ -1,13 +1,13 @@
 /**
  * Desktop-only pairing / onboarding screen (Task B). Shown by `useDesktopGate` when the
  * app runs in the Tauri shell and no instance is paired yet. It collects the self-hosted
- * instance URL + an `od_` API token, verifies them against the live server over the
+ * instance URL + an `ot_` API token, verifies them against the live server over the
  * tauri-plugin-http transport (Rust reqwest — no browser CORS), persists the pair through
  * the frozen `saveDesktopSession` contract, and calls `onPaired` so the gate swaps in the
  * real app.
  *
  * Verification order mirrors the plan:
- *   1. GET  {url}/api/v1/info  — is this a reachable OpenDoist instance?
+ *   1. GET  {url}/api/v1/info  — is this a reachable OpenTask instance?
  *   2. GET  {url}/api/v1/user  with the bearer — is the token valid? (401 → rejected)
  * The token is only ever sent in the `Authorization` header — never logged, echoed, or
  * placed in a URL.
@@ -75,7 +75,7 @@ export function PairingScreen({ onPaired }: PairingScreenProps) {
     try {
       const transport = await resolveTransport()
 
-      // 1. Reachable OpenDoist instance? A thrown error means we never connected.
+      // 1. Reachable OpenTask instance? A thrown error means we never connected.
       let info: Response
       try {
         info = await transport(`${instanceUrl}${API_VERSION}${endpoints.info}`, { method: 'GET' })
@@ -83,7 +83,7 @@ export function PairingScreen({ onPaired }: PairingScreenProps) {
         throw new Error('Could not reach the instance. Check the URL and your network.')
       }
       if (!info.ok) {
-        throw new Error(`No OpenDoist instance answered at that URL (HTTP ${info.status}).`)
+        throw new Error(`No OpenTask instance answered at that URL (HTTP ${info.status}).`)
       }
 
       // 2. Valid token? 401 is the server's "bad/expired token" signal.
@@ -92,7 +92,7 @@ export function PairingScreen({ onPaired }: PairingScreenProps) {
         headers: { authorization: `Bearer ${apiToken}` },
       })
       if (user.status === 401) {
-        throw new Error('That API token was rejected. Check you copied the whole od_ token.')
+        throw new Error('That API token was rejected. Check you copied the whole ot_ token.')
       }
       if (!user.ok) {
         throw new Error(`Could not verify the token (HTTP ${user.status}).`)
@@ -113,7 +113,7 @@ export function PairingScreen({ onPaired }: PairingScreenProps) {
 
   return (
     <AuthShell
-      title="Connect OpenDoist"
+      title="Connect OpenTask"
       subtitle="Pair this app with your self-hosted instance to get started."
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
@@ -145,7 +145,7 @@ export function PairingScreen({ onPaired }: PairingScreenProps) {
               autoCorrect="off"
               autoCapitalize="none"
               spellCheck={false}
-              placeholder="od_…"
+              placeholder="ot_…"
               required
               value={token}
               disabled={pending}

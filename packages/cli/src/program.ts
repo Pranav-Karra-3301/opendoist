@@ -12,11 +12,9 @@ import { registerViewCommands } from './commands/views'
 export const CLI_VERSION: string = pkg.version
 
 export function buildProgram(): Command {
-  const program = new Command('opendoist')
+  const program = new Command('opentask')
   program
-    .description(
-      'OpenDoist CLI — self-hosted, keyboard-first task manager\nTip: alias od=opendoist',
-    )
+    .description('OpenTask CLI — self-hosted, keyboard-first task manager\nTip: alias od=opentask')
     .version(CLI_VERSION, '-V, --version')
     .option('--json', 'stable machine-readable JSON on stdout (exit codes: 0 ok, 1 error, 2 auth)')
     .exitOverride()

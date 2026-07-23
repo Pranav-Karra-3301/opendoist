@@ -10,7 +10,7 @@
  * stream invalidate, so filter/label previews and views stay live with zero extra wiring —
  * strictly better than a duplicate task fetch. (Deviation recorded in the task result notes.)
  */
-import type { FilterContext, FilterTaskView, Weekday } from '@opendoist/core'
+import type { FilterContext, FilterTaskView, Weekday } from '@opentask/core'
 import { useMemo } from 'react'
 import { useProjects } from '@/api/hooks/projects'
 import { useSections } from '@/api/hooks/sections'

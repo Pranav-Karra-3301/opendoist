@@ -3,7 +3,7 @@
  * `createRambleService` in `service.ts` and re-exports it here — final shape: this file
  * holds interfaces only plus `export { createRambleService } from './service'`.
  */
-import type { Due, ParseContext, Priority } from '@opendoist/core'
+import type { Due, ParseContext, Priority } from '@opentask/core'
 import type { Db } from '../db/db'
 import type { SttProvider, TaskExtractor } from './providers/types'
 import type { ExtractedTask, RambleDto } from './schemas'

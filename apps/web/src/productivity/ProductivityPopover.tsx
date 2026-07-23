@@ -8,7 +8,7 @@
  * parse the FULL ProductivityDto (mirrors apps/server/src/productivity/types.ts, frozen by
  * Task A) so whichever consumer mounts first leaves a complete cache entry.
  */
-import { KARMA_LEVELS } from '@opendoist/core'
+import { KARMA_LEVELS } from '@opentask/core'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { ArrowRight, Flame, Minus, Target, TrendingDown, TrendingUp, Umbrella } from 'lucide-react'
@@ -255,7 +255,7 @@ export function ProductivityPopover(): ReactElement {
             <Link
               to="/reporting"
               onClick={() => setOpen(false)}
-              className="flex items-center justify-end gap-1 text-accent text-copy hover:underline focus-visible:outline-2 focus-visible:outline-[var(--od-focus-ring)] focus-visible:outline-offset-2"
+              className="flex items-center justify-end gap-1 text-accent text-copy hover:underline focus-visible:outline-2 focus-visible:outline-[var(--ot-focus-ring)] focus-visible:outline-offset-2"
             >
               Open Reporting
               <ArrowRight size={14} aria-hidden="true" />

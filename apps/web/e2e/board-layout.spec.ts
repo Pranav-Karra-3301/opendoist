@@ -456,7 +456,7 @@ test('an open project board has zero serious/critical axe violations in light an
   await createTask(page, { content: `${tag} card`, project_id: projectId, section_id: sectionId })
   await createTask(page, { content: `${tag} root`, project_id: projectId })
   // Review-fix regression: the scanned board MUST contain an overdue card — its red date chip
-  // (--od-date-overdue on the card's --od-surface bg) was the axe color-contrast failure the
+  // (--ot-date-overdue on the card's --ot-surface bg) was the axe color-contrast failure the
   // original spec never exercised (it only scanned chips-without-dates boards).
   await createTask(page, {
     content: `${tag} late`,

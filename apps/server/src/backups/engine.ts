@@ -3,7 +3,7 @@
  * (see the stub git history); every export here stays byte-compatible with that contract.
  *
  * A backup is a single `.zip` under `<dataDir>/backups/` containing a `VACUUM INTO` snapshot of
- * the live SQLite database (`opendoist.db`, guaranteed consistent), a `meta.json` manifest, and —
+ * the live SQLite database (`opentask.db`, guaranteed consistent), a `meta.json` manifest, and —
  * when enabled — the `attachments/` tree. Writes are staged to `.tmp-*` paths and renamed into
  * place so a crash never leaves a half-written backup under a real name.
  *
@@ -52,8 +52,8 @@ const byNewest = (a: BackupInfo, b: BackupInfo) =>
  * (scheduled/manual share one retention pool, so the split is only cosmetic for the UI badge.)
  */
 function inferKind(filename: string): BackupInfo['kind'] {
-  if (filename.startsWith('opendoist-prerestore-')) return 'pre_restore'
-  return /^opendoist-backup-\d{4}-\d{2}-\d{2}\.zip$/.test(filename) ? 'scheduled' : 'manual'
+  if (filename.startsWith('opentask-prerestore-')) return 'pre_restore'
+  return /^opentask-backup-\d{4}-\d{2}-\d{2}\.zip$/.test(filename) ? 'scheduled' : 'manual'
 }
 
 /** `backup_settings` row 1 field ?? env (config.*) ?? Task-A default (14 / true). */
@@ -78,12 +78,12 @@ export function backupFilePath(dataDir: string, filename: string): string {
 
 /**
  * Free on-disk name for a new backup. scheduled/manual prefer the bare per-day name
- * (`opendoist-backup-YYYY-MM-DD.zip`) and fall back to a UTC-timestamped name on collision;
- * pre_restore is always timestamped (`opendoist-prerestore-YYYY-MM-DD-HHMMSS.zip`). The rare
+ * (`opentask-backup-YYYY-MM-DD.zip`) and fall back to a UTC-timestamped name on collision;
+ * pre_restore is always timestamped (`opentask-prerestore-YYYY-MM-DD-HHMMSS.zip`). The rare
  * exact-second collision advances a second at a time, always yielding a BACKUP_FILENAME_RE name.
  */
 function nextBackupFilename(dir: string, kind: BackupInfo['kind'], now: Date): string {
-  const prefix = kind === 'pre_restore' ? 'opendoist-prerestore' : 'opendoist-backup'
+  const prefix = kind === 'pre_restore' ? 'opentask-prerestore' : 'opentask-backup'
   if (kind !== 'pre_restore') {
     const bare = `${prefix}-${now.toISOString().slice(0, 10)}.zip`
     if (!existsSync(join(dir, bare))) return bare
@@ -97,7 +97,7 @@ function nextBackupFilename(dir: string, kind: BackupInfo['kind'], now: Date): s
   }
 }
 
-/** Streams `opendoist.db` + `meta.json` (+ optional `attachments/`) into a zip, resolving on flush. */
+/** Streams `opentask.db` + `meta.json` (+ optional `attachments/`) into a zip, resolving on flush. */
 function writeZip(
   zipPath: string,
   dbPath: string,
@@ -115,7 +115,7 @@ function writeZip(
       reject(err)
     })
     archive.pipe(output)
-    archive.file(dbPath, { name: 'opendoist.db' })
+    archive.file(dbPath, { name: 'opentask.db' })
     archive.append(JSON.stringify(meta, null, 2), { name: 'meta.json' })
     if (attachRoot && existsSync(attachRoot)) {
       archive.directory(attachRoot, 'attachments')
@@ -124,7 +124,7 @@ function writeZip(
   })
 }
 
-/** VACUUM INTO temp db → zip (opendoist.db + meta.json [+ attachments/**]) → rename → meta row. */
+/** VACUUM INTO temp db → zip (opentask.db + meta.json [+ attachments/**]) → rename → meta row. */
 export async function createBackup(
   deps: BackupDeps,
   opts: { kind: BackupInfo['kind'] },
@@ -143,7 +143,7 @@ export async function createBackup(
     // Single-quotes in the destination path are doubled per SQLite string-literal quoting.
     deps.sqlite.exec(`VACUUM INTO '${tmpDbPath.replace(/'/g, "''")}'`)
     const meta = {
-      app: 'opendoist',
+      app: 'opentask',
       version: deps.config.version,
       createdAt,
       includesAttachments: includeAttachments,

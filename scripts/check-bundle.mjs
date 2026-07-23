@@ -5,7 +5,7 @@
  *   - total gzipped JS  > 900 KB, or
  *   - any single chunk   > 400 KB gzipped.
  *
- * Run after building the web app:  pnpm --filter @opendoist/web build && pnpm check:bundle
+ * Run after building the web app:  pnpm --filter @opentask/web build && pnpm check:bundle
  * The service worker (dist/sw.js, outside assets/) is intentionally excluded — it is precached and
  * versioned separately, not part of the initial app payload.
  */
@@ -27,7 +27,7 @@ try {
   files = readdirSync(ASSETS_DIR).filter((name) => name.endsWith('.js'))
 } catch {
   console.error(
-    `check-bundle: ${ASSETS_DIR} not found — run \`pnpm --filter @opendoist/web build\` first`,
+    `check-bundle: ${ASSETS_DIR} not found — run \`pnpm --filter @opentask/web build\` first`,
   )
   process.exit(1)
 }

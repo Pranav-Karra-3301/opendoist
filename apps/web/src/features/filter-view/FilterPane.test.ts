@@ -1,4 +1,4 @@
-import type { FilterTaskView } from '@opendoist/core'
+import type { FilterTaskView } from '@opentask/core'
 import { describe, expect, it } from 'vitest'
 import type { Task } from '@/api/schemas'
 import { labelViewTasks, pickDtos } from './FilterPane'

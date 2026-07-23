@@ -1,4 +1,4 @@
-import { dateInTz } from '@opendoist/core'
+import { dateInTz } from '@opentask/core'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createTestApp, json, seedTask, type TestApp } from '../reminders/test-helpers'
 

@@ -16,7 +16,7 @@ import {
   type ParseContext,
   parseQuickAdd,
   resolveNaturalDate,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { CalendarClock, CalendarDays, CalendarRange, CalendarX2, Sun } from 'lucide-react'
 import { type ComponentType, type ReactElement, useEffect, useMemo, useRef, useState } from 'react'
 import { MonthCalendar } from '@/components/ui/month-calendar'

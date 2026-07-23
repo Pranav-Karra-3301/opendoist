@@ -2,7 +2,7 @@ import { expect, type Locator, type Page, test } from '@playwright/test'
 import { SEL } from './helpers'
 
 /**
- * Quick Add UX pass — Task D geometry regressions (plan 2026-07-18-opendoist-quickadd-ux §Task D):
+ * Quick Add UX pass — Task D geometry regressions (plan 2026-07-18-opentask-quickadd-ux §Task D):
  *
  * 1. The dialog opens top-centered with identical geometry from every stable entry point
  *    (global `q`, the sidebar "Add task" button, the palette "Add task" command — all funnel

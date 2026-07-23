@@ -50,7 +50,7 @@ const STORE_PATH: &str = "settings.json";
 const KEY_INSTANCE_URL: &str = "instanceUrl";
 const KEY_TOKEN: &str = "token";
 
-const NOTIFICATION_TITLE: &str = "OpenDoist";
+const NOTIFICATION_TITLE: &str = "OpenTask";
 /// Shown when the reminder fired but its task could not be fetched (offline blip, deleted
 /// task); the user still learns a reminder came due rather than getting nothing.
 const FALLBACK_BODY: &str = "You have a reminder due.";
@@ -130,7 +130,7 @@ impl SeenSet {
 /// Load-time scheme gate, mirroring Task B's `normalizeInstanceUrl` rule (and its JS
 /// read-side twin in `apps/web/src/desktop/session-store.ts` `loadPairing`): the pairing
 /// UI only ever persists an absolute `https://` URL, so anything else in the
-/// hand-editable `settings.json` is tampering or corruption — and the `od_` bearer must
+/// hand-editable `settings.json` is tampering or corruption — and the `ot_` bearer must
 /// never be sent over cleartext http. ASCII-case-insensitive because URL schemes are
 /// case-insensitive and the JS side (via `new URL()`) accepts `HTTPS://…` too. Byte
 /// slicing via `get(..8)` is boundary-safe: a multi-byte char in the first 8 bytes
@@ -158,7 +158,7 @@ fn load_session(app: &AppHandle) -> Option<Session> {
         // the bearer never travels in the clear. Log the fact only: never the URL (it is
         // attacker-chosen here) and never the token.
         eprintln!(
-            "[opendoist] reminders poll skipped: stored instance URL is not https:// — ignoring pairing"
+            "[opentask] reminders poll skipped: stored instance URL is not https:// — ignoring pairing"
         );
         return None;
     }
@@ -226,7 +226,7 @@ async fn tick(app: &AppHandle, client: &reqwest::Client, seen: &mut SeenSet) {
         Err(err) => {
             // Transient (instance down, network blip): skip this tick, keep the seen-set,
             // retry next interval. Never surfaces the token.
-            eprintln!("[opendoist] reminders poll skipped: {err}");
+            eprintln!("[opentask] reminders poll skipped: {err}");
             return;
         }
     };
@@ -248,7 +248,7 @@ async fn tick(app: &AppHandle, client: &reqwest::Client, seen: &mut SeenSet) {
             .show()
         {
             eprintln!(
-                "[opendoist] notification failed for reminder {}: {err}",
+                "[opentask] notification failed for reminder {}: {err}",
                 reminder.id
             );
         }
@@ -265,7 +265,7 @@ pub fn spawn(app: AppHandle) {
             Ok(client) => client,
             Err(err) => {
                 eprintln!(
-                    "[opendoist] reminders watcher disabled — http client init failed: {err}"
+                    "[opentask] reminders watcher disabled — http client init failed: {err}"
                 );
                 return;
             }

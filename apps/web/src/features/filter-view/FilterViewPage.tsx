@@ -20,7 +20,7 @@ import {
   parseFilter,
   splitPanesRaw,
   viewKey,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { ListFilter } from 'lucide-react'

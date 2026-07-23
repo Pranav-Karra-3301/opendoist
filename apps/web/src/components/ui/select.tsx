@@ -40,7 +40,7 @@ export function SelectTrigger({
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       className={cn(
-        'flex h-8 cursor-pointer select-none items-center justify-between gap-2 rounded-sm border border-input-border bg-surface-raised px-3 text-copy text-text-primary outline-none transition-colors duration-150 ease-standard hover:bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)] data-disabled:cursor-not-allowed data-disabled:opacity-60',
+        'flex h-8 cursor-pointer select-none items-center justify-between gap-2 rounded-sm border border-input-border bg-surface-raised px-3 text-copy text-text-primary outline-none transition-colors duration-150 ease-standard hover:bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)] data-disabled:cursor-not-allowed data-disabled:opacity-60',
         className,
       )}
       {...props}

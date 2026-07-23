@@ -1,5 +1,5 @@
 [changelog]
-header = "# Changelog\n\nAll notable changes to OpenDoist.\n"
+header = "# Changelog\n\nAll notable changes to OpenTask.\n"
 body = """
 {% if version %}## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}{% else %}## [Unreleased]{% endif %}
 {% for group, commits in commits | group_by(attribute="group") %}

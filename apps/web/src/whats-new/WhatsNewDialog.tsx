@@ -26,7 +26,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import { type ChangelogEntry, changelogEntries, selectChangelogEntry } from './changelog'
 
-const RELEASES_URL = 'https://github.com/pranav-karra-3301/opendoist/releases'
+const RELEASES_URL = 'https://github.com/pranav-karra-3301/opentask/releases'
 const SEEN_VERSION_KEY = 'od-seen-version'
 
 interface WhatsNewStore {
@@ -77,7 +77,7 @@ export function WhatsNewDialog({
     >
       <DialogContent className="max-w-[560px]">
         <DialogHeader>
-          <DialogTitle>What's New in OpenDoist</DialogTitle>
+          <DialogTitle>What's New in OpenTask</DialogTitle>
         </DialogHeader>
 
         {entries.length === 0 ? (

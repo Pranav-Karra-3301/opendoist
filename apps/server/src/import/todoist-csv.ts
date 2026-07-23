@@ -7,7 +7,7 @@
  *  DURATION,DURATION_UNIT,DEADLINE,DEADLINE_LANG); older exports omit trailing columns.
  * `TYPE` is one of `section` | `task` | `note`; an all-empty row separates section groups.
  */
-import type { Priority } from '@opendoist/core'
+import type { Priority } from '@opentask/core'
 import { parse } from 'csv-parse/sync'
 import StreamZip from 'node-stream-zip'
 import type { ImportPlan } from './types'
@@ -16,7 +16,7 @@ type ImportTask = ImportPlan['tasks'][number]
 type ImportSkip = ImportPlan['skips'][number]
 type ProjectCsvResult = Pick<ImportPlan, 'sections' | 'tasks' | 'skips'> & { labels: string[] }
 
-/** Todoist CSV priority is inverted (4 = urgent); OpenDoist uses 1 = highest. */
+/** Todoist CSV priority is inverted (4 = urgent); OpenTask uses 1 = highest. */
 const PRIORITY_FROM_CSV: Record<number, Priority> = { 1: 4, 2: 3, 3: 2, 4: 1 }
 /** @name label token; captures the leading boundary so the whole run can be stripped from content. */
 const LABEL_RE = /(^|\s)@([\p{L}\p{N}_-]+)/gu

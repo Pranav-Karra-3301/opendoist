@@ -1,4 +1,4 @@
-import type { Priority } from '@opendoist/core'
+import type { Priority } from '@opentask/core'
 import { describe, expect, it, vi } from 'vitest'
 import type { ChannelDeps, NtfyConfig, ReminderPayload } from '../contracts'
 import { ntfyAdapter } from './ntfy'
@@ -93,7 +93,7 @@ describe('ntfyAdapter', () => {
     [3, 3],
     [4, 3],
   ]
-  it.each(priorityCases)('maps OpenDoist priority p%i to ntfy priority %i', async (p, expected) => {
+  it.each(priorityCases)('maps OpenTask priority p%i to ntfy priority %i', async (p, expected) => {
     const fetchMock = resolvingFetch()
     const { deps } = makeDeps(fetchMock as unknown as ChannelDeps['fetch'])
     const config: NtfyConfig = { server: 'https://ntfy.sh', topic: 't' }

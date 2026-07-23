@@ -1,4 +1,4 @@
-import { FilterSyntaxError, parseFilter } from '@opendoist/core'
+import { FilterSyntaxError, parseFilter } from '@opentask/core'
 import type { Command } from 'commander'
 import { createContext, io, runAction } from '../lib/context'
 import { UsageError } from '../lib/errors'

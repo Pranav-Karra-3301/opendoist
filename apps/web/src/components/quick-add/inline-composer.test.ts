@@ -1,4 +1,4 @@
-import { type ParseContext, parseQuickAdd } from '@opendoist/core'
+import { type ParseContext, parseQuickAdd } from '@opentask/core'
 import { describe, expect, it } from 'vitest'
 import { applyComposerContext, composerSubmitText, parseState } from './quick-add-model'
 

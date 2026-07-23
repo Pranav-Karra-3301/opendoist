@@ -14,7 +14,7 @@ import {
 
 const sampleBackup = BackupInfoSchema.parse({
   id: 'bk_1',
-  filename: 'opendoist-backup-2026-07-15.zip',
+  filename: 'opentask-backup-2026-07-15.zip',
   kind: 'scheduled',
   sizeBytes: 2048,
   includesAttachments: false,
@@ -25,7 +25,7 @@ describe('BackupInfoSchema', () => {
   it('parses the frozen server shape', () => {
     expect(sampleBackup).toEqual({
       id: 'bk_1',
-      filename: 'opendoist-backup-2026-07-15.zip',
+      filename: 'opentask-backup-2026-07-15.zip',
       kind: 'scheduled',
       sizeBytes: 2048,
       includesAttachments: false,
@@ -142,8 +142,8 @@ describe('formatRelativeTime', () => {
 
 describe('backupDownloadHref', () => {
   it('builds an encoded download path from the filename', () => {
-    expect(backupDownloadHref('opendoist-backup-2026-07-15.zip')).toBe(
-      '/api/v1/backups/opendoist-backup-2026-07-15.zip/download',
+    expect(backupDownloadHref('opentask-backup-2026-07-15.zip')).toBe(
+      '/api/v1/backups/opentask-backup-2026-07-15.zip/download',
     )
     expect(backupDownloadHref('jul 15.zip')).toBe('/api/v1/backups/jul%2015.zip/download')
   })

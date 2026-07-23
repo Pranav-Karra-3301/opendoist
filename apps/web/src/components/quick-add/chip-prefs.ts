@@ -2,9 +2,9 @@
  * Pure Quick Add chip-preferences logic, shared by the composer chip row (chip-row.tsx) and the
  * Settings → Quick Add page (features/settings/pages/QuickAddPage.tsx). Operates on the frozen
  * `QuickAddPrefs.chips` array (`{ id, visible }[]`, plan Task A Step 1) and imports ONLY
- * @opendoist/core, so it stays node-testable with no React/dnd dependency. Implements plan Task Q.
+ * @opentask/core, so it stays node-testable with no React/dnd dependency. Implements plan Task Q.
  */
-import { QUICK_ADD_CHIP_IDS, type QuickAddChipId, type QuickAddPrefs } from '@opendoist/core'
+import { QUICK_ADD_CHIP_IDS, type QuickAddChipId, type QuickAddPrefs } from '@opentask/core'
 
 /** One stored chip preference: a frozen chip id plus its visibility. */
 export type ChipPref = QuickAddPrefs['chips'][number]

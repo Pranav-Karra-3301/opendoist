@@ -1,4 +1,4 @@
-import { addDaysIso, dateInTz } from '@opendoist/core'
+import { addDaysIso, dateInTz } from '@opentask/core'
 import { and, eq, sql } from 'drizzle-orm'
 import { afterEach, expect, it } from 'vitest'
 import { dayStats, projects, sections, tasks } from '../../db/schema'
@@ -303,7 +303,7 @@ it('close and reopen 404 for a missing task', async () => {
 })
 
 it('close: 404 when the task belongs to another user', async () => {
-  const t = await make({ env: { OPENDOIST_ALLOW_REGISTRATION: 'true' } })
+  const t = await make({ env: { OPENTASK_ALLOW_REGISTRATION: 'true' } })
   const mine = await json<TaskDto>(await t.post('/api/v1/tasks/quick', { text: 'private note' }))
 
   const signup = await t.request('/api/auth/sign-up/email', {

@@ -11,7 +11,7 @@
  * best-effort until wired and always harmless when unset (channel state is persisted regardless,
  * so web clients still pick it up on the next `['channels']` refetch).
  */
-import { type Due, dateInTz, type Priority } from '@opendoist/core'
+import { type Due, dateInTz, type Priority } from '@opentask/core'
 import { and, eq } from 'drizzle-orm'
 import { loadConfig } from '../config'
 import type { Db } from '../db/db'

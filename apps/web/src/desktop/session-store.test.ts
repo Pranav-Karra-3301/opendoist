@@ -49,8 +49,8 @@ describe('normalizeInstanceUrl', () => {
 
   it('preserves a sub-path deploy while stripping its trailing slash', async () => {
     const { normalizeInstanceUrl } = await import('./session-store')
-    expect(normalizeInstanceUrl('https://host.example.com/opendoist/')).toBe(
-      'https://host.example.com/opendoist',
+    expect(normalizeInstanceUrl('https://host.example.com/opentask/')).toBe(
+      'https://host.example.com/opentask',
     )
   })
 
@@ -76,9 +76,9 @@ describe('normalizeInstanceUrl', () => {
 })
 
 describe('normalizeToken', () => {
-  it('accepts and trims an od_ token', async () => {
+  it('accepts and trims an ot_ token', async () => {
     const { normalizeToken } = await import('./session-store')
-    expect(normalizeToken('  od_abc123  ')).toBe('od_abc123')
+    expect(normalizeToken('  ot_abc123  ')).toBe('ot_abc123')
   })
 
   it('rejects an empty token', async () => {
@@ -86,32 +86,32 @@ describe('normalizeToken', () => {
     expect(() => normalizeToken('   ')).toThrow(/required/i)
   })
 
-  it('rejects a token without the od_ prefix', async () => {
+  it('rejects a token without the ot_ prefix', async () => {
     const { normalizeToken } = await import('./session-store')
-    expect(() => normalizeToken('abc123')).toThrow(/od_/)
+    expect(() => normalizeToken('abc123')).toThrow(/ot_/)
   })
 })
 
 describe('savePairing / loadPairing', () => {
   it('round-trips a normalized pairing through the store', async () => {
     const { savePairing, loadPairing } = await import('./session-store')
-    await savePairing('https://tasks.example.com/', 'od_secret123')
+    await savePairing('https://tasks.example.com/', 'ot_secret123')
     expect(storeSave).toHaveBeenCalled()
     expect(await loadPairing()).toEqual({
       instanceUrl: 'https://tasks.example.com',
-      token: 'od_secret123',
+      token: 'ot_secret123',
     })
   })
 
   it('persists the URL already stripped of its trailing slash', async () => {
     const { savePairing } = await import('./session-store')
-    await savePairing('https://tasks.example.com/', 'od_secret123')
+    await savePairing('https://tasks.example.com/', 'ot_secret123')
     expect(storeSet).toHaveBeenCalledWith('instanceUrl', 'https://tasks.example.com')
   })
 
   it('rejects a non-https URL WITHOUT writing to the store', async () => {
     const { savePairing } = await import('./session-store')
-    await expect(savePairing('http://insecure.example.com', 'od_secret123')).rejects.toThrow(
+    await expect(savePairing('http://insecure.example.com', 'ot_secret123')).rejects.toThrow(
       /https/i,
     )
     expect(storeSet).not.toHaveBeenCalled()
@@ -120,7 +120,7 @@ describe('savePairing / loadPairing', () => {
 
   it('rejects a bad token WITHOUT writing to the store', async () => {
     const { savePairing } = await import('./session-store')
-    await expect(savePairing('https://tasks.example.com', 'nope')).rejects.toThrow(/od_/)
+    await expect(savePairing('https://tasks.example.com', 'nope')).rejects.toThrow(/ot_/)
     expect(storeSet).not.toHaveBeenCalled()
   })
 
@@ -146,7 +146,7 @@ describe('savePairing / loadPairing', () => {
  * Load-time hardening: `settings.json` is a plain file in the app data dir, so a
  * hand-edited (or corrupted) pairing must NOT be trusted just because it parses as
  * strings. In particular a non-https instance URL read back from disk must be treated
- * as unpaired — otherwise the `od_` bearer would travel over cleartext http even though
+ * as unpaired — otherwise the `ot_` bearer would travel over cleartext http even though
  * `savePairing` could never have written that URL (plan: "Reject non-https:// instance
  * URLs", enforced on BOTH write and read).
  */
@@ -154,31 +154,31 @@ describe('loadPairing re-validation (hand-edited store)', () => {
   it('treats a stored http:// instance URL as unpaired', async () => {
     const { loadPairing } = await import('./session-store')
     backing.set('instanceUrl', 'http://localhost:32416')
-    backing.set('token', 'od_secret123')
+    backing.set('token', 'ot_secret123')
     expect(await loadPairing()).toBeNull()
   })
 
   it('treats a stored non-URL instance URL as unpaired', async () => {
     const { loadPairing } = await import('./session-store')
     backing.set('instanceUrl', 'tasks.example.com')
-    backing.set('token', 'od_secret123')
+    backing.set('token', 'ot_secret123')
     expect(await loadPairing()).toBeNull()
   })
 
   it('re-normalizes a hand-edited https URL (trailing slash stripped on load)', async () => {
     const { loadPairing } = await import('./session-store')
     backing.set('instanceUrl', 'https://tasks.example.com///')
-    backing.set('token', 'od_secret123')
+    backing.set('token', 'ot_secret123')
     expect(await loadPairing()).toEqual({
       instanceUrl: 'https://tasks.example.com',
-      token: 'od_secret123',
+      token: 'ot_secret123',
     })
   })
 
   it('never mints a bearer ApiSession from a hand-edited http:// pairing', async () => {
     const { getDesktopSession } = await import('../api/desktop-session')
     backing.set('instanceUrl', 'http://localhost:32416')
-    backing.set('token', 'od_secret123')
+    backing.set('token', 'ot_secret123')
     expect(await getDesktopSession()).toBeNull()
   })
 })
@@ -186,7 +186,7 @@ describe('loadPairing re-validation (hand-edited store)', () => {
 describe('clearPairing', () => {
   it('removes the persisted pairing', async () => {
     const { savePairing, clearPairing, loadPairing } = await import('./session-store')
-    await savePairing('https://tasks.example.com', 'od_secret123')
+    await savePairing('https://tasks.example.com', 'ot_secret123')
     await clearPairing()
     expect(storeDelete).toHaveBeenCalledWith('instanceUrl')
     expect(storeDelete).toHaveBeenCalledWith('token')
@@ -202,24 +202,24 @@ describe('getDesktopSession / saveDesktopSession (frozen contract)', () => {
 
   it('exposes a paired instance as a bearer, cookie-less ApiSession', async () => {
     const { saveDesktopSession, getDesktopSession } = await import('../api/desktop-session')
-    await saveDesktopSession('https://tasks.example.com/', 'od_secret123')
+    await saveDesktopSession('https://tasks.example.com/', 'ot_secret123')
     const session = await getDesktopSession()
     expect(session).not.toBeNull()
     expect(session?.baseUrl).toBe('https://tasks.example.com')
     expect(session?.credentials).toBe('omit')
-    expect(session?.authHeaders()).toEqual({ authorization: 'Bearer od_secret123' })
+    expect(session?.authHeaders()).toEqual({ authorization: 'Bearer ot_secret123' })
   })
 
   it('never puts the token in the base URL', async () => {
     const { saveDesktopSession, getDesktopSession } = await import('../api/desktop-session')
-    await saveDesktopSession('https://tasks.example.com', 'od_secret123')
+    await saveDesktopSession('https://tasks.example.com', 'ot_secret123')
     const session = await getDesktopSession()
-    expect(session?.baseUrl).not.toContain('od_secret123')
+    expect(session?.baseUrl).not.toContain('ot_secret123')
   })
 
   it('saveDesktopSession rejects a non-https instance URL', async () => {
     const { saveDesktopSession } = await import('../api/desktop-session')
-    await expect(saveDesktopSession('http://insecure.example.com', 'od_secret123')).rejects.toThrow(
+    await expect(saveDesktopSession('http://insecure.example.com', 'ot_secret123')).rejects.toThrow(
       /https/i,
     )
   })

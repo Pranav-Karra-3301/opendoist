@@ -18,7 +18,7 @@ export async function runCli(argv: string[]): Promise<CliRun> {
   const prevExit = process.exitCode
   process.exitCode = undefined
   try {
-    await buildProgram().parseAsync(['node', 'opendoist', ...argv])
+    await buildProgram().parseAsync(['node', 'opentask', ...argv])
   } catch (error) {
     const ce = error as { exitCode?: number }
     process.exitCode = typeof ce.exitCode === 'number' ? ce.exitCode : 1
@@ -90,9 +90,9 @@ export function installMockFetch(routes: RouteDef[]): RecordedCall[] {
 export const TEST_URL = 'https://od.example.com'
 /** Credentials via env; config path pointed at nowhere; colors off. Call vi.unstubAllEnvs() in afterEach. */
 export function stubAuthEnv(url: string = TEST_URL): void {
-  vi.stubEnv('OPENDOIST_URL', url)
-  vi.stubEnv('OPENDOIST_TOKEN', 'od_testtoken123')
-  vi.stubEnv('OPENDOIST_CONFIG_PATH', '/nonexistent/opendoist-test/config.json')
+  vi.stubEnv('OPENTASK_URL', url)
+  vi.stubEnv('OPENTASK_TOKEN', 'ot_testtoken123')
+  vi.stubEnv('OPENTASK_CONFIG_PATH', '/nonexistent/opentask-test/config.json')
   vi.stubEnv('NO_COLOR', '1')
   vi.stubEnv('FORCE_COLOR', '')
 }

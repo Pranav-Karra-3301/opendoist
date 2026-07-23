@@ -14,7 +14,7 @@
  * Writes (`savePairing`) validate BEFORE persisting and surface store failures so the
  * pairing flow can report them.
  *
- * Security: the `od_` token is persisted verbatim but MUST NEVER be logged, echoed, or
+ * Security: the `ot_` token is persisted verbatim but MUST NEVER be logged, echoed, or
  * placed in a URL — only in the `Authorization` header built by `desktop-session.ts`.
  */
 
@@ -25,7 +25,7 @@ const KEY_TOKEN = 'token'
 export interface StoredPairing {
   /** https instance base URL, no trailing slash. */
   instanceUrl: string
-  /** `od_` bearer token. */
+  /** `ot_` bearer token. */
   token: string
 }
 
@@ -50,13 +50,16 @@ export function normalizeInstanceUrl(rawUrl: string): string {
 }
 
 /**
- * Validate + normalize a user-supplied API token: non-empty and `od_`-prefixed.
+ * Validate + normalize a user-supplied API token: non-empty and `ot_`-prefixed (legacy
+ * OpenDoist-minted `od_` tokens stay valid — the server verifies by hash, not prefix).
  * Throws on anything else. Pure — no store access.
  */
 export function normalizeToken(rawToken: string): string {
   const trimmed = rawToken.trim()
   if (trimmed === '') throw new Error('API token is required')
-  if (!trimmed.startsWith('od_')) throw new Error('API token must start with "od_"')
+  if (!trimmed.startsWith('ot_') && !trimmed.startsWith('od_')) {
+    throw new Error('API token must start with "ot_"')
+  }
   return trimmed
 }
 
@@ -72,7 +75,7 @@ async function openStore() {
  * The stored URL is re-validated through the SAME `normalizeInstanceUrl` gate as
  * `savePairing`: `settings.json` is a plain, hand-editable file in the app data dir, and
  * a non-https instance URL read back from it must be treated as unpaired — never let the
- * `od_` bearer travel over cleartext http (plan: "Reject non-https:// instance URLs",
+ * `ot_` bearer travel over cleartext http (plan: "Reject non-https:// instance URLs",
  * enforced on write AND read). The Rust reminders watcher applies the same load-time
  * rule (`is_https_url` in `apps/desktop/src-tauri/src/reminders.rs`) — keep them in sync.
  */

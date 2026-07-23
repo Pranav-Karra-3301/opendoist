@@ -1,4 +1,4 @@
-# OpenDoist — canonical single-container deployment.
+# OpenTask — canonical single-container deployment.
 #
 #   1. cp .env.example .env      # then edit .env (every value is optional)
 #   2. docker compose up -d
@@ -7,11 +7,11 @@
 # Data (SQLite DB, attachments, backups, auto-generated secrets) lives in ./data.
 # See docs/install.md and docs/configuration.md for reverse-proxy, HTTPS, and env details.
 services:
-  opendoist:
-    image: ghcr.io/pranav-karra-3301/opendoist:${OPENDOIST_VERSION:-latest}
-    # Fixed name so the documented CLI invocation (`docker exec … opendoist opendoist …`)
-    # is copy-paste correct (compose v2 would otherwise name it `<project>-opendoist-1`).
-    container_name: opendoist
+  opentask:
+    image: ghcr.io/pranav-karra-3301/opentask:${OPENTASK_VERSION:-latest}
+    # Fixed name so the documented CLI invocation (`docker exec … opentask opentask …`)
+    # is copy-paste correct (compose v2 would otherwise name it `<project>-opentask-1`).
+    container_name: opentask
     restart: unless-stopped
     ports: ["7968:7968"]
     volumes: ["./data:/data"]

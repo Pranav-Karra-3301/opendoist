@@ -3,7 +3,7 @@
  * with no jsdom / testing-library (see components/feedback/feedback.test.tsx), so these render
  * with `react-dom/server` and inspect the markup. `rich-textarea` is mocked to a DOM-free
  * stand-in that still invokes the live-highlight overlay render-prop, which lets the parsed
- * `@opendoist/core` token spans surface in the static markup.
+ * `@opentask/core` token spans surface in the static markup.
  */
 import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -80,7 +80,7 @@ describe('App rendering', { timeout: 20_000 }, () => {
     expect(html).toContain('esc')
   })
 
-  it('live-highlights a sample string via @opendoist/core', async () => {
+  it('live-highlights a sample string via @opentask/core', async () => {
     const { App } = await import('./App')
     const html = renderToStaticMarkup(<App initialText="pay rent tomorrow p1 #Home" />)
     expect(html).toContain('data-kind="due"')

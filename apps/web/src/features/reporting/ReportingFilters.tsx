@@ -3,7 +3,7 @@
  * project select, and a date-range preset (with custom since/until inputs). Controlled —
  * the page owns `ReportingFilterState` and derives query params from it.
  */
-import { KNOWN_ACTIVITY_TYPES } from '@opendoist/core'
+import { KNOWN_ACTIVITY_TYPES } from '@opentask/core'
 import { useProjects } from '@/api/hooks/projects'
 import { buttonVariants } from '@/components/ui/button'
 import {

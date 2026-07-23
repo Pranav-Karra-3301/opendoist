@@ -81,7 +81,7 @@ export function InlineAdd({ defaults, placement, onDone }: InlineAddProps) {
         type="button"
         data-placement={placement}
         onClick={() => setExpanded(true)}
-        className="group flex h-9 w-full items-center gap-2 rounded-sm px-[5px] text-left text-body text-text-secondary transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+        className="group flex h-9 w-full items-center gap-2 rounded-sm px-[5px] text-left text-body text-text-secondary transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
       >
         <Plus size={18} className="text-accent" aria-hidden />
         Add task

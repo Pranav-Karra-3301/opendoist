@@ -7,7 +7,7 @@
  *
  * All computation is scoped to the authed user: every karma_ledger and day_stats read carries
  * `WHERE user_id = ?` (phase 3's composite `(user_id, date)` PK). Karma point/level/streak/trend
- * math lives entirely in `@opendoist/core` (pure, zero-IO) — this module only shapes SQL rollups
+ * math lives entirely in `@opentask/core` (pure, zero-IO) — this module only shapes SQL rollups
  * into the frozen DTO and delegates the math. `buildProductivityDto` is exported (and takes an
  * explicit `now` instant) so tests can pin the clock without going through HTTP.
  */
@@ -21,7 +21,7 @@ import {
   karmaLevel,
   karmaTrend,
   type Weekday,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { and, eq, gte, lte, sql } from 'drizzle-orm'
 import type { AppEnv } from '../app'
 import type { Db } from '../db/db'

@@ -85,10 +85,10 @@ describe('getOrCreateVapidKeys', () => {
       getOrCreateVapidKeys({ dataDir: dir, publicUrl: 'https://tasks.example.com' }).subject,
     ).toBe('https://tasks.example.com')
     expect(getOrCreateVapidKeys({ dataDir: dir, publicUrl: 'http://localhost:7968' }).subject).toBe(
-      'mailto:admin@opendoist.local',
+      'mailto:admin@opentask.local',
     )
     expect(getOrCreateVapidKeys({ dataDir: dir, publicUrl: null }).subject).toBe(
-      'mailto:admin@opendoist.local',
+      'mailto:admin@opentask.local',
     )
     const onDisk = JSON.parse(readFileSync(join(dir, 'secrets.json'), 'utf8')) as Record<
       string,

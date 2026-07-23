@@ -71,7 +71,7 @@ const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'app',
   beforeLoad: async () => {
-    // Desktop (Tauri): the paired instance + od_ bearer IS the session — the cookie-based
+    // Desktop (Tauri): the paired instance + ot_ bearer IS the session — the cookie-based
     // better-auth probe would hit the tauri:// origin (no server there), read "no session",
     // and strand the app on /login. Web builds never enter this branch (isTauri() false).
     if (isTauri() && (await getDesktopSession()) !== null) return

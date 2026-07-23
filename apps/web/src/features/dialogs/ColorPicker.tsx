@@ -1,7 +1,7 @@
 /**
  * 20-color project/label/filter palette picker — FROZEN by Task A (plan Step 5).
  * Color names mirror the server's PALETTE enum; swatches paint via the
- * `--od-palette-*` tokens (auto-brightened in dark themes by tokens.css).
+ * `--ot-palette-*` tokens (auto-brightened in dark themes by tokens.css).
  */
 // biome-ignore-all lint/a11y/useSemanticElements: frozen plan markup — styled swatch buttons inside role="radiogroup"; native radios cannot render as 24px color dots
 export const PROJECT_COLORS = [
@@ -27,7 +27,7 @@ export const PROJECT_COLORS = [
   'taupe',
 ] as const
 export type ProjectColor = (typeof PROJECT_COLORS)[number]
-export const colorVar = (c: string) => `var(--od-palette-${c.replaceAll('_', '-')})`
+export const colorVar = (c: string) => `var(--ot-palette-${c.replaceAll('_', '-')})`
 export function ColorPicker({
   value,
   onChange,

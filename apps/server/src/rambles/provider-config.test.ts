@@ -28,12 +28,12 @@ const rowFor = (userId: string) =>
   db.select().from(providerSettings).where(eq(providerSettings.userId, userId)).get()
 
 beforeAll(() => {
-  originalDataDir = process.env.OPENDOIST_DATA_DIR
-  dataDir = mkdtempSync(join(tmpdir(), 'opendoist-pc-'))
+  originalDataDir = process.env.OPENTASK_DATA_DIR
+  dataDir = mkdtempSync(join(tmpdir(), 'opentask-pc-'))
   // getEncryptionKey() reads loadConfig().dataDir, so point it at this temp dir's secrets.json.
-  process.env.OPENDOIST_DATA_DIR = dataDir
+  process.env.OPENTASK_DATA_DIR = dataDir
   ensureDataDirAndSecrets(dataDir)
-  const opened = openDb(join(dataDir, 'opendoist.db'))
+  const opened = openDb(join(dataDir, 'opentask.db'))
   db = opened.db
   sqlite = opened.sqlite
   db.insert(user).values({ id: USER, name: 'Test', email: 'h@example.com' }).run()
@@ -42,8 +42,8 @@ beforeAll(() => {
 afterAll(() => {
   sqlite.close()
   rmSync(dataDir, { recursive: true, force: true })
-  if (originalDataDir === undefined) delete process.env.OPENDOIST_DATA_DIR
-  else process.env.OPENDOIST_DATA_DIR = originalDataDir
+  if (originalDataDir === undefined) delete process.env.OPENTASK_DATA_DIR
+  else process.env.OPENTASK_DATA_DIR = originalDataDir
 })
 
 beforeEach(() => {
@@ -51,14 +51,14 @@ beforeEach(() => {
 })
 
 describe('readProviderEnv', () => {
-  it('maps OPENDOIST_STT_*/LLM_* into the flat slot shape', () => {
+  it('maps OPENTASK_STT_*/LLM_* into the flat slot shape', () => {
     const env = readProviderEnv({
-      OPENDOIST_STT_PROVIDER: 'deepgram',
-      OPENDOIST_STT_BASE_URL: 'https://api.deepgram.com',
-      OPENDOIST_STT_MODEL: 'nova-3',
-      OPENDOIST_STT_API_KEY: 'dg',
-      OPENDOIST_LLM_PROVIDER: 'openai-compatible',
-      OPENDOIST_LLM_MODEL: 'gpt-4o-mini',
+      OPENTASK_STT_PROVIDER: 'deepgram',
+      OPENTASK_STT_BASE_URL: 'https://api.deepgram.com',
+      OPENTASK_STT_MODEL: 'nova-3',
+      OPENTASK_STT_API_KEY: 'dg',
+      OPENTASK_LLM_PROVIDER: 'openai-compatible',
+      OPENTASK_LLM_MODEL: 'gpt-4o-mini',
     })
     expect(env.sttProvider).toBe('deepgram')
     expect(env.sttBaseUrl).toBe('https://api.deepgram.com')
@@ -127,16 +127,16 @@ describe('resolveSttConfig / resolveLlmConfig', () => {
     expect(await resolveLlmConfig(db, USER, { llmProvider: 'none' })).toBeNull()
   })
 
-  it('treats set-but-empty env values (OPENDOIST_STT_API_KEY=) as unset', async () => {
+  it('treats set-but-empty env values (OPENTASK_STT_API_KEY=) as unset', async () => {
     // Regression: '' used to pass through as apiKey '' → adapters sent `Authorization: Bearer `
     // / `xi-api-key: ""` while the view said hasApiKey:false for the very same env.
     const env = readProviderEnv({
-      OPENDOIST_STT_PROVIDER: 'openai-compatible',
-      OPENDOIST_STT_BASE_URL: '',
-      OPENDOIST_STT_MODEL: '',
-      OPENDOIST_STT_API_KEY: '',
-      OPENDOIST_LLM_PROVIDER: 'openai-compatible',
-      OPENDOIST_LLM_API_KEY: '',
+      OPENTASK_STT_PROVIDER: 'openai-compatible',
+      OPENTASK_STT_BASE_URL: '',
+      OPENTASK_STT_MODEL: '',
+      OPENTASK_STT_API_KEY: '',
+      OPENTASK_LLM_PROVIDER: 'openai-compatible',
+      OPENTASK_LLM_API_KEY: '',
     } as NodeJS.ProcessEnv)
     expect(await resolveSttConfig(db, USER, env)).toEqual({
       provider: 'openai-compatible',

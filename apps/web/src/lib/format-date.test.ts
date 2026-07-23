@@ -43,14 +43,14 @@ describe('formatDueChip', () => {
 
   it('maps every tone to a CSS var', () => {
     expect(DUE_TONE_VAR).toEqual({
-      overdue: '--od-date-overdue',
-      missed: '--od-warning',
-      today: '--od-date-today',
-      tomorrow: '--od-date-tomorrow',
-      weekend: '--od-date-weekend',
-      nextweek: '--od-date-next-week',
-      week: '--od-text-secondary',
-      future: '--od-text-secondary',
+      overdue: '--ot-date-overdue',
+      missed: '--ot-warning',
+      today: '--ot-date-today',
+      tomorrow: '--ot-date-tomorrow',
+      weekend: '--ot-date-weekend',
+      nextweek: '--ot-date-next-week',
+      week: '--ot-text-secondary',
+      future: '--ot-text-secondary',
     })
   })
 })

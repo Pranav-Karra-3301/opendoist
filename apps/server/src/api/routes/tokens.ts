@@ -1,5 +1,5 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
-import { ApiTokenSchema, CreatedApiTokenSchema } from '@opendoist/core'
+import { ApiTokenSchema, CreatedApiTokenSchema } from '@opentask/core'
 import { and, eq } from 'drizzle-orm'
 import type { AppEnv } from '../../app'
 import { apikey } from '../../db/auth-schema'
@@ -9,12 +9,15 @@ const security: Record<string, string[]>[] = [{ cookieAuth: [] }, { bearerAuth: 
 
 type Scope = 'read' | 'read_write'
 
-/** The two frozen permission shapes: `{opendoist:['read']}` | `{opendoist:['read','read_write']}`. */
+/** The two frozen permission shapes: `{opentask:['read']}` | `{opentask:['read','read_write']}`. */
 const permissionsFor = (scope: Scope): Record<string, string[]> => ({
-  opendoist: scope === 'read_write' ? ['read', 'read_write'] : ['read'],
+  opentask: scope === 'read_write' ? ['read', 'read_write'] : ['read'],
 })
 
-/** Read a stored `permissions` blob (JSON string or object) back to a scope — mirrors app.ts. */
+/**
+ * Read a stored `permissions` blob (JSON string or object) back to a scope — mirrors app.ts.
+ * Pre-rebrand keys stored the `opendoist` namespace; read it as a fallback.
+ */
 function scopeOf(permissions: unknown): Scope {
   let parsed: unknown = permissions
   if (typeof parsed === 'string') {
@@ -24,8 +27,9 @@ function scopeOf(permissions: unknown): Scope {
       return 'read'
     }
   }
-  const opendoist = (parsed as { opendoist?: unknown } | null)?.opendoist
-  return Array.isArray(opendoist) && opendoist.includes('read_write') ? 'read_write' : 'read'
+  const ns = parsed as { opentask?: unknown; opendoist?: unknown } | null
+  const grants = ns?.opentask ?? ns?.opendoist
+  return Array.isArray(grants) && grants.includes('read_write') ? 'read_write' : 'read'
 }
 
 const toIso = (v: unknown): string => {
@@ -62,7 +66,7 @@ const createTokenRoute = createRoute({
   path: '/tokens',
   tags: ['Tokens'],
   summary: 'Create an API token',
-  description: 'The full `od_…` value is returned exactly once and is never retrievable again.',
+  description: 'The full `ot_…` value is returned exactly once and is never retrievable again.',
   security,
   request: {
     body: { content: { 'application/json': { schema: CreateBodySchema } }, required: true },
@@ -123,7 +127,7 @@ export const tokensRoutes = () => {
         id: r.id,
         name: r.name ?? '',
         scope: scopeOf(r.permissions),
-        start: r.start ?? 'od_',
+        start: r.start ?? 'ot_',
         createdAt: toIso(r.createdAt),
         lastUsedAt: toIsoOrNull(r.lastRequest),
       }))
@@ -142,7 +146,7 @@ export const tokensRoutes = () => {
     const created = await authApi.api.createApiKey({
       body: {
         name,
-        prefix: 'od_',
+        prefix: 'ot_',
         permissions: permissionsFor(scope),
         userId: auth.userId,
       },
@@ -152,7 +156,7 @@ export const tokensRoutes = () => {
         id: created.id,
         name: created.name ?? name,
         scope: scopeOf(created.permissions),
-        start: created.start ?? 'od_',
+        start: created.start ?? 'ot_',
         createdAt: toIso(created.createdAt),
         lastUsedAt: toIsoOrNull(created.lastRequest),
         token: created.key,

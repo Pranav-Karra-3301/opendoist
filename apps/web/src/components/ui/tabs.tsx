@@ -32,7 +32,7 @@ export function TabsTrigger({
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(
-        'inline-flex h-7 cursor-pointer select-none items-center justify-center rounded-sm px-3 font-medium text-copy outline-none transition-colors duration-150 ease-standard hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)] data-selected:text-text-primary',
+        'inline-flex h-7 cursor-pointer select-none items-center justify-center rounded-sm px-3 font-medium text-copy outline-none transition-colors duration-150 ease-standard hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)] data-selected:text-text-primary',
         className,
       )}
       {...props}

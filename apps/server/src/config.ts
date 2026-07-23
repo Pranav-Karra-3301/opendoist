@@ -46,11 +46,23 @@ export const ConfigSchema = z.object({
 })
 export type Config = z.infer<typeof ConfigSchema>
 
+/**
+ * Legacy OPENDOIST_* names (pre-rebrand) present in `env`. Honored by `loadConfig` as a
+ * fallback when the OPENTASK_* name is unset; the caller boot-warns so operators migrate.
+ */
+export function findLegacyEnv(env: NodeJS.ProcessEnv = process.env): string[] {
+  return Object.keys(env)
+    .filter((k) => k.startsWith('OPENDOIST_'))
+    .sort()
+}
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const pkg = JSON.parse(readFileSync(join(import.meta.dirname, '../package.json'), 'utf8')) as {
     version: string
   }
-  const o = (k: string) => env[`OPENDOIST_OIDC_${k}`]
+  /** OPENTASK_<k>, falling back to the legacy OPENDOIST_<k> spelling. */
+  const g = (k: string) => env[`OPENTASK_${k}`] ?? env[`OPENDOIST_${k}`]
+  const o = (k: string) => g(`OIDC_${k}`)
   const oidc =
     o('ISSUER') && o('CLIENT_ID') && o('CLIENT_SECRET')
       ? {
@@ -61,30 +73,30 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
         }
       : null
   const ai = (p: 'STT' | 'LLM') =>
-    env[`OPENDOIST_${p}_PROVIDER`]
+    g(`${p}_PROVIDER`)
       ? {
-          provider: env[`OPENDOIST_${p}_PROVIDER`] as string,
-          baseUrl: env[`OPENDOIST_${p}_BASE_URL`] ?? null,
-          model: env[`OPENDOIST_${p}_MODEL`] ?? null,
-          apiKey: env[`OPENDOIST_${p}_API_KEY`] ?? null,
+          provider: g(`${p}_PROVIDER`) as string,
+          baseUrl: g(`${p}_BASE_URL`) ?? null,
+          model: g(`${p}_MODEL`) ?? null,
+          apiKey: g(`${p}_API_KEY`) ?? null,
         }
       : null
   return ConfigSchema.parse({
-    publicUrl: env.OPENDOIST_PUBLIC_URL ?? null,
-    port: Number(env.OPENDOIST_PORT ?? 7968),
-    dataDir: env.OPENDOIST_DATA_DIR ?? '/data',
-    webDistDir: env.OPENDOIST_WEB_DIST ?? null,
-    allowRegistration: bool(env.OPENDOIST_ALLOW_REGISTRATION, false),
-    disableUpdateCheck: bool(env.OPENDOIST_DISABLE_UPDATE_CHECK, false),
-    logLevel: env.OPENDOIST_LOG_LEVEL ?? 'info',
-    trustProxy: bool(env.OPENDOIST_TRUST_PROXY, false),
-    uploadMaxMb: Number(env.OPENDOIST_UPLOAD_MAX_MB ?? 25),
-    backupRetention: Number(env.OPENDOIST_BACKUP_RETENTION ?? 14),
-    backupIncludeAttachments: bool(env.OPENDOIST_BACKUP_INCLUDE_ATTACHMENTS, true),
-    backupCron: env.OPENDOIST_BACKUP_CRON ?? '0 3 * * *',
+    publicUrl: g('PUBLIC_URL') ?? null,
+    port: Number(g('PORT') ?? 7968),
+    dataDir: g('DATA_DIR') ?? '/data',
+    webDistDir: g('WEB_DIST') ?? null,
+    allowRegistration: bool(g('ALLOW_REGISTRATION'), false),
+    disableUpdateCheck: bool(g('DISABLE_UPDATE_CHECK'), false),
+    logLevel: g('LOG_LEVEL') ?? 'info',
+    trustProxy: bool(g('TRUST_PROXY'), false),
+    uploadMaxMb: Number(g('UPLOAD_MAX_MB') ?? 25),
+    backupRetention: Number(g('BACKUP_RETENTION') ?? 14),
+    backupIncludeAttachments: bool(g('BACKUP_INCLUDE_ATTACHMENTS'), true),
+    backupCron: g('BACKUP_CRON') ?? '0 3 * * *',
     oidc,
     stt: ai('STT'),
     llm: ai('LLM'),
-    version: env.OPENDOIST_VERSION ?? `${pkg.version}-dev`,
+    version: g('VERSION') ?? `${pkg.version}-dev`,
   })
 }

@@ -3,7 +3,7 @@
  * settings (timezone, weekStart, nextWeekDay, weekendDay, smartDate) are the source of
  * truth; browser values are fallbacks only (settings still loading / first paint).
  */
-import { DEFAULT_PARSE_CONTEXT_SETTINGS, type ParseContext, type Weekday } from '@opendoist/core'
+import { DEFAULT_PARSE_CONTEXT_SETTINGS, type ParseContext, type Weekday } from '@opentask/core'
 import { useUserSettings } from '@/api/hooks/user'
 import type { UserSettings } from '@/api/schemas'
 

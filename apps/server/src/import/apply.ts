@@ -15,7 +15,7 @@ import {
   parseRecurrenceText,
   type RecurrenceSpec,
   resolveNaturalDate,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { and, eq, isNull, max, sql } from 'drizzle-orm'
 import { PALETTE } from '../api/schemas'
 import type { Db } from '../db/db'

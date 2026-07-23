@@ -12,7 +12,7 @@ async function pickTheme(page: Page, label: string): Promise<void> {
  * the two axes via `settingsPatchForChoice`: `Dark` → explicit dark on the Kale accent, a light
  * accent (e.g. `Tangerine`) → explicit light on that accent, `System` → follow the OS from Kale.
  * `applyAppearance`/`applyAccent` (lib/theme.ts) stamp `data-mode="light|dark"` + `data-accent` on
- * <html> (removing `data-mode` for System) and mirror `od-appearance`/`od-accent` to localStorage;
+ * <html> (removing `data-mode` for System) and mirror `ot-appearance`/`ot-accent` to localStorage;
  * the index.html head script re-paints the persisted choice on reload.
  */
 test('applies, persists across reload, and clears the mode for System', async ({ page }) => {
@@ -26,7 +26,7 @@ test('applies, persists across reload, and clears the mode for System', async ({
   await expect(html).toHaveAttribute('data-mode', 'dark')
   await expect(html).toHaveAttribute('data-accent', 'kale')
 
-  // Persists across a reload (the head script reads od-appearance/od-accent before React mounts).
+  // Persists across a reload (the head script reads ot-appearance/ot-accent before React mounts).
   await page.reload()
   await expect(html).toHaveAttribute('data-mode', 'dark')
   await expect(html).toHaveAttribute('data-accent', 'kale')

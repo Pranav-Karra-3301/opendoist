@@ -6,7 +6,7 @@
  * `SidebarPrefs` object. A partial like `{ showInbox: false }` would drop the untouched toggles on
  * the server round-trip. Task J reads these prefs to show/hide the live sidebar items.
  */
-import type { SidebarPrefs, UserSettingsPatch } from '@opendoist/core'
+import type { SidebarPrefs, UserSettingsPatch } from '@opentask/core'
 
 export interface SidebarViewToggle {
   key: keyof SidebarPrefs

@@ -6,7 +6,7 @@
  * Quick Add parsing live (lib/parse-context.ts) and the app's Home redirect (router.tsx /
  * lib/home-view.ts) picks up a new Home view on the next launch. Implements plan Task N.
  */
-import type { UserSettings, Weekday } from '@opendoist/core'
+import type { UserSettings, Weekday } from '@opentask/core'
 import { useQuery } from '@tanstack/react-query'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { useMemo, useState } from 'react'
@@ -208,7 +208,7 @@ export default function GeneralPage() {
     <div className="max-w-2xl">
       <SettingsSection
         title="Startup"
-        description="Choose where OpenDoist opens each time you launch it."
+        description="Choose where OpenTask opens each time you launch it."
       >
         <SettingRow
           label="Home view"

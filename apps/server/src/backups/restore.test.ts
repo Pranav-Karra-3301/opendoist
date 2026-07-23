@@ -25,7 +25,7 @@ import { restoreFromZip } from './restore'
 vi.mock('./engine', () => ({
   createBackup: vi.fn(async () => ({
     id: 'pre_restore_id',
-    filename: 'opendoist-prerestore-2026-07-17-000000.zip',
+    filename: 'opentask-prerestore-2026-07-17-000000.zip',
     kind: 'pre_restore' as const,
     sizeBytes: 0,
     includesAttachments: false,
@@ -60,10 +60,13 @@ function seedTask(app: TestApp, content: string): { taskId: string; userId: stri
   return { taskId, userId: app.userId }
 }
 
-/** VACUUM a consistent snapshot of `app`'s db into a zip (`opendoist.db` at root + meta.json). */
+/**
+ * VACUUM a consistent snapshot of `app`'s db into a zip (`opentask.db` at root + meta.json).
+ * `dbEntryName` overrides the entry name to simulate a legacy OpenDoist-era backup.
+ */
 function makeBackupZip(
   app: TestApp,
-  opts?: { attachment?: { name: string; body: string } },
+  opts?: { attachment?: { name: string; body: string }; dbEntryName?: string },
 ): Promise<string> {
   const dir = mkdtempSync(join(tmpdir(), 'od-backup-src-'))
   cleanups.push(() => rmSync(dir, { recursive: true, force: true }))
@@ -84,14 +87,28 @@ function makeBackupZip(
     out.on('close', () => resolve(zipPath))
     archive.on('error', reject)
     archive.pipe(out)
-    archive.file(snapshot, { name: 'opendoist.db' })
-    archive.append(JSON.stringify({ app: 'opendoist', schema: 'v1' }), { name: 'meta.json' })
+    archive.file(snapshot, { name: opts?.dbEntryName ?? 'opentask.db' })
+    archive.append(JSON.stringify({ app: 'opentask', schema: 'v1' }), { name: 'meta.json' })
     if (attachmentsDir) archive.directory(attachmentsDir, 'attachments')
     void archive.finalize()
   })
 }
 
 describe('restoreFromZip', () => {
+  it('restores a legacy backup whose db entry is still named opendoist.db', async () => {
+    const source = await createTestApp()
+    cleanups.push(() => source.close())
+    const { taskId } = seedTask(source, 'LEGACY-NAMED BACKUP')
+    const zipPath = await makeBackupZip(source, { dbEntryName: 'opendoist.db' })
+
+    const target = await createTestApp()
+    cleanups.push(() => target.close())
+    await restoreFromZip(target.deps, zipPath)
+
+    const restored = target.deps.db.select().from(tasks).where(eq(tasks.id, taskId)).get()
+    expect(restored?.content).toBe('LEGACY-NAMED BACKUP')
+  })
+
   it('replaces the live database with the backup contents', async () => {
     const source = await createTestApp()
     cleanups.push(() => source.close())
@@ -104,7 +121,7 @@ describe('restoreFromZip', () => {
     expect(targetUser).not.toBe(sourceUser)
 
     const result = await restoreFromZip(target.deps, zipPath)
-    expect(result.preRestoreBackup).toMatch(/^opendoist-prerestore-/)
+    expect(result.preRestoreBackup).toMatch(/^opentask-prerestore-/)
 
     // The restored task is visible through the SAME (proxied) handle the app already holds.
     const restored = target.deps.db.select().from(tasks).where(eq(tasks.id, taskId)).get()
@@ -154,7 +171,7 @@ describe('restoreFromZip', () => {
     expect(target.deps.db.select().from(tasks).where(eq(tasks.id, taskId)).get()).toBeUndefined()
   })
 
-  it('rejects a zip missing opendoist.db with 400', async () => {
+  it('rejects a zip missing opentask.db with 400', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'od-badzip-'))
     cleanups.push(() => rmSync(dir, { recursive: true, force: true }))
     const zipPath = join(dir, 'no-db.zip')
@@ -199,7 +216,7 @@ describe('restoreFromZip', () => {
   })
 
   it('verifyRestoreDb rejection is an HTTPException (400)', async () => {
-    // A zip whose opendoist.db is not a real sqlite database fails verification.
+    // A zip whose opentask.db is not a real sqlite database fails verification.
     const dir = mkdtempSync(join(tmpdir(), 'od-notdb-'))
     cleanups.push(() => rmSync(dir, { recursive: true, force: true }))
     const zipPath = join(dir, 'garbage.zip')
@@ -209,7 +226,7 @@ describe('restoreFromZip', () => {
       out.on('close', () => resolve())
       archive.on('error', reject)
       archive.pipe(out)
-      archive.append('this is not a sqlite file', { name: 'opendoist.db' })
+      archive.append('this is not a sqlite file', { name: 'opentask.db' })
       void archive.finalize()
     })
 

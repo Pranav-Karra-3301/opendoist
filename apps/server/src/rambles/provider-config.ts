@@ -12,7 +12,7 @@ import {
   SttProviderIdSchema,
 } from './schemas'
 
-/** Flat OPENDOIST_STT_* / OPENDOIST_LLM_* env slot (instance-wide defaults). */
+/** Flat OPENTASK_STT_* / OPENTASK_LLM_* env slot (instance-wide defaults). */
 export interface ProviderEnv {
   sttProvider?: string
   sttBaseUrl?: string
@@ -32,14 +32,14 @@ export interface ProviderEnv {
  */
 export function readProviderEnv(env: NodeJS.ProcessEnv = process.env): ProviderEnv {
   return {
-    sttProvider: env.OPENDOIST_STT_PROVIDER,
-    sttBaseUrl: env.OPENDOIST_STT_BASE_URL,
-    sttModel: env.OPENDOIST_STT_MODEL,
-    sttApiKey: env.OPENDOIST_STT_API_KEY,
-    llmProvider: env.OPENDOIST_LLM_PROVIDER,
-    llmBaseUrl: env.OPENDOIST_LLM_BASE_URL,
-    llmModel: env.OPENDOIST_LLM_MODEL,
-    llmApiKey: env.OPENDOIST_LLM_API_KEY,
+    sttProvider: env.OPENTASK_STT_PROVIDER,
+    sttBaseUrl: env.OPENTASK_STT_BASE_URL,
+    sttModel: env.OPENTASK_STT_MODEL,
+    sttApiKey: env.OPENTASK_STT_API_KEY,
+    llmProvider: env.OPENTASK_LLM_PROVIDER,
+    llmBaseUrl: env.OPENTASK_LLM_BASE_URL,
+    llmModel: env.OPENTASK_LLM_MODEL,
+    llmApiKey: env.OPENTASK_LLM_API_KEY,
   }
 }
 
@@ -50,7 +50,7 @@ function getRow(db: Db, userId: string): ProviderRow | null {
 }
 
 /**
- * Env values are strings, so a set-but-empty var (`OPENDOIST_STT_API_KEY=`) arrives as ''. The
+ * Env values are strings, so a set-but-empty var (`OPENTASK_STT_API_KEY=`) arrives as ''. The
  * resolvers treat that as unset (the contract documented on `readProviderEnv`): '' → null, so an
  * adapter never emits a malformed empty credential (`Authorization: Bearer ` / `xi-api-key: ""`)
  * and the resolved config agrees with the view's `hasApiKey: Boolean(...)`.
@@ -66,7 +66,7 @@ function warnInvalidProvider(slot: 'stt' | 'llm', value: string): void {
   if (warnedInvalidProviders.has(key)) return
   warnedInvalidProviders.add(key)
   console.warn(
-    `[opendoist] ignoring OPENDOIST_${slot.toUpperCase()}_PROVIDER=${JSON.stringify(value)}: not a recognized provider; treating as unset`,
+    `[opentask] ignoring OPENTASK_${slot.toUpperCase()}_PROVIDER=${JSON.stringify(value)}: not a recognized provider; treating as unset`,
   )
 }
 

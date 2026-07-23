@@ -57,7 +57,7 @@ export function AppLayout() {
     <div className="relative h-screen overflow-hidden bg-bg font-sans text-body text-text-primary antialiased">
       <a
         href="#main"
-        className="sr-only rounded-sm bg-surface px-4 py-2 font-medium text-body text-text-primary shadow-menu focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[var(--z-toast)] focus:outline-2 focus:outline-offset-2 focus:outline-[var(--od-focus-ring)]"
+        className="sr-only rounded-sm bg-surface px-4 py-2 font-medium text-body text-text-primary shadow-menu focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[var(--z-toast)] focus:outline-2 focus:outline-offset-2 focus:outline-[var(--ot-focus-ring)]"
       >
         Skip to content
       </a>

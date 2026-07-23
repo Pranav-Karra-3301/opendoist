@@ -1,4 +1,4 @@
-import { dateInTz } from '@opendoist/core'
+import { dateInTz } from '@opentask/core'
 import { useMemo } from 'react'
 import { useProjects } from '@/api/hooks/projects'
 import { useActiveTasks } from '@/api/hooks/tasks'

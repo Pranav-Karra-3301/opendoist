@@ -1,4 +1,4 @@
-import type { Priority } from '@opendoist/core'
+import type { Priority } from '@opentask/core'
 import { Check } from 'lucide-react'
 import { type MouseEvent, useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -28,7 +28,7 @@ export function TaskCheckbox({
   content,
 }: TaskCheckboxProps) {
   const [completing, setCompleting] = useState(false)
-  const color = `var(--od-p${priority})`
+  const color = `var(--ot-p${priority})`
 
   if (uncompletable) {
     return (
@@ -67,7 +67,7 @@ export function TaskCheckbox({
       data-priority={priority}
       onClick={handleClick}
       onAnimationEnd={handleAnimationEnd}
-      className="group/checkbox flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+      className="group/checkbox flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
     >
       <span
         className={cn(

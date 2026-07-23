@@ -10,8 +10,8 @@ import { quickAdd, SEL } from './helpers'
  * 2. The ring must be blue *before* focus ever lands (`outline-color` pinned in @layer base):
  *    `transition-colors` includes `outline-color`, so an unpinned ring fades in from
  *    currentColor (grey) instead of appearing instantly as #1f60c2.
- * 3. The keyboard-focused task row uses the dedicated `--od-row-focus-bg` (#fafafa), not the
- *    generic hover token (#f3f3f3), plus the inset `--od-row-focus-ring`.
+ * 3. The keyboard-focused task row uses the dedicated `--ot-row-focus-bg` (#fafafa), not the
+ *    generic hover token (#f3f3f3), plus the inset `--ot-row-focus-ring`.
  * 4. Menu-semantics popovers (more actions) carry the Dropdown/menu chrome (`shadow-menu` +
  *    1px border) while the scheduler keeps the popover shadow.
  * 5. The Button `secondary` variant resolves the §2.9 law colors in both light and dark.
@@ -152,11 +152,11 @@ test('button secondary variant resolves the §2.9 law colors in light and dark',
   // Probe carries the frozen secondary-variant background class (generated from button.tsx).
   const probe = await page.evaluate(() => {
     const btn = document.createElement('button')
-    btn.className = 'bg-[var(--od-btn-secondary-bg)]'
+    btn.className = 'bg-[var(--ot-btn-secondary-bg)]'
     document.body.append(btn)
     const read = () => ({
       idle: getComputedStyle(btn).backgroundColor,
-      hover: getComputedStyle(btn).getPropertyValue('--od-btn-secondary-bg-hover').trim(),
+      hover: getComputedStyle(btn).getPropertyValue('--ot-btn-secondary-bg-hover').trim(),
     })
     const light = read()
     document.documentElement.dataset.mode = 'dark'

@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { RecurrenceSpecSchema } from '@opendoist/core'
+import { RecurrenceSpecSchema } from '@opentask/core'
 import { eq } from 'drizzle-orm'
 import StreamZip from 'node-stream-zip'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -28,7 +28,7 @@ import {
   TODOIST_CSV_HEADER,
   zipCsvFiles,
 } from './csv-export'
-import { buildJsonExport, type OpendoistExport, OpendoistExportSchema } from './json-export'
+import { buildJsonExport, type OpentaskExport, OpentaskExportSchema } from './json-export'
 
 /** Track temp dirs created for zip round-trips so afterEach can clean them all. */
 const tempDirs: string[] = []
@@ -37,7 +37,7 @@ afterEach(() => {
 })
 
 function writeZipToDisk(buffer: Buffer): string {
-  const dir = mkdtempSync(join(tmpdir(), 'opendoist-export-'))
+  const dir = mkdtempSync(join(tmpdir(), 'opentask-export-'))
   tempDirs.push(dir)
   const path = join(dir, 'export.zip')
   writeFileSync(path, buffer)
@@ -153,8 +153,8 @@ describe('buildJsonExport', () => {
         .run()
 
       const doc = buildJsonExport({ db, userId }, '2026-07-15T00:00:00.000Z')
-      expect(() => OpendoistExportSchema.parse(doc)).not.toThrow()
-      expect(doc.format).toBe('opendoist-export')
+      expect(() => OpentaskExportSchema.parse(doc)).not.toThrow()
+      expect(doc.format).toBe('opentask-export')
       expect(doc.version).toBe(1)
       expect(doc.exportedAt).toBe('2026-07-15T00:00:00.000Z')
 
@@ -487,9 +487,9 @@ describe('export routes', () => {
       expect(res.status).toBe(200)
       expect(res.headers.get('content-type')).toContain('application/json')
       expect(res.headers.get('content-disposition')).toMatch(
-        /^attachment; filename="opendoist-export-\d{4}-\d{2}-\d{2}\.json"$/,
+        /^attachment; filename="opentask-export-\d{4}-\d{2}-\d{2}\.json"$/,
       )
-      const doc = OpendoistExportSchema.parse(await json<OpendoistExport>(res))
+      const doc = OpentaskExportSchema.parse(await json<OpentaskExport>(res))
       expect(doc.tasks.some((task) => task.content === 'Exported task')).toBe(true)
     } finally {
       t.close()
@@ -504,7 +504,7 @@ describe('export routes', () => {
       expect(res.status).toBe(200)
       expect(res.headers.get('content-type')).toBe('application/zip')
       expect(res.headers.get('content-disposition')).toMatch(
-        /^attachment; filename="opendoist-export-\d{4}-\d{2}-\d{2}\.zip"$/,
+        /^attachment; filename="opentask-export-\d{4}-\d{2}-\d{2}\.zip"$/,
       )
       const zipPath = writeZipToDisk(Buffer.from(await res.arrayBuffer()))
       const zip = new StreamZip.async({ file: zipPath })

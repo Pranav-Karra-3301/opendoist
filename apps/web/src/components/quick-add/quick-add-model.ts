@@ -16,7 +16,7 @@ import {
   type ParsedQuickAdd,
   parseQuickAdd,
   type QuickAddToken,
-} from '@opendoist/core'
+} from '@opentask/core'
 import type { Label, Project, Section, TaskCreate } from '@/api/schemas'
 
 export interface IgnoredSpan {

@@ -12,7 +12,7 @@ export interface EmptyStateProps {
 }
 
 /**
- * Centered empty-state block (max-width 320px): 48px icon in --od-text-tertiary,
+ * Centered empty-state block (max-width 320px): 48px icon in --ot-text-tertiary,
  * title 16px/600, description 13px secondary, and an optional secondary CTA button
  * (32px tall, 5px radius). `role="status"` announces the block politely when it appears.
  */

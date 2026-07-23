@@ -139,7 +139,7 @@ export default function ProductivityPage() {
                   title={d.full}
                   onClick={() => update({ daysOff: toggleDayOff(settings.daysOff, d.value) })}
                   className={cn(
-                    'h-8 min-w-11 cursor-pointer rounded-sm border px-2.5 text-copy transition-colors duration-150 ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]',
+                    'h-8 min-w-11 cursor-pointer rounded-sm border px-2.5 text-copy transition-colors duration-150 ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]',
                     selected
                       ? 'border-transparent bg-selected font-semibold text-selected-text'
                       : 'border-input-border bg-surface-raised font-medium text-text-secondary hover:bg-hover hover:text-text-primary',

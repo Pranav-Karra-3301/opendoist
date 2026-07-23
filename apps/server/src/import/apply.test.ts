@@ -59,7 +59,7 @@ let fixturePlan: ImportPlan
 let tmpRoot: string
 
 beforeAll(async () => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'opendoist-apply-'))
+  tmpRoot = mkdtempSync(join(tmpdir(), 'opentask-apply-'))
   const zipPath = join(tmpRoot, 'backup.zip')
   await zipFiles(zipPath, [
     { name: 'Work [220474322].csv', content: workCsv },

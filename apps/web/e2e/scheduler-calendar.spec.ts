@@ -2,7 +2,7 @@ import { expect, type Locator, type Page, test } from '@playwright/test'
 import { quickAdd, SEL } from './helpers'
 
 /**
- * Quick Add UX pass — Task E scheduler month calendar (plan 2026-07-18-opendoist-quickadd-ux §Task E).
+ * Quick Add UX pass — Task E scheduler month calendar (plan 2026-07-18-opentask-quickadd-ux §Task E).
  *
  * The row Schedule popover (SchedulerPanel) now embeds a MonthCalendar below the presets and the
  * free-text box. Both specs drive it from the Inbox, which lists a task regardless of its due —

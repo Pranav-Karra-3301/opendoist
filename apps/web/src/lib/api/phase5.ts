@@ -14,7 +14,7 @@ import {
   SearchPageSchema,
   type UserSettingsPatch,
   UserSettingsSchema,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { z } from 'zod'
 import { apiVoid, api as clientApi } from '@/api/client'
 

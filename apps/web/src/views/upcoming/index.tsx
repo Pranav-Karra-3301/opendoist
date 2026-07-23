@@ -6,7 +6,7 @@
  * mutation layer). Every day derives its slice client-side from the one `useActiveTasks`
  * cache via `lib/derive`; no view-specific query. The scroll sentinel extends the range.
  */
-import { viewKey } from '@opendoist/core'
+import { viewKey } from '@opentask/core'
 import type { CSSProperties } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useTaskMutations } from '@/api/hooks/tasks'
@@ -64,7 +64,7 @@ export function UpcomingView() {
   const sentinelRef = useRef<HTMLDivElement>(null)
   const [stripH, setStripH] = useState(0)
 
-  // Measure the sticky strip so day headings can pin just beneath it (--od-strip-h).
+  // Measure the sticky strip so day headings can pin just beneath it (--ot-strip-h).
   useEffect(() => {
     const el = stripRef.current
     if (el === null) return
@@ -194,7 +194,7 @@ export function UpcomingView() {
     <ODErrorBoundary label="Upcoming">
       <div
         className="mx-auto max-w-[var(--content-max)] px-6 pb-24"
-        style={{ '--od-strip-h': `${stripH}px` } as CSSProperties}
+        style={{ '--ot-strip-h': `${stripH}px` } as CSSProperties}
       >
         <div ref={stripRef} className="sticky top-0 z-[var(--z-sticky)] bg-bg">
           <WeekStrip

@@ -27,4 +27,4 @@ export const RestoreResponseSchema = z.object({
 })
 
 /** valid on-disk backup names — also the download-route guard (path-traversal defense) */
-export const BACKUP_FILENAME_RE = /^opendoist-(backup|prerestore)-\d{4}-\d{2}-\d{2}(-\d{6})?\.zip$/
+export const BACKUP_FILENAME_RE = /^opentask-(backup|prerestore)-\d{4}-\d{2}-\d{2}(-\d{6})?\.zip$/

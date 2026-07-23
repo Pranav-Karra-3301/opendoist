@@ -6,8 +6,8 @@
  * paging (`shift+←/→`, `home`) is bound centrally by Task N against `useUpcomingStore`.
  */
 
-import type { Weekday } from '@opendoist/core'
-import { addDaysIso } from '@opendoist/core'
+import type { Weekday } from '@opentask/core'
+import { addDaysIso } from '@opentask/core'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
@@ -81,7 +81,7 @@ export function WeekStrip({
               aria-current={isSelected ? 'date' : undefined}
               onClick={() => onSelectDay(date)}
               className={cn(
-                'flex flex-col items-center gap-1 rounded-sm py-1.5 transition-colors duration-150 ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]',
+                'flex flex-col items-center gap-1 rounded-sm py-1.5 transition-colors duration-150 ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]',
                 isPast ? 'cursor-default opacity-40' : 'cursor-pointer hover:bg-hover',
               )}
             >

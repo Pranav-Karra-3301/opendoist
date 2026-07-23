@@ -4,7 +4,7 @@
  * under the repo's `environment: 'node'` config without a DOM.
  *
  * Backups ship in phase 9 (spec §2.6): a nightly `VACUUM INTO` snapshot into `/data/backups`
- * with count-based retention (`OPENDOIST_BACKUP_RETENTION`), on-demand "back up now", verified
+ * with count-based retention (`OPENTASK_BACKUP_RETENTION`), on-demand "back up now", verified
  * restore under a maintenance lock, and download links. The wire shapes below mirror the frozen
  * server contract in `apps/server/src/backups/types.ts` (Task A) — redeclared here because the
  * server package isn't importable from the web app, exactly as `@/api/schemas` redeclares the

@@ -4,9 +4,9 @@
  * Sections:
  *  - Snapshots: `GET /api/v1/backups` list + per-row download link, and a "Back up now"
  *    button (`POST /api/v1/backups`).
- *  - Backup settings: retention (`OPENDOIST_BACKUP_RETENTION` default) and a tri-state
+ *  - Backup settings: retention (`OPENTASK_BACKUP_RETENTION` default) and a tri-state
  *    include-attachments override, both PATCHed to `/api/v1/backups/settings`.
- *  - Restore: upload an OpenDoist backup .zip with a type-to-confirm dialog, an XHR upload
+ *  - Restore: upload an OpenTask backup .zip with a type-to-confirm dialog, an XHR upload
  *    (so we can show progress), a full-page blocking overlay while the server swaps the DB
  *    under its maintenance lock, then a success dialog that reloads the app. Any transient
  *    503s other queries hit during the lock resolve on that reload.
@@ -122,7 +122,7 @@ function SnapshotsSection() {
         <div className="min-w-0">
           <h2 className="mb-1 font-medium text-subtitle text-text-primary">Snapshots</h2>
           <p className="max-w-prose text-copy text-text-secondary">
-            OpenDoist takes a nightly snapshot of your database and keeps the most recent copies so
+            OpenTask takes a nightly snapshot of your database and keeps the most recent copies so
             you can download or restore them.
           </p>
         </div>
@@ -334,11 +334,11 @@ function BackupSettingsSection() {
           <div className="px-4 py-3 text-caption text-text-tertiary">
             Defaults come from{' '}
             <code className="rounded-sm border border-border bg-surface px-1 font-mono">
-              OPENDOIST_BACKUP_RETENTION
+              OPENTASK_BACKUP_RETENTION
             </code>{' '}
             /{' '}
             <code className="rounded-sm border border-border bg-surface px-1 font-mono">
-              OPENDOIST_BACKUP_INCLUDE_ATTACHMENTS
+              OPENTASK_BACKUP_INCLUDE_ATTACHMENTS
             </code>
             .
           </div>
@@ -444,7 +444,7 @@ function AttachmentsControl({
               if (!selected) onChange(option.value)
             }}
             className={cn(
-              'h-8 cursor-pointer px-2.5 font-medium text-caption transition-colors duration-150 ease-standard focus-visible:z-10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--od-focus-ring)] disabled:cursor-not-allowed disabled:opacity-60',
+              'h-8 cursor-pointer px-2.5 font-medium text-caption transition-colors duration-150 ease-standard focus-visible:z-10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)] disabled:cursor-not-allowed disabled:opacity-60',
               index > 0 && 'border-input-border border-l',
               selected
                 ? 'bg-selected text-selected-text'
@@ -567,7 +567,7 @@ function RestoreSection() {
       >
         <SettingRow
           label="Restore from backup"
-          description="Upload an OpenDoist backup .zip. The app pauses while the restore runs."
+          description="Upload an OpenTask backup .zip. The app pauses while the restore runs."
           control={
             <Button variant="outline" onClick={() => inputRef.current?.click()}>
               <RotateCcw size={16} aria-hidden="true" />
@@ -710,7 +710,7 @@ function ExportSection() {
       />
       <SettingRow
         label="CSV (Todoist-compatible) zip"
-        description="One CSV per project — importable into Todoist or back into OpenDoist."
+        description="One CSV per project — importable into Todoist or back into OpenTask."
         control={
           <a
             href="/api/v1/export/csv"

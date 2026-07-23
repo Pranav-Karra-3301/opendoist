@@ -16,7 +16,7 @@ import {
   parseQuickAdd,
   resolveNaturalDate,
   timeInTz,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { Calendar, Check, Clock, Flag, Hash, Plus, Repeat, Tag, Target } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import { useLabelMutations, useLabels } from '@/api/hooks/labels'
@@ -42,21 +42,21 @@ import { cn } from '@/lib/utils'
 
 const PRIORITIES: Priority[] = [1, 2, 3, 4]
 const PRIORITY_VAR: Record<Priority, string> = {
-  1: '--od-p1',
-  2: '--od-p2',
-  3: '--od-p3',
-  4: '--od-p4',
+  1: '--ot-p1',
+  2: '--ot-p2',
+  3: '--ot-p3',
+  4: '--ot-p4',
 }
 const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
 const fieldTriggerCls =
-  'flex w-full items-center gap-1.5 rounded-sm px-1 py-1 text-left text-copy text-text-primary outline-none transition-colors duration-150 hover:bg-hover focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]'
+  'flex w-full items-center gap-1.5 rounded-sm px-1 py-1 text-left text-copy text-text-primary outline-none transition-colors duration-150 hover:bg-hover focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]'
 const menuItemCls =
   'flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-copy text-text-primary outline-none transition-colors duration-150 hover:bg-hover focus-visible:bg-hover'
 
-/** `berry_red` → `var(--od-palette-berry-red)`; falls back to the tertiary text colour. */
+/** `berry_red` → `var(--ot-palette-berry-red)`; falls back to the tertiary text colour. */
 function paletteVar(color: string | undefined): string {
-  return color ? `var(--od-palette-${color.replaceAll('_', '-')})` : 'var(--od-text-tertiary)'
+  return color ? `var(--ot-palette-${color.replaceAll('_', '-')})` : 'var(--ot-text-tertiary)'
 }
 
 function weekdayHint(dateIso: string): string {
@@ -340,7 +340,7 @@ function DeadlineField({ task }: { task: Task }) {
           {label ? (
             <span
               className="inline-flex items-center gap-1"
-              style={{ color: 'var(--od-date-overdue)' }}
+              style={{ color: 'var(--ot-date-overdue)' }}
             >
               <Target size={14} aria-hidden="true" />
               {label}

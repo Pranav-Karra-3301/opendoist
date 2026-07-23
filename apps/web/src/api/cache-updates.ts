@@ -3,8 +3,8 @@
  * layer in hooks/tasks.ts applies these inside `onMutate`; the undo store replays their
  * inverses. No React, no IO — each function is unit-tested in cache-updates.test.ts.
  */
-import type { Due, ParseContext, Priority } from '@opendoist/core'
-import { nextOccurrence } from '@opendoist/core'
+import type { Due, ParseContext, Priority } from '@opentask/core'
+import { nextOccurrence } from '@opentask/core'
 import type { Task, TaskCreate, TaskMove, TaskPatch } from './schemas'
 
 /** Sort key that lands an optimistic (not-yet-persisted) row at the end of any manual-order

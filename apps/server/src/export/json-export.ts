@@ -5,7 +5,7 @@
  * projects, sections, labels, filters, tasks (with the core `Due` shape and label NAMES), comments
  * (attachment metadata only, never file bytes), reminders and the user settings blob. Soft-deleted
  * rows are excluded; completed tasks are kept (they are part of the canonical record). The route in
- * `routes.ts` streams `OpendoistExportSchema.parse`-able JSON as a download.
+ * `routes.ts` streams `OpentaskExportSchema.parse`-able JSON as a download.
  *
  * AS-BUILT: every row is user-scoped (each table carries `user_id NOT NULL`) and the codebase is
  * deps-injected, so this takes `{ db, userId }` rather than the plan's no-arg signature.
@@ -18,7 +18,7 @@ import {
   PrioritySchema,
   type RecurrenceSpec,
   RecurrenceSpecSchema,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { and, eq, isNull } from 'drizzle-orm'
 import { z } from 'zod'
 import type { Db } from '../db/db'
@@ -120,8 +120,8 @@ const ExportReminderSchema = z.object({
   firedAt: z.string().nullable(),
 })
 
-export const OpendoistExportSchema = z.object({
-  format: z.literal('opendoist-export'),
+export const OpentaskExportSchema = z.object({
+  format: z.literal('opentask-export'),
   version: z.literal(1),
   exportedAt: z.string(),
   /** the user's settings document (phase-5 UserSettings shape); passed through untouched */
@@ -134,7 +134,7 @@ export const OpendoistExportSchema = z.object({
   comments: z.array(ExportCommentSchema),
   reminders: z.array(ExportReminderSchema),
 })
-export type OpendoistExport = z.infer<typeof OpendoistExportSchema>
+export type OpentaskExport = z.infer<typeof OpentaskExportSchema>
 
 /* ---------- helpers ---------- */
 
@@ -200,7 +200,7 @@ function loadLabelsByTask(db: Db, userId: string): Map<string, string[]> {
 }
 
 /** Build the whole canonical export document for one user. Never throws on odd stored data. */
-export function buildJsonExport(deps: ExportDeps, now: string = nowIso()): OpendoistExport {
+export function buildJsonExport(deps: ExportDeps, now: string = nowIso()): OpentaskExport {
   const { db, userId } = deps
 
   const projectRows = db
@@ -264,7 +264,7 @@ export function buildJsonExport(deps: ExportDeps, now: string = nowIso()): Opend
   const labelsByTask = loadLabelsByTask(db, userId)
 
   return {
-    format: 'opendoist-export',
+    format: 'opentask-export',
     version: 1,
     exportedAt: now,
     settings: getSettings(db, userId) as unknown as Record<string, unknown>,

@@ -46,9 +46,9 @@ async function setTheme(page: Page, theme: 'light' | 'dark'): Promise<void> {
 /**
  * Full axe gate (incl. colour-contrast) in light Kale, then again in dark, then restore.
  * The dark scan originally excluded `color-contrast` because the as-built dark palette had a
- * token-layer shortfall (`--od-text-tertiary` #808080 ≈ 3.73:1 on the raised surface) that was
+ * token-layer shortfall (`--ot-text-tertiary` #808080 ≈ 3.73:1 on the raised surface) that was
  * outside this task's files; Task O lifted the token to #a0a0a0 (≥4.62:1 everywhere) and fixed
- * dark `--od-on-accent`, so both themes now run the identical full gate.
+ * dark `--ot-on-accent`, so both themes now run the identical full gate.
  */
 async function axeLightAndDark(
   page: Page,
@@ -147,7 +147,7 @@ test('Command palette: named combobox, result count announced, axe-clean', async
   await expect(dialog.getByRole('option').first()).toBeVisible()
   await expect(dialog.locator('[role="status"]')).toContainText(/result/)
 
-  // Task O applied the deferred tokens.css fix: light --od-text-tertiary is now #6d6d6d
+  // Task O applied the deferred tokens.css fix: light --ot-text-tertiary is now #6d6d6d
   // (4.66:1 on the selected-item hover surface #f3f3f3), so the CommandShortcut keycaps
   // are colour-contrast checked along with everything else in the palette.
   await axeLightAndDark(page, { include: '[role="dialog"]' })

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to OpenDoist.
+All notable changes to OpenTask.
 ## [0.3.2] - 2026-07-22
 
 ### Features
@@ -82,7 +82,7 @@ All notable changes to OpenDoist.
 - *(web)* Full app shell — views, Quick Add, keyboard-first UX
 - *(web,server)* View engine, filters UI, full settings, reporting, undo
 - *(server,web)* Reminders — scheduler, channels, Web Push, iCal feed
-- *(cli)* Opendoist command-line client
+- *(cli)* Opentask command-line client
 - *(server,web)* Ramble — voice capture to confirmed tasks
 - *(server,web,core)* Backups, Todoist importer, karma, What's New, export
 - *(web,server,docs)* PWA, a11y pass, performance, seed, docs, release engineering

@@ -29,7 +29,7 @@
  * (Enter) opens the detail panel, which edits project/section, due date, priority, and labels —
  * the exact PATCH/move shapes the drops fire.
  */
-import { addDaysIso, type Due, dateInTz } from '@opendoist/core'
+import { addDaysIso, type Due, dateInTz } from '@opentask/core'
 import { useState } from 'react'
 import { useTaskMutations } from '@/api/hooks/tasks'
 import type { Task } from '@/api/schemas'

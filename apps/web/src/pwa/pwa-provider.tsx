@@ -107,15 +107,15 @@ export function PwaProvider({ children }: { children: ReactNode }) {
               <Download size={18} aria-hidden="true" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-medium text-copy text-text-primary">Install OpenDoist</p>
+              <p className="font-medium text-copy text-text-primary">Install OpenTask</p>
               <p className="text-caption text-text-secondary">
                 Add it to your device for quick access and offline use.
               </p>
               <button
                 type="button"
                 onClick={install}
-                aria-label="Install OpenDoist"
-                className="mt-2 inline-flex h-7 cursor-pointer items-center rounded-sm bg-accent px-2.5 font-medium text-caption text-on-accent transition-colors duration-150 hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+                aria-label="Install OpenTask"
+                className="mt-2 inline-flex h-7 cursor-pointer items-center rounded-sm bg-accent px-2.5 font-medium text-caption text-on-accent transition-colors duration-150 hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
               >
                 Install
               </button>
@@ -124,7 +124,7 @@ export function PwaProvider({ children }: { children: ReactNode }) {
               type="button"
               aria-label="Dismiss install prompt"
               onClick={dismissInstall}
-              className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-text-secondary transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+              className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-text-secondary transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
             >
               <X size={15} aria-hidden="true" />
             </button>

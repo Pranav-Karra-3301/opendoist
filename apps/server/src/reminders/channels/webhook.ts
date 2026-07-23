@@ -42,7 +42,7 @@ export const webhookAdapter: ChannelAdapter<'webhook'> = {
     const headers: Record<string, string> = {
       'content-type': 'application/json',
       'x-signature': `sha256=${signWebhookBody(body, config.secret)}`,
-      'user-agent': 'OpenDoist-Webhook',
+      'user-agent': 'OpenTask-Webhook',
     }
 
     // Up to 3 attempts: fire immediately, then back off 1 s and 5 s before each retry.

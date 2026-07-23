@@ -3,26 +3,28 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OpenDoist</title>
+    <title>OpenTask</title>
     <link rel="icon" href="/icons/icon-192.png" type="image/png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <meta name="theme-color" content="#fcfcf8" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="OpenDoist" />
+    <meta name="apple-mobile-web-app-title" content="OpenTask" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <script>
       // Pre-hydration theme paint (appearance × accent). Reads the two axes mirrored to
-      // localStorage by lib/theme.ts: `od-appearance` = 'light'|'dark'|'system', `od-accent` =
+      // localStorage by lib/theme.ts: `ot-appearance` = 'light'|'dark'|'system', `ot-accent` =
       // the palette name. `data-accent` applies the accent in both light and dark; `data-mode`
       // ('light'|'dark') or `.system-dark` (system → follows the OS) applies the appearance.
-      // Back-compat: a pre-appearance install still has `od-theme`/`od-auto-dark` (and an old
-      // 'system' meant "follow the OS from Kale") — migrate those to appearance/accent inline.
+      // Back-compat, two generations: an OpenDoist-era install mirrored `od-appearance`/`od-accent`
+      // (writes migrate to `ot-*` on the next theme change), and a pre-appearance install still has
+      // `od-theme`/`od-auto-dark` (an old 'system' meant "follow the OS from Kale") — migrate all
+      // of those to appearance/accent inline.
       ;(() => {
         var root = document.documentElement
         var ACCENTS = ['kale', 'todoist', 'moonstone', 'tangerine', 'blueberry', 'lavender', 'raspberry']
-        var appearance = localStorage.getItem('od-appearance')
-        var accent = localStorage.getItem('od-accent')
+        var appearance = localStorage.getItem('ot-appearance') || localStorage.getItem('od-appearance')
+        var accent = localStorage.getItem('ot-accent') || localStorage.getItem('od-accent')
         var theme, autoDark, baseAccent
         if (!appearance || !accent) {
           theme = localStorage.getItem('od-theme')

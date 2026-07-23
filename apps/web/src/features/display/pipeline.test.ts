@@ -1,4 +1,4 @@
-import { DEFAULT_VIEW_PREFS, type ParseContext, type ViewPrefs } from '@opendoist/core'
+import { DEFAULT_VIEW_PREFS, type ParseContext, type ViewPrefs } from '@opentask/core'
 import { describe, expect, it } from 'vitest'
 import type { Task } from '@/api/schemas'
 import {

@@ -59,54 +59,54 @@ const SEMANTIC_GROUPS: ReadonlyArray<{ title: string; tokens: readonly string[] 
   {
     title: 'Canvas & surfaces',
     tokens: [
-      '--od-bg',
-      '--od-surface',
-      '--od-surface-raised',
-      '--od-surface-overlay',
-      '--od-hover',
-      '--od-selected',
-      '--od-selected-text',
-      '--od-sidebar-hover',
+      '--ot-bg',
+      '--ot-surface',
+      '--ot-surface-raised',
+      '--ot-surface-overlay',
+      '--ot-hover',
+      '--ot-selected',
+      '--ot-selected-text',
+      '--ot-sidebar-hover',
     ],
   },
   {
     title: 'Borders & inputs',
-    tokens: ['--od-border', '--od-border-subtle', '--od-input-border', '--od-input-border-focus'],
+    tokens: ['--ot-border', '--ot-border-subtle', '--ot-input-border', '--ot-input-border-focus'],
   },
   {
     title: 'Text',
-    tokens: ['--od-text-primary', '--od-text-secondary', '--od-text-tertiary'],
+    tokens: ['--ot-text-primary', '--ot-text-secondary', '--ot-text-tertiary'],
   },
   {
     title: 'Accent',
     tokens: [
-      '--od-accent',
-      '--od-accent-hover',
-      '--od-accent-disabled',
-      '--od-on-accent',
-      '--od-accent-soft',
+      '--ot-accent',
+      '--ot-accent-hover',
+      '--ot-accent-disabled',
+      '--ot-on-accent',
+      '--ot-accent-soft',
     ],
   },
   {
     title: 'Status',
-    tokens: ['--od-danger', '--od-danger-hover', '--od-success', '--od-warning', '--od-info'],
+    tokens: ['--ot-danger', '--ot-danger-hover', '--ot-success', '--ot-warning', '--ot-info'],
   },
   {
     title: 'Priorities',
     tokens: [
-      '--od-p1',
-      '--od-p1-disabled',
-      '--od-p2',
-      '--od-p2-disabled',
-      '--od-p3',
-      '--od-p3-disabled',
-      '--od-p4',
-      '--od-p4-disabled',
+      '--ot-p1',
+      '--ot-p1-disabled',
+      '--ot-p2',
+      '--ot-p2-disabled',
+      '--ot-p3',
+      '--ot-p3-disabled',
+      '--ot-p4',
+      '--ot-p4-disabled',
     ],
   },
   {
     title: 'Focus (always blue, never the accent)',
-    tokens: ['--od-focus-ring', '--od-focus-ring-outer', '--od-row-focus-ring'],
+    tokens: ['--ot-focus-ring', '--ot-focus-ring-outer', '--ot-row-focus-ring'],
   },
 ]
 
@@ -135,11 +135,11 @@ const PALETTE = [
 ] as const
 
 const DATE_CHIPS = [
-  { label: 'Today', token: '--od-date-today' },
-  { label: 'Tomorrow', token: '--od-date-tomorrow' },
-  { label: 'Weekend', token: '--od-date-weekend' },
-  { label: 'Next week', token: '--od-date-next-week' },
-  { label: 'Overdue', token: '--od-date-overdue' },
+  { label: 'Today', token: '--ot-date-today' },
+  { label: 'Tomorrow', token: '--ot-date-tomorrow' },
+  { label: 'Weekend', token: '--ot-date-weekend' },
+  { label: 'Next week', token: '--ot-date-next-week' },
+  { label: 'Overdue', token: '--ot-date-overdue' },
 ] as const
 
 const PRIORITIES = [1, 2, 3, 4] as const
@@ -181,7 +181,7 @@ const BUTTON_BASE =
 
 const ALL_TOKEN_NAMES: readonly string[] = [
   ...SEMANTIC_GROUPS.flatMap((g) => g.tokens),
-  ...PALETTE.map((name) => `--od-palette-${name}`),
+  ...PALETTE.map((name) => `--ot-palette-${name}`),
   ...DATE_CHIPS.map((chip) => chip.token),
 ]
 
@@ -190,14 +190,14 @@ function isThemeChoice(value: string | null): value is ThemeChoice {
 }
 
 function readStoredTheme(): ThemeChoice {
-  const stored = localStorage.getItem('od-theme')
+  const stored = localStorage.getItem('ot-theme')
   return isThemeChoice(stored) ? stored : 'system'
 }
 
 /** Mirrors the index.html head script: explicit data-theme wins over OS, both ways. */
 function applyTheme(choice: ThemeChoice): void {
   const root = document.documentElement
-  localStorage.setItem('od-theme', choice)
+  localStorage.setItem('ot-theme', choice)
   if (choice === 'system') {
     root.removeAttribute('data-theme')
     root.classList.toggle('system-dark', matchMedia('(prefers-color-scheme: dark)').matches)
@@ -286,7 +286,7 @@ export function TokenShowcase() {
         <header className="flex flex-col gap-5">
           <div className="flex flex-col gap-1">
             <p className="font-medium text-accent text-caption uppercase tracking-widest">
-              OpenDoist
+              OpenTask
             </p>
             <h1 className="font-strong text-header-xl">Design tokens</h1>
             <p className="max-w-[60ch] text-copy text-text-secondary">
@@ -297,7 +297,7 @@ export function TokenShowcase() {
           </div>
           <div className="flex flex-col gap-2">
             <span className="text-caption text-text-tertiary">
-              Theme — persisted to <code className="font-mono">od-theme</code>
+              Theme — persisted to <code className="font-mono">ot-theme</code>
             </span>
             <div className="flex flex-wrap gap-2">
               {THEME_OPTIONS.map((option) => (
@@ -386,7 +386,7 @@ export function TokenShowcase() {
                         className="h-10 rounded-sm border border-border-subtle"
                         style={{ background: `var(${token})` }}
                       />
-                      <span className="font-mono text-caption">{token.replace('--od-', '')}</span>
+                      <span className="font-mono text-caption">{token.replace('--ot-', '')}</span>
                       <span className="font-mono text-caption text-text-tertiary">
                         {computed[token] ?? '…'}
                       </span>
@@ -404,11 +404,11 @@ export function TokenShowcase() {
               <div key={name} className="flex items-center gap-2">
                 <span
                   className="size-3 shrink-0 rounded-full"
-                  style={{ background: `var(--od-palette-${name})` }}
+                  style={{ background: `var(--ot-palette-${name})` }}
                 />
                 <span className="text-copy">{name.replace('-', ' ')}</span>
                 <span className="ml-auto font-mono text-caption text-text-tertiary">
-                  {computed[`--od-palette-${name}`] ?? ''}
+                  {computed[`--ot-palette-${name}`] ?? ''}
                 </span>
               </div>
             ))}

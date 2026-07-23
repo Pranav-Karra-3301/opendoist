@@ -41,7 +41,7 @@ export function GoalRing({
         cy={CENTER}
         r={R}
         fill="none"
-        stroke="var(--od-border)"
+        stroke="var(--ot-border)"
         strokeWidth={STROKE}
       />
       {pct > 0 && (
@@ -50,7 +50,7 @@ export function GoalRing({
           cy={CENTER}
           r={R}
           fill="none"
-          stroke="var(--od-accent)"
+          stroke="var(--ot-accent)"
           strokeWidth={STROKE}
           strokeLinecap="round"
           strokeDasharray={C}
@@ -62,7 +62,7 @@ export function GoalRing({
         <path
           d="M13.5 20.5l4 4 9-9.5"
           fill="none"
-          stroke="var(--od-accent)"
+          stroke="var(--ot-accent)"
           strokeWidth={2.5}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -74,7 +74,7 @@ export function GoalRing({
           textAnchor="middle"
           dominantBaseline="central"
           fontSize={fontSize}
-          fill="var(--od-text-primary)"
+          fill="var(--ot-text-primary)"
           className="tabular-nums"
         >
           {frac}

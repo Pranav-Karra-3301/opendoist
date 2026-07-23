@@ -5,9 +5,9 @@
  *
  * Semantics:
  *  - `getDesktopSession()` resolves the paired instance as an `ApiSession`
- *    (`baseUrl` = https instance URL without trailing slash, `authHeaders` = od_ bearer,
+ *    (`baseUrl` = https instance URL without trailing slash, `authHeaders` = ot_ bearer,
  *    `credentials: 'omit'`) or `null` while unpaired. Never throws for "unpaired".
- *  - `saveDesktopSession(url, token)` validates (https only, non-empty od_ token),
+ *  - `saveDesktopSession(url, token)` validates (https only, non-empty ot_ token),
  *    normalizes (strips trailing slashes), and persists. Never log or echo the token.
  */
 import { loadPairing, savePairing } from '../desktop/session-store'

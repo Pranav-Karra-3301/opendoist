@@ -2,7 +2,7 @@ packages:
   - apps/*
   - packages/*
 
-# `pnpm deploy` (Dockerfile: `pnpm --filter @opendoist/server --prod deploy /out/server`)
+# `pnpm deploy` (Dockerfile: `pnpm --filter @opentask/server --prod deploy /out/server`)
 # hard-fails on pnpm >=10 with ERR_PNPM_DEPLOY_NONINJECTED_WORKSPACE unless the workspace
 # either injects workspace packages everywhere or opts into the legacy copy-based deploy.
 # Legacy deploy is the minimal choice: it only changes `pnpm deploy`, not dev installs.

@@ -1,11 +1,11 @@
 /**
  * TokenCreateDialog (plan Task V) — the two-phase "create API token" flow the Integrations
  * page opens. Phase 1 collects a name + scope and POSTs to /api/v1/tokens; phase 2 reveals
- * the full `od_…` secret exactly once (the server never returns it again) with a copy button
+ * the full `ot_…` secret exactly once (the server never returns it again) with a copy button
  * and a store-it-now warning. Closing clears the secret from component state so a reopened
  * form can never leak it.
  */
-import type { CreatedApiToken } from '@opendoist/core'
+import type { CreatedApiToken } from '@opentask/core'
 import { useMutation } from '@tanstack/react-query'
 import { Check, Copy, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
@@ -191,7 +191,7 @@ export default function TokenCreateDialog({
                       onChange={() => setScope(option.id)}
                       aria-label={option.label}
                       className="mt-0.5 size-4 shrink-0"
-                      style={{ accentColor: 'var(--od-accent)' }}
+                      style={{ accentColor: 'var(--ot-accent)' }}
                     />
                     <span className="grid gap-0.5">
                       <span className="text-body text-text-primary">{option.label}</span>

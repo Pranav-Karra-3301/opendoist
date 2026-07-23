@@ -1,5 +1,5 @@
 /** Todoist importer — phase 9 FROZEN contract (plan Task A Step 4). Do not edit outside Task A. */
-import { HmTimeSchema, IsoDateSchema, PrioritySchema } from '@opendoist/core'
+import { HmTimeSchema, IsoDateSchema, PrioritySchema } from '@opentask/core'
 import { z } from 'zod'
 
 export const ImportSkipSchema = z.object({
@@ -19,7 +19,7 @@ export const ImportTaskSchema = z.object({
   /** keeps a leading '* ' (uncompletable) if present */
   content: z.string().min(1),
   description: z.string().default(''),
-  /** ALWAYS OpenDoist convention (1 = highest) inside a plan */
+  /** ALWAYS OpenTask convention (1 = highest) inside a plan */
   priority: PrioritySchema,
   /** natural language, re-parsed at apply time */
   dueString: z.string().nullable().default(null),

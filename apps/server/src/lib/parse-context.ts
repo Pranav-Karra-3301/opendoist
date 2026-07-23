@@ -1,4 +1,4 @@
-import type { ParseContext, Weekday } from '@opendoist/core'
+import type { ParseContext, Weekday } from '@opentask/core'
 import type { Settings } from '../api/schemas'
 import { nowIso } from './ids'
 

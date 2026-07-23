@@ -9,7 +9,7 @@
 
 import { randomBytes } from 'node:crypto'
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
-import { type RecurrenceSpec, RecurrenceSpecSchema } from '@opendoist/core'
+import { type RecurrenceSpec, RecurrenceSpecSchema } from '@opentask/core'
 import { and, eq, inArray, isNotNull, isNull } from 'drizzle-orm'
 import type { AppEnv } from '../app'
 import type { Db } from '../db/db'

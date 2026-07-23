@@ -31,14 +31,14 @@ export async function createTestApp(opts?: {
   env?: Record<string, string>
   signup?: boolean
 }): Promise<TestApp> {
-  const dataDir = mkdtempSync(join(tmpdir(), 'opendoist-'))
+  const dataDir = mkdtempSync(join(tmpdir(), 'opentask-'))
   const config = loadConfig({
-    OPENDOIST_DATA_DIR: dataDir,
-    OPENDOIST_LOG_LEVEL: 'silent',
+    OPENTASK_DATA_DIR: dataDir,
+    OPENTASK_LOG_LEVEL: 'silent',
     ...opts?.env,
   })
   const secrets = ensureDataDirAndSecrets(config.dataDir)
-  const { db, sqlite } = openDb(join(config.dataDir, 'opendoist.db'))
+  const { db, sqlite } = openDb(join(config.dataDir, 'opentask.db'))
   const auth = createAuth(db, config, secrets.sessionSecret)
   const bus = new EventBus()
   const logger = createLogger(config)

@@ -56,10 +56,10 @@ describe('checkForUpdate', () => {
         },
       }),
     )
-    expect(seenUrl).toBe('https://api.github.com/repos/pranav-karra-3301/opendoist/releases/latest')
+    expect(seenUrl).toBe('https://api.github.com/repos/pranav-karra-3301/opentask/releases/latest')
     const headers = seenInit?.headers as Record<string, string>
     expect(headers.Accept).toBe('application/vnd.github+json')
-    expect(headers['User-Agent']).toBe('opendoist/0.1.0')
+    expect(headers['User-Agent']).toBe('opentask/0.1.0')
   })
 
   it('flags an available update for a newer tag (strips the v prefix)', async () => {

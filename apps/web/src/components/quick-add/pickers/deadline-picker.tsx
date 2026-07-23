@@ -10,7 +10,7 @@
  * works typed straight into the task. Both writes route through the parent's `commit`, so the
  * picker never keeps parallel deadline state.
  */
-import type { Deadline, QuickAddToken, Weekday } from '@opendoist/core'
+import type { Deadline, QuickAddToken, Weekday } from '@opentask/core'
 import { X } from 'lucide-react'
 import { type ReactElement, useState } from 'react'
 import { MonthCalendar } from '@/components/ui/month-calendar'
@@ -88,9 +88,9 @@ export function DeadlinePicker({
             type="button"
             onClick={clear}
             aria-label="Clear deadline"
-            className="inline-flex h-6 items-center gap-1 rounded-sm px-1.5 text-caption text-text-tertiary transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--od-focus-ring)]"
+            className="inline-flex h-6 items-center gap-1 rounded-sm px-1.5 text-caption text-text-tertiary transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--ot-focus-ring)]"
           >
-            <span style={{ color: 'var(--od-date-overdue)' }}>{chip.label}</span>
+            <span style={{ color: 'var(--ot-date-overdue)' }}>{chip.label}</span>
             <X size={12} aria-hidden />
           </button>
         )}

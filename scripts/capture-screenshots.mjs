@@ -1,5 +1,5 @@
 /**
- * Capture the README screenshots against a real, seeded OpenDoist instance.
+ * Capture the README screenshots against a real, seeded OpenTask instance.
  *
  * Pipeline (all throwaway state in an OS temp dir, torn down on exit):
  *   1. ensure the web app is built (`apps/web/dist`) — the server serves it as the SPA
@@ -14,14 +14,14 @@
  * AS-BUILT notes (deviations from the plan's Task K Step 1 draft, all verified against the repo):
  *   - The server has NO build step / no `apps/server/dist` — it runs through `tsx` (see
  *     apps/server/package.json `start`). We therefore start it with `pnpm --filter
- *     @opendoist/server start` and point it at the *web* build via OPENDOIST_WEB_DIST, so a
+ *     @opentask/server start` and point it at the *web* build via OPENTASK_WEB_DIST, so a
  *     single origin serves both the API and the SPA (app.ts static-SPA fallback). All web
  *     API/auth calls are same-origin relative (api/client.ts `BASE='/api/v1'`; auth/client.ts
  *     omits baseURL), so no separate web server or proxy is needed.
  *   - Playwright's `chromium` is imported from `@playwright/test` (a direct web devDependency);
  *     the bare `playwright` package is not hoisted. We resolve it through the web workspace with
  *     `createRequire` — no new dependency is added.
- *   - A random high port (overridable via OPENDOIST_SCREENSHOT_PORT) keeps parallel build agents
+ *   - A random high port (overridable via OPENTASK_SCREENSHOT_PORT) keeps parallel build agents
  *     from colliding, per the crew's "unique random ports" rule.
  *   - Seed runs BEFORE the server starts (zero connection overlap on the WAL DB) rather than the
  *     plan's after-boot ordering.
@@ -44,10 +44,10 @@ const require = createRequire(join(ROOT, 'apps/web/package.json'))
 const { chromium } = require('@playwright/test')
 
 const PORT = Number(
-  process.env.OPENDOIST_SCREENSHOT_PORT ?? 20000 + Math.floor(Math.random() * 40000),
+  process.env.OPENTASK_SCREENSHOT_PORT ?? 20000 + Math.floor(Math.random() * 40000),
 )
 const ORIGIN = `http://localhost:${PORT}`
-const DEMO = { email: 'demo@opendoist.local', password: 'opendoist-demo' }
+const DEMO = { email: 'demo@opentask.local', password: 'opentask-demo' }
 const VIEWPORT = { width: 1440, height: 900 }
 
 /** Run a command to completion; reject with captured output on a non-zero exit. */
@@ -72,16 +72,16 @@ function run(cmd, args, env) {
 
 /** Boot the server as a long-lived child; resolve once /api/health reports ok. */
 async function startServer(dataDir) {
-  const child = spawn('pnpm', ['--filter', '@opendoist/server', 'start'], {
+  const child = spawn('pnpm', ['--filter', '@opentask/server', 'start'], {
     cwd: ROOT,
     env: {
       ...process.env,
-      OPENDOIST_DATA_DIR: dataDir,
-      OPENDOIST_PORT: String(PORT),
-      OPENDOIST_WEB_DIST: WEB_DIST,
-      OPENDOIST_PUBLIC_URL: ORIGIN,
-      OPENDOIST_DISABLE_UPDATE_CHECK: 'true',
-      OPENDOIST_LOG_LEVEL: 'warn',
+      OPENTASK_DATA_DIR: dataDir,
+      OPENTASK_PORT: String(PORT),
+      OPENTASK_WEB_DIST: WEB_DIST,
+      OPENTASK_PUBLIC_URL: ORIGIN,
+      OPENTASK_DISABLE_UPDATE_CHECK: 'true',
+      OPENTASK_LOG_LEVEL: 'warn',
     },
   })
   let log = ''
@@ -122,18 +122,18 @@ async function main() {
   // 1. Build the web app if the SPA the server serves is missing.
   if (!existsSync(join(WEB_DIST, 'index.html'))) {
     console.log('building web app (apps/web/dist missing)…')
-    await run('pnpm', ['--filter', '@opendoist/web', 'build'], {})
+    await run('pnpm', ['--filter', '@opentask/web', 'build'], {})
   }
 
-  const dataDir = await mkdtemp(join(tmpdir(), 'opendoist-shots-'))
+  const dataDir = await mkdtemp(join(tmpdir(), 'opentask-shots-'))
   let server = null
   let browser = null
   try {
     // 2. Seed the frozen dataset (creates the demo user + demo data) into the fresh DB.
     console.log('seeding demo data…')
-    await run('pnpm', ['--filter', '@opendoist/server', 'seed'], {
-      OPENDOIST_DATA_DIR: dataDir,
-      OPENDOIST_DISABLE_UPDATE_CHECK: 'true',
+    await run('pnpm', ['--filter', '@opentask/server', 'seed'], {
+      OPENTASK_DATA_DIR: dataDir,
+      OPENTASK_DISABLE_UPDATE_CHECK: 'true',
     })
 
     // 3. Boot the server serving that DB + the web build.

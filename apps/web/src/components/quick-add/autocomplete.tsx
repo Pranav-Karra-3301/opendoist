@@ -91,7 +91,7 @@ const MENU_ITEM_HEIGHT = 32
 const MENU_VERTICAL_PADDING = 8
 
 function paletteVar(color: string): string {
-  return `var(--od-palette-${color.replaceAll('_', '-')})`
+  return `var(--ot-palette-${color.replaceAll('_', '-')})`
 }
 
 function quoteIfNeeded(name: string): string {

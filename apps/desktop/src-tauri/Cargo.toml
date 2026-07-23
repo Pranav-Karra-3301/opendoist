@@ -1,10 +1,10 @@
 [package]
-name = "opendoist-desktop"
+name = "opentask-desktop"
 version = "0.1.0"
-description = "OpenDoist macOS desktop app (Tauri 2): the web SPA in a native shell plus a menu-bar Quick Add popover, native reminder notifications, autostart, and a minisign self-updater."
-authors = ["OpenDoist contributors"]
+description = "OpenTask macOS desktop app (Tauri 2): the web SPA in a native shell plus a menu-bar Quick Add popover, native reminder notifications, autostart, and a minisign self-updater."
+authors = ["OpenTask contributors"]
 license = "MIT"
-repository = "https://github.com/Pranav-Karra-3301/opendoist"
+repository = "https://github.com/Pranav-Karra-3301/opentask"
 edition = "2021"
 rust-version = "1.77.2"
 

@@ -11,7 +11,7 @@ export const ExtractedTaskSchema = z.object({
   title: z.string().min(1).max(500),
   notes: z.string().nullable(),
   due: z.string().nullable(),
-  priority: z.number().int().min(1).max(4).nullable(), // 1 = highest, matches OpenDoist storage
+  priority: z.number().int().min(1).max(4).nullable(), // 1 = highest, matches OpenTask storage
   labels: z.array(z.string()).default([]),
 })
 export type ExtractedTask = z.infer<typeof ExtractedTaskSchema>

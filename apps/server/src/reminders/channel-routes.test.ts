@@ -209,7 +209,7 @@ it('POST /channels/:id/test dispatches the standard test payload and returns the
   expect(type).toBe('webhook')
   expect(JSON.parse(configJson)).toEqual(webhookBody.config)
   expect(payload.test).toBe(true)
-  expect(payload.title).toBe('Test notification from OpenDoist')
+  expect(payload.title).toBe('Test notification from OpenTask')
   expect(payload.body).toBe('Your HA channel works.')
 })
 

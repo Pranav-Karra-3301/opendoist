@@ -9,7 +9,7 @@
  * matches what the server will create. Priority and label editors reuse the app's frozen chip
  * panels (`PriorityMenu` / `LabelPanel`) for visual parity with task rows and the detail panel.
  */
-import { dateInTz, type ParseContext, parseQuickAdd, resolveNaturalDate } from '@opendoist/core'
+import { dateInTz, type ParseContext, parseQuickAdd, resolveNaturalDate } from '@opentask/core'
 import { CalendarPlus, Flag, Repeat, Trash2 } from 'lucide-react'
 import { type ReactElement, useLayoutEffect, useRef, useState } from 'react'
 import type { ExtractedTask } from '@/api/rambles'
@@ -33,7 +33,7 @@ type Prio = 1 | 2 | 3 | 4
 /** Menu-semantics popover chrome (§2.9), matching the app's row/detail chip popovers. */
 const MENU_CHROME = 'border border-black/10 dark:border-border [box-shadow:var(--shadow-menu)]'
 const chipCls =
-  'inline-flex h-7 max-w-full items-center gap-1.5 rounded-sm border border-border px-2 text-copy text-text-secondary outline-none transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]'
+  'inline-flex h-7 max-w-full items-center gap-1.5 rounded-sm border border-border px-2 text-copy text-text-secondary outline-none transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]'
 
 const PRIORITY_FLAG: Record<Prio, { className: string; filled: boolean }> = {
   1: { className: 'text-p1', filled: true },
@@ -301,7 +301,7 @@ export function RambleReviewRow({
         type="button"
         onClick={onRemove}
         aria-label={`Remove task ${index + 1}`}
-        className="flex size-7 shrink-0 items-center justify-center rounded-sm text-text-tertiary transition-colors duration-150 hover:bg-hover hover:text-danger focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+        className="flex size-7 shrink-0 items-center justify-center rounded-sm text-text-tertiary transition-colors duration-150 hover:bg-hover hover:text-danger focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
       >
         <Trash2 size={16} aria-hidden />
       </button>

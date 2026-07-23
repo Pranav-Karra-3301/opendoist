@@ -9,9 +9,9 @@ import { useProjects } from '@/api/hooks/projects'
 import { useSections } from '@/api/hooks/sections'
 import type { TaskMove } from '@/api/schemas'
 
-/** Server palette names are snake_case (`berry_red`); the CSS vars are kebab (`--od-palette-berry-red`). */
+/** Server palette names are snake_case (`berry_red`); the CSS vars are kebab (`--ot-palette-berry-red`). */
 export function paletteVar(color: string): string {
-  return `var(--od-palette-${color.replace(/_/g, '-')}, var(--od-text-tertiary))`
+  return `var(--ot-palette-${color.replace(/_/g, '-')}, var(--ot-text-tertiary))`
 }
 
 export interface MovePanelProps {

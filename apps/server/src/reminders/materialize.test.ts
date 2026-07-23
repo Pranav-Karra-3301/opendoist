@@ -1,4 +1,4 @@
-import { DueSchema, instantFor } from '@opendoist/core'
+import { DueSchema, instantFor } from '@opentask/core'
 import { eq } from 'drizzle-orm'
 import { afterEach, describe, expect, test } from 'vitest'
 import type { Db } from '../db/db'

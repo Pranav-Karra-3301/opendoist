@@ -21,7 +21,7 @@
 //!
 //! Failures (offline, no desktop release yet, bad signature, …) are logged and retried
 //! at the next interval. Nothing secret is involved: the endpoint is a public GitHub
-//! URL and no `od_` token ever touches this code path.
+//! URL and no `ot_` token ever touches this code path.
 
 use std::time::Duration;
 
@@ -92,11 +92,11 @@ pub fn spawn(app: AppHandle) {
                 CheckOutcome::UpToDate => {}
                 CheckOutcome::Installed(version) => {
                     eprintln!(
-                        "[opendoist] update {version} installed — it takes effect at the next launch"
+                        "[opentask] update {version} installed — it takes effect at the next launch"
                     );
                 }
                 // Routine when offline or before the first desktop release exists.
-                CheckOutcome::Failed(err) => eprintln!("[opendoist] update check skipped: {err}"),
+                CheckOutcome::Failed(err) => eprintln!("[opentask] update check skipped: {err}"),
             }
             if !should_keep_checking(&outcome) {
                 return;

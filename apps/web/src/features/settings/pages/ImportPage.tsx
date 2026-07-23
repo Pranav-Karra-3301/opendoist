@@ -1,5 +1,5 @@
 /**
- * Import settings (plan Task H) — bring existing Todoist data into OpenDoist from either a
+ * Import settings (plan Task H) — bring existing Todoist data into OpenTask from either a
  * downloaded backup .zip (parsed server-side, one CSV per project) or a live API token. Both
  * modes drive the phase-9 import job runner (Task G): a POST starts a job and returns 202
  * `{ jobId }`, then this page polls `GET /api/v1/import/jobs/:id` every 750 ms while it runs
@@ -269,7 +269,7 @@ export default function ImportPage() {
   return (
     <div className="max-w-2xl">
       <p className="mb-6 max-w-prose text-copy text-text-secondary">
-        Move your projects, sections, labels, tasks, and comments from Todoist into OpenDoist.
+        Move your projects, sections, labels, tasks, and comments from Todoist into OpenTask.
         Priorities and due dates are converted automatically. Preview first to see exactly what will
         be created.
       </p>
@@ -339,7 +339,7 @@ export default function ImportPage() {
           <DialogFooter>
             <DialogClose
               className={cn(
-                'inline-flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-sm px-3 font-medium text-copy text-text-secondary transition-colors hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]',
+                'inline-flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-sm px-3 font-medium text-copy text-text-secondary transition-colors hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]',
               )}
             >
               Cancel
@@ -511,7 +511,7 @@ function ResultsPanel({
             type="button"
             onClick={onToggleSkips}
             aria-expanded={showSkips}
-            className="inline-flex items-center gap-1 rounded-sm text-caption text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+            className="inline-flex items-center gap-1 rounded-sm text-caption text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
           >
             {showSkips ? (
               <ChevronDown size={14} aria-hidden="true" />

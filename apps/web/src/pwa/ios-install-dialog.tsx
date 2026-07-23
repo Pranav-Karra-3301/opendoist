@@ -2,7 +2,7 @@
  * iOS "Add to Home Screen" dialog (phase 10, Task C) — the general install affordance for
  * iPhone/iPad, where there is no `beforeinstallprompt` and installing is a manual Safari
  * Share-sheet flow. Distinct from the phase-6 push-permission `IosInstallScreen` (that one
- * is triggered by setting a reminder); this one is the app's "Install OpenDoist" button.
+ * is triggered by setting a reminder); this one is the app's "Install OpenTask" button.
  *
  * Uses the frozen `Dialog` primitive (Base UI) — it provides the focus trap + restore, Esc,
  * `role="dialog"` and `aria-labelledby` wiring, so no manual a11y plumbing is needed here.
@@ -58,9 +58,9 @@ export function IosInstallDialog({ open, onClose }: { open: boolean; onClose: ()
             <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-accent-soft text-accent">
               <Download size={20} aria-hidden="true" />
             </div>
-            <DialogTitle>Install OpenDoist on iPhone or iPad</DialogTitle>
+            <DialogTitle>Install OpenTask on iPhone or iPad</DialogTitle>
             <DialogDescription>
-              Add OpenDoist to your Home Screen to launch it like a native app:
+              Add OpenTask to your Home Screen to launch it like a native app:
             </DialogDescription>
           </DialogHeader>
 

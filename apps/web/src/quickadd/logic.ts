@@ -1,4 +1,4 @@
-import { DEFAULT_PARSE_CONTEXT_SETTINGS, type ParseContext } from '@opendoist/core'
+import { DEFAULT_PARSE_CONTEXT_SETTINGS, type ParseContext } from '@opentask/core'
 import { z } from 'zod'
 import { api, endpoints } from '@/api/client'
 

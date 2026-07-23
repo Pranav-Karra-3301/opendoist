@@ -1,15 +1,17 @@
 <p align="center">
-  <img src="assets/brand/icon-green.svg" alt="OpenDoist" width="96" height="96">
+  <img src="assets/brand/icon-green.svg" alt="OpenTask" width="96" height="96">
 </p>
 
-<h1 align="center">OpenDoist</h1>
+<h1 align="center">OpenTask</h1>
 
 <p align="center"><strong>Self-hosted, single-user, keyboard-first task manager — a Todoist-compatible open alternative.</strong></p>
 
+<p align="center"><sub>Formerly <strong>OpenDoist</strong> — renamed in v0.4.0; every legacy surface (env vars, tokens, backups, data files) keeps working. See <a href="#migrating-from-opendoist">Migrating from OpenDoist</a>.</sub></p>
+
 <p align="center">
-  <a href="https://github.com/pranav-karra-3301/opendoist/actions/workflows/ci.yml"><img src="https://github.com/pranav-karra-3301/opendoist/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/pranav-karra-3301/opendoist/releases"><img src="https://img.shields.io/github/v/release/pranav-karra-3301/opendoist?color=4c7a45&label=release" alt="Latest release"></a>
-  <a href="https://github.com/pranav-karra-3301/opendoist/pkgs/container/opendoist"><img src="https://img.shields.io/badge/ghcr.io-opendoist-1f60c2" alt="GHCR image"></a>
+  <a href="https://github.com/pranav-karra-3301/opentask/actions/workflows/ci.yml"><img src="https://github.com/pranav-karra-3301/opentask/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/pranav-karra-3301/opentask/releases"><img src="https://img.shields.io/github/v/release/pranav-karra-3301/opentask?color=4c7a45&label=release" alt="Latest release"></a>
+  <a href="https://github.com/pranav-karra-3301/opentask/pkgs/container/opentask"><img src="https://img.shields.io/badge/ghcr.io-opentask-1f60c2" alt="GHCR image"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-4c7a45" alt="License: AGPL-3.0"></a>
   <img src="https://img.shields.io/badge/node-%E2%89%A5%2022-4c7a45" alt="Node >= 22">
 </p>
@@ -17,11 +19,11 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/hero-dark.png">
-    <img src="docs/screenshots/hero.png" alt="OpenDoist Today view, showing the overdue section, priority colors, and the sidebar" width="900">
+    <img src="docs/screenshots/hero.png" alt="OpenTask Today view, showing the overdue section, priority colors, and the sidebar" width="900">
   </picture>
 </p>
 
-OpenDoist is a task manager you run yourself: one container, one `/data` volume, one account. It speaks
+OpenTask is a task manager you run yourself: one container, one `/data` volume, one account. It speaks
 the Todoist workflow you already know — the Quick Add grammar, the filter language, the keyboard map —
 without the cloud, the subscription, or the second user you never wanted.
 
@@ -51,7 +53,7 @@ Everything below is shipped, tested, and in `main`.
 
 | Feature | Notes |
 |---|---|
-| ✅ Views | Inbox · Today (overdue + reschedule) · Upcoming (week strip, drag between days) · Project / Label / Filter (comma = multiple panes), with per-view group / sort / filter |
+| ✅ Views | Inbox · Today (overdue + reschedule) · Upcoming (week strip, drag between days) · Project / Label / Filter (comma = multiple panes), with per-view layout (list or kanban board), group / sort / filter |
 | ✅ Keyboard-first | Full web shortcut map, `?` shortcuts overlay, 10 s undo toasts |
 | ✅ Command palette | ⌘K fuzzy navigation and actions |
 | ✅ Productivity | Daily/weekly goals, streaks, karma, vacation mode, an activity feed, and unlimited history |
@@ -77,53 +79,70 @@ Everything below is shipped, tested, and in `main`.
 | Feature | Notes |
 |---|---|
 | ✅ PWA + offline | Installable app with a Workbox app shell; last-viewed lists stay readable offline |
-| ✅ REST API | Hono, every route zod-typed → OpenAPI + Scalar docs at `/api/v1/docs`, cursor pagination, SSE live updates, scoped `od_…` API tokens |
-| ✅ CLI | `opendoist add "…"` with the identical parser; `--json` on every read command |
+| ✅ REST API | Hono, every route zod-typed → OpenAPI + Scalar docs at `/api/v1/docs`, cursor pagination, SSE live updates, scoped `ot_…` API tokens |
+| ✅ CLI | `opentask add "…"` with the identical parser; `--json` on every read command |
 | ✅ Auth | Password + TOTP 2FA, generic OIDC SSO; registration auto-locks after the first user |
 
-**Non-goals (v1):** collaboration/sharing, board & calendar layouts, CalDAV, an email reminder channel, native mobile apps (the PWA is the mobile story), and localization.
+**Non-goals (v1):** collaboration/sharing, the calendar layout, CalDAV, an email reminder channel, native mobile apps (the PWA is the mobile story), and localization.
 
 ## Quick start
 
-OpenDoist is one container writing to one volume:
+OpenTask is one container writing to one volume:
 
 ```sh
-docker run -d --name opendoist -p 7968:7968 -v ./data:/data ghcr.io/pranav-karra-3301/opendoist
+docker run -d --name opentask -p 7968:7968 -v ./data:/data ghcr.io/pranav-karra-3301/opentask
 ```
 
 Or with Docker Compose:
 
 ```yaml
 services:
-  opendoist:
-    image: ghcr.io/pranav-karra-3301/opendoist:latest
-    container_name: opendoist
+  opentask:
+    image: ghcr.io/pranav-karra-3301/opentask:latest
+    container_name: opentask
     ports: ["7968:7968"]
     volumes: ["./data:/data"]
 ```
 
 Then open `http://localhost:7968` and create your account. Registration locks automatically after the
-first user; re-open it with `OPENDOIST_ALLOW_REGISTRATION=true`. HTTPS is required for Web Push and PWA
+first user; re-open it with `OPENTASK_ALLOW_REGISTRATION=true`. HTTPS is required for Web Push and PWA
 install (localhost is exempt) — see [docs/install.md](docs/install.md).
+
+## Migrating from OpenDoist
+
+OpenTask v0.4.0 is a rename of OpenDoist — same data model, same API, same image lineage. An
+existing deployment upgrades in place; every legacy surface is honored:
+
+| Legacy surface | What happens |
+|---|---|
+| `OPENDOIST_*` env vars | Still honored as fallbacks (a boot warning suggests renaming to `OPENTASK_*`) |
+| `opendoist.db` in the data dir | Renamed to `opentask.db` (with WAL sidecars) automatically on first boot |
+| `od_…` API tokens | Keep working — verification is by hash; new tokens mint as `ot_…` |
+| Old backup zips (`opendoist.db` entry) | Still restorable |
+| `opendoist` / `od` CLI names | Kept as aliases of `opentask` / `ot` (Docker image and npm bin) |
+| `ghcr.io/pranav-karra-3301/opendoist` | Frozen at ≤ 0.3.x — switch to `ghcr.io/pranav-karra-3301/opentask` |
+
+The old GitHub repo URL redirects. The JSON export `format` marker is now `opentask-export`.
 
 ## Command line
 
 The CLI talks to your instance with the same Quick Add parser as the web app. It ships inside the
-container (with an `od` short alias), so the quick start above already installed it — create an API
+container (with an `ot` short alias; the legacy `opendoist`/`od` names still work), so the quick
+start above already installed it — create an API
 token in **Settings → Integrations**, then:
 
 ```sh
-docker exec -e OPENDOIST_TOKEN=od_… opendoist opendoist add "Pay rent tomorrow 9am p1 #Home"
-docker exec -e OPENDOIST_TOKEN=od_… opendoist opendoist today
+docker exec -e OPENTASK_TOKEN=ot_… opentask opentask add "Pay rent tomorrow 9am p1 #Home"
+docker exec -e OPENTASK_TOKEN=ot_… opentask opentask today
 ```
 
-(The image already points `OPENDOIST_URL` at the bundled server, so the token is all it needs.)
+(The image already points `OPENTASK_URL` at the bundled server, so the token is all it needs.)
 
-> **npm package:** `npm install -g opendoist` is planned but **not published yet** at 0.1.0.
+> **npm package:** `npm install -g opentask` is planned but **not published yet** at 0.1.0.
 > Until it lands, use the bundled binary above, or build from a source checkout with
-> `pnpm --filter opendoist build` and run `node packages/cli/dist/index.js`.
+> `pnpm --filter opentask build` and run `node packages/cli/dist/index.js`.
 
-Full command reference — including `opendoist login` and env-var configuration — in
+Full command reference — including `opentask login` and env-var configuration — in
 [docs/cli.md](docs/cli.md).
 
 ## Screenshots
@@ -151,8 +170,8 @@ Full docs live in [`docs/`](docs/):
 Requires Node ≥ 22 and pnpm 10.
 
 ```sh
-git clone https://github.com/pranav-karra-3301/opendoist.git
-cd opendoist
+git clone https://github.com/pranav-karra-3301/opentask.git
+cd opentask
 pnpm install
 pnpm verify   # lint + typecheck + test + build, everything CI runs
 ```
@@ -160,8 +179,8 @@ pnpm verify   # lint + typecheck + test + build, everything CI runs
 Handy during development:
 
 ```sh
-pnpm --filter @opendoist/core test   # core engine test suites (golden tables + property tests)
-pnpm --filter @opendoist/web dev     # web app (Vite)
+pnpm --filter @opentask/core test   # core engine test suites (golden tables + property tests)
+pnpm --filter @opentask/web dev     # web app (Vite)
 pnpm seed                            # load a demo account with example data
 pnpm lint:fix                        # Biome, auto-fix
 ```
@@ -177,7 +196,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for commit conventions and the design-tok
 | Core (`packages/core`) | zod 4 · chrono-node · date-fns 4 + `@date-fns/tz` · temporal-polyfill + rrule-temporal — pure, zero-IO, shared by web/server/CLI |
 | Server (`apps/server`) | Hono 4 + `@hono/zod-openapi` · Drizzle + better-sqlite3 · better-auth · croner · web-push |
 | Web (`apps/web`) | Vite 8 · React 19 · Tailwind 4 · TanStack Query + Router · Base UI · dnd-kit · cmdk · vite-plugin-pwa |
-| CLI (`packages/cli`) | commander · tsdown · bundled in the Docker image as `opendoist` / `od` (npm publish planned) |
+| CLI (`packages/cli`) | commander · tsdown · bundled in the Docker image as `opentask` / `od` (npm publish planned) |
 | Releases | Conventional commits · git-cliff changelog · GHCR images (amd64 + arm64) |
 
 ## License

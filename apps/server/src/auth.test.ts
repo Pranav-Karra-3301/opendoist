@@ -101,8 +101,8 @@ it('locks registration after the first user by default', async () => {
   expect(res.status).toBeLessThan(500)
 })
 
-it('allows registration when OPENDOIST_ALLOW_REGISTRATION is set', async () => {
-  const t = await make({ env: { OPENDOIST_ALLOW_REGISTRATION: 'true' } })
+it('allows registration when OPENTASK_ALLOW_REGISTRATION is set', async () => {
+  const t = await make({ env: { OPENTASK_ALLOW_REGISTRATION: 'true' } })
   const res = await signUp(t, {
     name: 'Second',
     email: 'second@example.com',
@@ -130,16 +130,16 @@ it('seeds the first user with a single Inbox project and default settings', asyn
   expect(stored).toEqual(SettingsSchema.parse({}))
 })
 
-it('mints od_ API keys whose scope gates writes through the guard', async () => {
+it('mints ot_ API keys whose scope gates writes through the guard', async () => {
   const t = await make()
 
   // Setting `permissions` server-side requires the server-only `userId` param, NOT `headers`:
   // better-auth 1.6's api-key plugin rejects `permissions` when it detects a client request
   // (any call carrying `headers`). Same behavior as the plan's headers call, installed signature.
   const readKey = await t.deps.auth.api.createApiKey({
-    body: { name: 'cli', userId: t.userId, permissions: { opendoist: ['read'] } },
+    body: { name: 'cli', userId: t.userId, permissions: { opentask: ['read'] } },
   })
-  expect(readKey.key.startsWith('od_')).toBe(true)
+  expect(readKey.key.startsWith('ot_')).toBe(true)
 
   // Read scope authenticates: GET falls through to the not-found handler.
   const readGet = await t.request('/api/v1/__x', {
@@ -158,7 +158,7 @@ it('mints od_ API keys whose scope gates writes through the guard', async () => 
 
   // Read-write scope passes the guard on writes: POST falls through to not-found.
   const rwKey = await t.deps.auth.api.createApiKey({
-    body: { name: 'cli-rw', userId: t.userId, permissions: { opendoist: ['read', 'read_write'] } },
+    body: { name: 'cli-rw', userId: t.userId, permissions: { opentask: ['read', 'read_write'] } },
   })
   const rwPost = await t.request('/api/v1/__x', {
     method: 'POST',
@@ -167,13 +167,13 @@ it('mints od_ API keys whose scope gates writes through the guard', async () => 
   expect(rwPost.status).toBe(404)
 })
 
-it('od_ keys keep authenticating past 10 requests (plugin default rate limit disabled)', async () => {
+it('ot_ keys keep authenticating past 10 requests (plugin default rate limit disabled)', async () => {
   const t = await make()
   // better-auth's api-key plugin defaults to rateLimit {enabled, 10 requests/day}; the 11th
   // verifyApiKey would throw RATE_LIMITED, which the bearer middleware reads as 401. Regression
   // for the phase-9 gate fix (`rateLimit: {enabled: false}` in auth.ts).
   const key = await t.deps.auth.api.createApiKey({
-    body: { name: 'cli-busy', userId: t.userId, permissions: { opendoist: ['read'] } },
+    body: { name: 'cli-busy', userId: t.userId, permissions: { opentask: ['read'] } },
   })
   for (let i = 0; i < 12; i++) {
     const res = await t.request('/api/v1/tasks', {
@@ -200,7 +200,7 @@ it('HTTP-created API keys default to the explicit read-only permission shape', a
   })
   expect(created.status).toBe(200)
   const key = await json<{ key: string; permissions: unknown }>(created)
-  expect(key.key.startsWith('od_')).toBe(true)
+  expect(key.key.startsWith('ot_')).toBe(true)
 
   const verified = await t.deps.auth.api.verifyApiKey({ body: { key: key.key } })
   expect(verified.valid).toBe(true)
@@ -208,7 +208,7 @@ it('HTTP-created API keys default to the explicit read-only permission shape', a
     typeof verified.key?.permissions === 'string'
       ? (JSON.parse(verified.key.permissions) as unknown)
       : verified.key?.permissions
-  expect(permissions).toEqual({ opendoist: ['read'] })
+  expect(permissions).toEqual({ opentask: ['read'] })
 
   // Scope gating over the wire: reads pass, writes are refused.
   const bearer = { authorization: `Bearer ${key.key}` }
@@ -222,10 +222,10 @@ it('HTTP-created API keys default to the explicit read-only permission shape', a
   expect((await json<{ title: string }>(write)).title).toBe('insufficient scope')
 })
 
-it('rejects a garbage od_ bearer token with 401', async () => {
+it('rejects a garbage ot_ bearer token with 401', async () => {
   const t = await make()
   const res = await t.request('/api/v1/__x', {
-    headers: { authorization: 'Bearer od_nope' },
+    headers: { authorization: 'Bearer ot_nope' },
   })
   expect(res.status).toBe(401)
   expect((await json<{ title: string }>(res)).title).toBe('unauthorized')
@@ -247,10 +247,10 @@ it('advertises the env-configured OIDC provider through /api/v1/info', async () 
   const t = await make({
     signup: false,
     env: {
-      OPENDOIST_OIDC_ISSUER: 'https://id.example.com',
-      OPENDOIST_OIDC_CLIENT_ID: 'x',
-      OPENDOIST_OIDC_CLIENT_SECRET: 'y',
-      OPENDOIST_OIDC_NAME: 'Example',
+      OPENTASK_OIDC_ISSUER: 'https://id.example.com',
+      OPENTASK_OIDC_CLIENT_ID: 'x',
+      OPENTASK_OIDC_CLIENT_SECRET: 'y',
+      OPENTASK_OIDC_NAME: 'Example',
     },
   })
   const res = await t.request('/api/v1/info')
@@ -267,10 +267,10 @@ it('trusts the oidc provider for email-matched account linking', async () => {
   const t = await make({
     signup: false,
     env: {
-      OPENDOIST_OIDC_ISSUER: 'https://id.example.com',
-      OPENDOIST_OIDC_CLIENT_ID: 'x',
-      OPENDOIST_OIDC_CLIENT_SECRET: 'y',
-      OPENDOIST_OIDC_NAME: 'Example',
+      OPENTASK_OIDC_ISSUER: 'https://id.example.com',
+      OPENTASK_OIDC_CLIENT_ID: 'x',
+      OPENTASK_OIDC_CLIENT_SECRET: 'y',
+      OPENTASK_OIDC_NAME: 'Example',
     },
   })
   const linking = t.deps.auth.options.account?.accountLinking

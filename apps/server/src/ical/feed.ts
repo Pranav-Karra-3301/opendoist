@@ -15,7 +15,7 @@ import {
   nextOccurrence,
   type ParseContext,
   type RecurrenceSpec,
-} from '@opendoist/core'
+} from '@opentask/core'
 import ical, { type ICalEventData } from 'ical-generator'
 import { ICAL_WINDOW, taskDeepLink } from '../reminders/contracts'
 
@@ -102,7 +102,7 @@ function eventsForRow(
       makeEvent(
         row,
         { date: row.dueDate, time: row.dueTime },
-        `task-${row.id}@opendoist`,
+        `task-${row.id}@opentask`,
         ctx.timezone,
         publicUrl,
       ),
@@ -115,7 +115,7 @@ function eventsForRow(
   while (cur !== null && cur.date <= windowEnd && iterations < MAX_EXPAND_ITERATIONS) {
     iterations += 1
     if (cur.date >= windowStart) {
-      const uid = `task-${row.id}-${cur.date.replaceAll('-', '')}@opendoist`
+      const uid = `task-${row.id}-${cur.date.replaceAll('-', '')}@opentask`
       out.push(makeEvent(row, cur, uid, ctx.timezone, publicUrl))
     }
     cur = nextOccurrence(row.recurrence, { after: cur, ctx })
@@ -152,7 +152,7 @@ export function buildTasksCalendar(
   const capped = events.slice(0, ICAL_WINDOW.maxEvents)
 
   const stamp = new Date(opts.now)
-  const cal = ical({ name: 'OpenDoist — Tasks', prodId: '//opendoist//tasks//EN', ttl: 3600 })
+  const cal = ical({ name: 'OpenTask — Tasks', prodId: '//opentask//tasks//EN', ttl: 3600 })
   for (const ev of capped) {
     const data: ICalEventData = {
       id: ev.uid,

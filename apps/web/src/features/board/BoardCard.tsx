@@ -126,7 +126,7 @@ export function BoardCard({
         selected
           ? 'border-border bg-selected'
           : focused
-            ? 'border-[var(--od-row-focus-ring)] bg-[var(--od-row-focus-bg)]'
+            ? 'border-[var(--ot-row-focus-ring)] bg-[var(--ot-row-focus-bg)]'
             : 'border-border bg-surface hover:shadow-menu',
       )}
     >
@@ -151,7 +151,7 @@ export function BoardCard({
           onClick={handleTitleClick}
           onDoubleClick={openDetail}
           className={cn(
-            'block max-w-full cursor-pointer text-left text-body [overflow-wrap:anywhere] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]',
+            'block max-w-full cursor-pointer text-left text-body [overflow-wrap:anywhere] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]',
             completed ? 'text-text-tertiary line-through' : 'text-text-primary',
           )}
         >
@@ -175,7 +175,7 @@ export function BoardCard({
             event.stopPropagation()
             openRowPopover(task.id, 'more')
           }}
-          className="flex size-7 items-center justify-center rounded-sm bg-surface text-text-secondary transition-colors hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+          className="flex size-7 items-center justify-center rounded-sm bg-surface text-text-secondary transition-colors hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
         >
           <Ellipsis size={18} aria-hidden />
         </button>

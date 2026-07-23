@@ -24,7 +24,7 @@ import {
   RestoreResponseSchema,
 } from './types'
 
-/** 2 GiB restore-upload cap (the attachments OPENDOIST_UPLOAD_MAX_MB cap deliberately does NOT apply). */
+/** 2 GiB restore-upload cap (the attachments OPENTASK_UPLOAD_MAX_MB cap deliberately does NOT apply). */
 const RESTORE_MAX_BYTES = 2 * 1024 * 1024 * 1024
 
 const security: Record<string, string[]>[] = [{ cookieAuth: [] }, { bearerAuth: [] }]

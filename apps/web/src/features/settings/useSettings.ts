@@ -8,7 +8,7 @@ import {
   type UserSettings,
   type UserSettingsPatch,
   UserSettingsSchema,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getUserSettings, patchUserSettings } from '../../lib/api/phase5'
 

@@ -12,7 +12,7 @@ import { expectNoAxeViolations } from './helpers/a11y'
  * against a seeded Today view.
  *
  * Dark mode is applied through the real account-menu Theme path (not a forced attribute) so
- * the whole `--od-*` cascade lands; the OS color-scheme is pinned to `light` so the light
+ * the whole `--ot-*` cascade lands; the OS color-scheme is pinned to `light` so the light
  * pass is deterministic; `settle()` waits for chrome paint + web fonts before every axe pass.
  */
 
@@ -57,7 +57,7 @@ async function gotoRendered(page: Page, route: string): Promise<void> {
 
 /**
  * Switch the theme through the real account-menu path (mirrors theme.spec) so the whole
- * `--od-*` cascade is applied exactly as in production — forcing `data-mode` from JS can
+ * `--ot-*` cascade is applied exactly as in production — forcing `data-mode` from JS can
  * leave a half-applied frame that axe reads as spurious contrast failures. The choice is
  * persisted + mirrored to localStorage, so subsequent full navigations stay on it.
  */
@@ -97,8 +97,8 @@ test.describe('a11y — app chrome, Inbox, Today, Upcoming', () => {
         // The head script re-applies the persisted choice before React mounts.
         await expect(page.locator('html')).toHaveAttribute('data-mode', 'dark')
         await settle(page)
-        // Full shared gate incl. colour-contrast: Task O lifted dark --od-text-tertiary to
-        // #a0a0a0 and dark --od-on-accent to #1e1e1e, the two dark token shortfalls that
+        // Full shared gate incl. colour-contrast: Task O lifted dark --ot-text-tertiary to
+        // #a0a0a0 and dark --ot-on-accent to #1e1e1e, the two dark token shortfalls that
         // originally forced a contrast-exempt dark scan here.
         await expectNoAxeViolations(page)
       }

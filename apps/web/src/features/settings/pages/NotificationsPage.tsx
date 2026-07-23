@@ -204,7 +204,7 @@ function PushStatus({
       return (
         <div className="flex flex-col gap-2">
           <p className="text-copy text-text-secondary">
-            iOS delivers Web Push only to an installed app. Add OpenDoist to your Home Screen, then
+            iOS delivers Web Push only to an installed app. Add OpenTask to your Home Screen, then
             open it from there to turn on notifications.
           </p>
           <div className="flex flex-wrap items-center gap-2">
@@ -715,7 +715,7 @@ function AddChannelDialog({
                       setErrors({})
                     }}
                     className={cn(
-                      'flex cursor-pointer flex-col items-center gap-1 rounded-sm border px-3 py-2 text-caption transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]',
+                      'flex cursor-pointer flex-col items-center gap-1 rounded-sm border px-3 py-2 text-caption transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]',
                       type === opt.type
                         ? 'border-accent bg-accent-soft text-accent'
                         : 'border-input-border text-text-secondary hover:bg-hover',
@@ -753,7 +753,7 @@ function AddChannelDialog({
                     id="ntfy-topic"
                     value={ntfyTopic}
                     onChange={(event) => setNtfyTopic(event.target.value)}
-                    placeholder="my-opendoist-alerts"
+                    placeholder="my-opentask-alerts"
                   />
                 </Field>
                 <Field

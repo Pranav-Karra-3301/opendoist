@@ -34,11 +34,11 @@ async function createProject(page: Page, name: string, color = 'blue'): Promise<
  * Task E originally deferred `color-contrast` here because it surfaced three shortfalls that
  * lived in cross-owned files (design tokens + shared primitives, not these views). Task O
  * landed all three, so the rule is enforced again per Task E's handoff note:
- *   1. tokens.css — dark `--od-text-tertiary` lifted #808080 → #a0a0a0 (≥4.62:1 on every
+ *   1. tokens.css — dark `--ot-text-tertiary` lifted #808080 → #a0a0a0 (≥4.62:1 on every
  *      dark scan surface).
  *   2. components/task/task-meta.tsx — label chips now mix the palette color 65/35 toward
- *      `--od-text-primary`, so every palette clears the AA 4.5:1 floor as 12px text in both
- *      themes (worst light case: grey 4.53:1 on --od-hover).
+ *      `--ot-text-primary`, so every palette clears the AA 4.5:1 floor as 12px text in both
+ *      themes (worst light case: grey 4.53:1 on --ot-hover).
  *   3. Reporting inactive tabs/select values recompute ≥5.4:1 against the final tokens.css.
  * CSS transitions are killed before scanning: the `data-mode` flip crossfades colors for up
  * to 300ms (`transition-colors`), and axe must never read mid-interpolation values.

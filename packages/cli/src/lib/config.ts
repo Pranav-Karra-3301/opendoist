@@ -23,9 +23,9 @@ export function normalizeUrl(raw: string): string {
 }
 
 export function configFilePath(env: NodeJS.ProcessEnv = process.env): string {
-  const override = env.OPENDOIST_CONFIG_PATH
+  const override = env.OPENTASK_CONFIG_PATH
   if (override !== undefined && override !== '') return override
-  return join(envPaths('opendoist', { suffix: '' }).config, 'config.json')
+  return join(envPaths('opentask', { suffix: '' }).config, 'config.json')
 }
 
 export function readConfigFile(env: NodeJS.ProcessEnv = process.env): CliConfig | null {
@@ -60,11 +60,16 @@ export function deleteConfigFile(env: NodeJS.ProcessEnv = process.env): boolean 
   }
 }
 
-/** Precedence: OPENDOIST_URL / OPENDOIST_TOKEN env vars > config file. Null when either half is missing. */
+/**
+ * Precedence: OPENTASK_URL / OPENTASK_TOKEN env vars > config file. Null when either half is
+ * missing. Legacy OPENDOIST_URL / OPENDOIST_TOKEN spellings are honored as fallbacks.
+ */
 export function resolveConnection(env: NodeJS.ProcessEnv = process.env): Connection | null {
   const file = readConfigFile(env)
-  const envUrl = env.OPENDOIST_URL ? normalizeUrl(env.OPENDOIST_URL) : null
-  const envToken = env.OPENDOIST_TOKEN ? env.OPENDOIST_TOKEN : null
+  const rawUrl = env.OPENTASK_URL || env.OPENDOIST_URL
+  const rawToken = env.OPENTASK_TOKEN || env.OPENDOIST_TOKEN
+  const envUrl = rawUrl ? normalizeUrl(rawUrl) : null
+  const envToken = rawToken ? rawToken : null
   const url = envUrl ?? file?.url ?? null
   const token = envToken ?? file?.token ?? null
   if (url === null || token === null) return null

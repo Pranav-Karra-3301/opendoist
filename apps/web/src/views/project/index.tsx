@@ -4,7 +4,7 @@
  * the single `useActiveTasks()` cache, sliced client-side; drag-and-drop reorders within a
  * container and moves across sections (see `use-project-dnd`).
  */
-import { viewKey } from '@opendoist/core'
+import { viewKey } from '@opentask/core'
 import { useParams } from '@tanstack/react-router'
 import { Archive, Ellipsis, Hash, Pencil, Plus, Settings2, Trash2 } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -39,9 +39,9 @@ import { ROOT_DROP_ID, useProjectDnd, useProjectViewStore } from './use-project-
 
 const CONTENT = 'mx-auto max-w-[var(--content-max)] px-6 pb-24'
 
-/** Normalize a server palette id (`berry_red`) to its CSS var (`--od-palette-berry-red`). */
+/** Normalize a server palette id (`berry_red`) to its CSS var (`--ot-palette-berry-red`). */
 function paletteVar(color: string): string {
-  return `var(--od-palette-${color.replace(/_/g, '-')}, var(--od-palette-charcoal))`
+  return `var(--ot-palette-${color.replace(/_/g, '-')}, var(--ot-palette-charcoal))`
 }
 
 function ColorDot({ color }: { color: string }) {

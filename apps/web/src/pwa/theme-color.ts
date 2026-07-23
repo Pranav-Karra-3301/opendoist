@@ -3,7 +3,7 @@
  *
  * Keeps `<meta name="theme-color">` — the colour the OS paints the PWA title bar / status
  * bar / task switcher — in step with the app surface. index.html ships a static default;
- * this resolves the live `--od-surface` token (which changes with the light/dark and accent
+ * this resolves the live `--ot-surface` token (which changes with the light/dark and accent
  * themes) and rewrites the meta whenever the theme could have changed: the theme store
  * toggles `data-mode` / `data-accent` / `class` on `<html>`, and the OS can flip
  * `prefers-color-scheme`.
@@ -12,7 +12,7 @@
  */
 
 function readSurfaceColor(): string {
-  const value = getComputedStyle(document.documentElement).getPropertyValue('--od-surface').trim()
+  const value = getComputedStyle(document.documentElement).getPropertyValue('--ot-surface').trim()
   return value || '#fcfcf8'
 }
 

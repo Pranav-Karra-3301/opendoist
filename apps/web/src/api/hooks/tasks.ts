@@ -26,7 +26,7 @@
  * failure. Forward ops (and the flag-less reopen/create) toast their own errors.
  */
 
-import { dateInTz } from '@opendoist/core'
+import { dateInTz } from '@opentask/core'
 import {
   type UseMutationResult,
   type UseQueryResult,

@@ -8,7 +8,7 @@
  * Reminders are repeatable, so a preset/absolute pick APPENDS a token (never replaces an existing
  * one) and closes; a remove strips that reminder's token span. All edits route through `commit`.
  */
-import type { Due, QuickAddToken, ReminderDraft, Weekday } from '@opendoist/core'
+import type { Due, QuickAddToken, ReminderDraft, Weekday } from '@opentask/core'
 import { Bell, Plus, X } from 'lucide-react'
 import { type ReactElement, useState } from 'react'
 import { MonthCalendar } from '@/components/ui/month-calendar'
@@ -118,7 +118,7 @@ export function ReminderPicker({
                 type="button"
                 onClick={() => removeAt(index)}
                 aria-label={`Remove reminder ${reminderLabel(draft, today)}`}
-                className="flex size-5 shrink-0 items-center justify-center rounded-sm text-text-tertiary transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--od-focus-ring)]"
+                className="flex size-5 shrink-0 items-center justify-center rounded-sm text-text-tertiary transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--ot-focus-ring)]"
               >
                 <X size={12} aria-hidden />
               </button>

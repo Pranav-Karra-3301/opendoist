@@ -32,7 +32,7 @@ import { colorVar } from '@/features/dialogs/ColorPicker'
 import { CSS, useSortable } from '@/lib/dnd'
 import { cn } from '@/lib/utils'
 
-/** 12px color dot painted from a palette color name via the frozen `--od-palette-*` tokens. */
+/** 12px color dot painted from a palette color name via the frozen `--ot-palette-*` tokens. */
 function ColorDot({ color }: { color: string }) {
   return (
     <span
@@ -45,10 +45,10 @@ function ColorDot({ color }: { color: string }) {
 
 /** Name-link styling shared by both lists (the list supplies the typed `<Link>` as children). */
 export const ROW_LINK_CLASS =
-  'block max-w-full truncate rounded-sm text-body text-text-primary outline-none transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]'
+  'block max-w-full truncate rounded-sm text-body text-text-primary outline-none transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]'
 
 const HOVER_ACTION_CLASS =
-  'flex size-7 shrink-0 items-center justify-center rounded-sm text-text-secondary opacity-0 outline-none transition-colors hover:bg-hover hover:text-text-primary focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)] group-hover/row:opacity-100 group-focus-within/row:opacity-100'
+  'flex size-7 shrink-0 items-center justify-center rounded-sm text-text-secondary opacity-0 outline-none transition-colors hover:bg-hover hover:text-text-primary focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)] group-hover/row:opacity-100 group-focus-within/row:opacity-100'
 
 export interface SortableRowProps {
   id: string
@@ -110,7 +110,7 @@ export function SortableRow({
         aria-label={isFavorite ? `Remove ${name} from favorites` : `Add ${name} to favorites`}
         onClick={onToggleFavorite}
         className={cn(
-          'flex size-7 shrink-0 items-center justify-center rounded-sm outline-none transition-colors hover:bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]',
+          'flex size-7 shrink-0 items-center justify-center rounded-sm outline-none transition-colors hover:bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]',
           isFavorite
             ? 'text-accent'
             : 'text-text-tertiary opacity-0 hover:text-text-primary focus-visible:opacity-100 group-hover/row:opacity-100 group-focus-within/row:opacity-100',
@@ -158,7 +158,7 @@ export function SectionHeader({
         type="button"
         aria-label={addLabel}
         onClick={onAdd}
-        className="flex size-7 items-center justify-center rounded-sm text-text-secondary outline-none transition-colors hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+        className="flex size-7 items-center justify-center rounded-sm text-text-secondary outline-none transition-colors hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
       >
         <Plus size={18} aria-hidden="true" />
       </button>

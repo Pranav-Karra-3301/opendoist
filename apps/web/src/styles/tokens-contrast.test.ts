@@ -13,10 +13,10 @@ const css = readFileSync(new URL('./tokens.css', import.meta.url), 'utf8')
 /**
  * Guards the r2 "text-on-dark-surface contrast ≥ 4.5:1" bar for the accent palette.
  *
- * Each accent's dark half (`--accent-dark`) drives `--od-accent` in dark mode, which renders
+ * Each accent's dark half (`--accent-dark`) drives `--ot-accent` in dark mode, which renders
  * both as accent-filled buttons (dark text on the accent) AND as accent-colored text/labels on
  * the neutral dark surfaces — including the #363636 hover/selected row, the tightest of them.
- * The codebase already treats #363636 as a ≥4.5:1 text surface (see the `--od-text-tertiary`
+ * The codebase already treats #363636 as a ≥4.5:1 text surface (see the `--ot-text-tertiary`
  * #a0a0a0 comment in tokens.css). This test parses tokens.css and locks every accent to that
  * floor so a future palette edit can't silently drop an accent below AA on any dark surface.
  */
@@ -56,11 +56,11 @@ const darkBlock = css.match(/\[data-mode="dark"\],\s*\.system-dark\s*\{([^}]*)\}
 if (!darkBlock) throw new Error('could not locate the [data-mode="dark"] block in tokens.css')
 
 const darkSurfaces = {
-  'bg (#1e1e1e)': readColor(darkBlock, '--od-bg'),
-  'raised (#282828)': readColor(darkBlock, '--od-surface-raised'),
-  'hover/selected-row (#363636)': readColor(darkBlock, '--od-hover'),
+  'bg (#1e1e1e)': readColor(darkBlock, '--ot-bg'),
+  'raised (#282828)': readColor(darkBlock, '--ot-surface-raised'),
+  'hover/selected-row (#363636)': readColor(darkBlock, '--ot-hover'),
 }
-const darkOnAccent = readColor(darkBlock, '--od-on-accent') // #1e1e1e — dark text on the accent fill
+const darkOnAccent = readColor(darkBlock, '--ot-on-accent') // #1e1e1e — dark text on the accent fill
 
 // Every [data-accent="X"] block and its --accent-dark value.
 const accentDark = new Map<string, string>()

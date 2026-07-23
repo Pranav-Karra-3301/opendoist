@@ -1,4 +1,4 @@
-import type { ParseContext } from '@opendoist/core'
+import type { ParseContext } from '@opentask/core'
 import { describe, expect, it } from 'vitest'
 import type { Label, Project, Section } from '@/api/schemas'
 import {

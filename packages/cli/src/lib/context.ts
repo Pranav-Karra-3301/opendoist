@@ -1,4 +1,4 @@
-import { DEFAULT_PARSE_CONTEXT_SETTINGS, dateInTz, type ParseContext } from '@opendoist/core'
+import { DEFAULT_PARSE_CONTEXT_SETTINGS, dateInTz, type ParseContext } from '@opentask/core'
 import type { Command } from 'commander'
 import { ApiClient } from './api'
 import { type Connection, resolveConnection } from './config'
@@ -56,7 +56,7 @@ export function createContext(command: Command): CommandContext {
   if (connection === null)
     throw new AuthError(
       'not logged in: no server URL/token found',
-      'run `opendoist login`, or set OPENDOIST_URL and OPENDOIST_TOKEN',
+      'run `opentask login`, or set OPENTASK_URL and OPENTASK_TOKEN',
     )
   const now = new Date().toISOString()
   const timezone = systemTimezone()

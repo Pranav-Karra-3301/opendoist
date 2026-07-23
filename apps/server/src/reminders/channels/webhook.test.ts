@@ -90,7 +90,7 @@ describe('webhookAdapter.send', () => {
     expect(init?.signal).toBeInstanceOf(AbortSignal)
     expect(init?.headers).toMatchObject({
       'content-type': 'application/json',
-      'user-agent': 'OpenDoist-Webhook',
+      'user-agent': 'OpenTask-Webhook',
       'x-signature': `sha256=${GOLDEN_SIG}`,
     })
 

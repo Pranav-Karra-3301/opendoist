@@ -318,7 +318,7 @@ importers:
       '@node-rs/argon2':
         specifier: 'catalog:'
         version: 2.0.2
-      '@opendoist/core':
+      '@opentask/core':
         specifier: workspace:*
         version: link:../../packages/core
       '@scalar/hono-api-reference':
@@ -406,7 +406,7 @@ importers:
       '@dnd-kit/utilities':
         specifier: 'catalog:'
         version: 3.2.2(react@19.2.7)
-      '@opendoist/core':
+      '@opentask/core':
         specifier: workspace:*
         version: link:../../packages/core
       '@tanstack/react-query':
@@ -527,7 +527,7 @@ importers:
 
   packages/cli:
     devDependencies:
-      '@opendoist/core':
+      '@opentask/core':
         specifier: workspace:*
         version: link:../core
       '@types/node':

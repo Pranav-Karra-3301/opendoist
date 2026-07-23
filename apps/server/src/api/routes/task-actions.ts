@@ -1,5 +1,5 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
-import { dateInTz, nextOccurrence, parseQuickAdd, RecurrenceSpecSchema } from '@opendoist/core'
+import { dateInTz, nextOccurrence, parseQuickAdd, RecurrenceSpecSchema } from '@opentask/core'
 import { and, eq, inArray, isNull } from 'drizzle-orm'
 import type { AppEnv } from '../../app'
 import type { Db } from '../../db/db'

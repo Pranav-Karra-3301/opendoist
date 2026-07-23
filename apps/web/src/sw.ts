@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 /**
- * OpenDoist service worker (phase 10, Task C).
+ * OpenTask service worker (phase 10, Task C).
  *
  * Built by vite-plugin-pwa in `injectManifest` mode (`vite.config.ts`) and emitted to
  * `/sw.js` at the same scope the hand-rolled phase-6 worker used — so activating this one
@@ -82,7 +82,7 @@ self.addEventListener('push', (event) => {
   } catch {
     data = {}
   }
-  const title = data.title || 'OpenDoist reminder'
+  const title = data.title || 'OpenTask reminder'
   // userVisibleOnly contract: a notification MUST be shown for every push, or the browser
   // shows its own "site updated in background" warning and may revoke the subscription.
   event.waitUntil(

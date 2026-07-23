@@ -3,7 +3,7 @@
  *
  *  - **web** (browser, served by the instance): same-origin relative URLs, cookie auth,
  *    `window.fetch` — byte-identical to the pre-desktop behavior.
- *  - **desktop** (Tauri webview): user-configured instance base URL, `od_` bearer token,
+ *  - **desktop** (Tauri webview): user-configured instance base URL, `ot_` bearer token,
  *    and `@tauri-apps/plugin-http`'s `fetch` (Rust reqwest — no browser CORS; the
  *    self-hosted server ships no CORS headers, so `window.fetch` cannot work there).
  *
@@ -31,7 +31,7 @@ export async function resolveTransport(): Promise<FetchLike> {
 export interface ApiSession {
   /** `''` for web same-origin; `'https://instance.example'` (no trailing slash) for desktop. */
   baseUrl: string
-  /** `{}` for cookie-authenticated web; `{ authorization: 'Bearer od_…' }` for desktop. */
+  /** `{}` for cookie-authenticated web; `{ authorization: 'Bearer ot_…' }` for desktop. */
   authHeaders(): Record<string, string>
   /** `'include'` for web (session cookie); `'omit'` for desktop (bearer only). */
   credentials: RequestCredentials

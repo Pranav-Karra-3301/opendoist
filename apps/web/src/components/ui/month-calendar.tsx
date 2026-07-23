@@ -13,8 +13,8 @@
  * `now`/timezone, so "today" is the viewer's local calendar date (correct for the single-user
  * self-hosted app; the ring is a convenience, never authoritative state).
  */
-import type { Weekday } from '@opendoist/core'
-import { addDaysIso, isoWeekday, lastDayOfMonth } from '@opendoist/core'
+import type { Weekday } from '@opentask/core'
+import { addDaysIso, isoWeekday, lastDayOfMonth } from '@opentask/core'
 import { CalendarCheck, ChevronLeft, ChevronRight } from 'lucide-react'
 import { type ReactElement, useEffect, useId, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -199,7 +199,7 @@ export function MonthCalendar({ value, onPick, weekStart, min }: MonthCalendarPr
           type="button"
           aria-label="Previous month"
           onClick={() => setViewMonth(shiftMonthFirst(viewMonth, -1))}
-          className="flex size-7 items-center justify-center rounded-sm text-text-secondary transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:bg-hover focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--od-focus-ring)]"
+          className="flex size-7 items-center justify-center rounded-sm text-text-secondary transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:bg-hover focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--ot-focus-ring)]"
         >
           <ChevronLeft size={18} aria-hidden />
         </button>
@@ -214,7 +214,7 @@ export function MonthCalendar({ value, onPick, weekStart, min }: MonthCalendarPr
           type="button"
           aria-label="Go to current month"
           onClick={goToCurrentMonth}
-          className="flex size-7 items-center justify-center rounded-sm text-text-secondary transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:bg-hover focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--od-focus-ring)]"
+          className="flex size-7 items-center justify-center rounded-sm text-text-secondary transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:bg-hover focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--ot-focus-ring)]"
         >
           <CalendarCheck size={16} aria-hidden />
         </button>
@@ -222,7 +222,7 @@ export function MonthCalendar({ value, onPick, weekStart, min }: MonthCalendarPr
           type="button"
           aria-label="Next month"
           onClick={() => setViewMonth(shiftMonthFirst(viewMonth, 1))}
-          className="flex size-7 items-center justify-center rounded-sm text-text-secondary transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:bg-hover focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--od-focus-ring)]"
+          className="flex size-7 items-center justify-center rounded-sm text-text-secondary transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:bg-hover focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--ot-focus-ring)]"
         >
           <ChevronRight size={18} aria-hidden />
         </button>
@@ -279,7 +279,7 @@ export function MonthCalendar({ value, onPick, weekStart, min }: MonthCalendarPr
                       onPick(date)
                     }}
                     className={cn(
-                      'flex h-8 w-full items-center justify-center rounded-sm text-copy transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--od-focus-ring)]',
+                      'flex h-8 w-full items-center justify-center rounded-sm text-copy transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--ot-focus-ring)]',
                       disabled && 'cursor-not-allowed text-text-tertiary opacity-40',
                       !disabled &&
                         selected &&

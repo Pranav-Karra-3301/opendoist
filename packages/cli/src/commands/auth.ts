@@ -39,7 +39,7 @@ async function runLogin(opts: LoginOptions, command: Command): Promise<void> {
   const rawUrl = opts.url ?? (await prompter.ask('Server URL (e.g. https://todo.example.com):'))
   const url = normalizeUrl(rawUrl)
   const token = (
-    opts.token ?? (await prompter.ask('API token (Settings → Integrations, starts with od_):'))
+    opts.token ?? (await prompter.ask('API token (Settings → Integrations, starts with ot_):'))
   ).trim()
   if (url === '' || token === '') {
     throw new UsageError(
@@ -47,8 +47,8 @@ async function runLogin(opts: LoginOptions, command: Command): Promise<void> {
       'pass --url and --token, or answer the prompts',
     )
   }
-  if (!token.startsWith('od_')) {
-    io.err("warning: token does not start with 'od_' — continuing anyway")
+  if (!token.startsWith('ot_')) {
+    io.err("warning: token does not start with 'ot_' — continuing anyway")
   }
 
   // Probe the server unauthenticated first so a wrong URL fails clearly before we send the token.
@@ -57,16 +57,16 @@ async function runLogin(opts: LoginOptions, command: Command): Promise<void> {
     info = await new ApiClient(url, null).info()
   } catch (error) {
     // Any API-shaped failure on the probe (404, 500, or a 200 that is not JSON — an SPA
-    // catch-all, a random website) means this URL is not a usable OpenDoist server.
+    // catch-all, a random website) means this URL is not a usable OpenTask server.
     if (error instanceof ApiError) {
-      throw new CliError(`${url} does not look like an OpenDoist server (${error.message})`, {
+      throw new CliError(`${url} does not look like an OpenTask server (${error.message})`, {
         hint: 'check the URL — expected GET /api/v1/info to report a version',
       })
     }
     throw error // NetworkError (exit 1) / AuthError (exit 2) keep their own messaging
   }
   if (typeof info.version !== 'string' || info.version === '') {
-    throw new CliError(`${url} does not look like an OpenDoist server`, {
+    throw new CliError(`${url} does not look like an OpenTask server`, {
       hint: 'check the URL — expected GET /api/v1/info to report a version',
     })
   }
@@ -80,7 +80,7 @@ async function runLogin(opts: LoginOptions, command: Command): Promise<void> {
     io.out(jsonOut({ ok: true, url, version: info.version, user, config_path: configPath }))
     return
   }
-  io.out(`✓ logged in to ${url} as ${user.email} — OpenDoist v${info.version}`)
+  io.out(`✓ logged in to ${url} as ${user.email} — OpenTask v${info.version}`)
   io.out(`config: ${configPath} (0600)`)
 }
 
@@ -88,8 +88,10 @@ async function runLogout(_opts: NoOptions, command: Command): Promise<void> {
   const { json } = globalOpts(command)
   const path = configFilePath()
   const removed = deleteConfigFile()
-  if (process.env.OPENDOIST_TOKEN) {
-    io.err('note: OPENDOIST_TOKEN is still set in your environment')
+  if (process.env.OPENTASK_TOKEN) {
+    io.err('note: OPENTASK_TOKEN is still set in your environment')
+  } else if (process.env.OPENDOIST_TOKEN) {
+    io.err('note: legacy OPENDOIST_TOKEN is still set in your environment')
   }
   if (json) {
     io.out(jsonOut({ ok: true, removed }))
@@ -113,16 +115,16 @@ async function runWhoami(_opts: NoOptions, command: Command): Promise<void> {
     return
   }
   io.out(`${user.email} (${user.name})`)
-  io.out(`server: ${ctx.baseUrl} — OpenDoist v${info.version}`)
+  io.out(`server: ${ctx.baseUrl} — OpenTask v${info.version}`)
   io.out(`credentials: ${ctx.connection.source}`)
 }
 
 export function registerAuthCommands(program: Command): void {
   program
     .command('login')
-    .description('Authenticate against an OpenDoist server and save credentials')
+    .description('Authenticate against an OpenTask server and save credentials')
     .option('--url <url>', 'server URL (e.g. https://todo.example.com)')
-    .option('--token <token>', 'API token from Settings → Integrations (starts with od_)')
+    .option('--token <token>', 'API token from Settings → Integrations (starts with ot_)')
     .action(runAction(runLogin))
 
   program

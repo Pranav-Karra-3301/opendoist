@@ -13,7 +13,7 @@ import {
   instantFor,
   nextOccurrence,
   UserSettingsSchema,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { eq } from 'drizzle-orm'
 import type { Db } from '../db/db'
 import { reminders, tasks, userSettings } from '../db/schema'

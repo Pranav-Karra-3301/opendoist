@@ -88,20 +88,20 @@ export function createAuth(db: Db, config: Config, sessionSecret: string) {
     plugins: [
       twoFactor(),
       apiKey({
-        defaultPrefix: 'od_',
+        defaultPrefix: 'ot_',
         apiKeyHeaders: ['x-api-key'],
         enableMetadata: true,
         // better-auth's api-key plugin ships a 10-requests-per-day default rate limit; the 11th
         // `verifyApiKey` throws RATE_LIMITED, which the bearer middleware reads as an invalid key
-        // (401). od_ tokens are the CLI's/API's primary auth on a self-hosted instance, so the
+        // (401). ot_ tokens are the CLI's/API's primary auth on a self-hosted instance, so the
         // plugin-level limiter is disabled (phase-9 integration gate finding).
         rateLimit: { enabled: false },
         // better-auth treats `permissions` as server-only: HTTP `/api/auth/api-key/create` cannot
-        // set it. Default such keys to the explicit least-privilege shape so every od_ key carries
-        // one of the two contract shapes ({opendoist:['read']} | {opendoist:['read','read_write']}).
+        // set it. Default such keys to the explicit least-privilege shape so every ot_ key carries
+        // one of the two contract shapes ({opentask:['read']} | {opentask:['read','read_write']}).
         // read_write keys are minted in-process via `auth.api.createApiKey` until the Settings →
         // Integrations token endpoint lands (phase 5).
-        permissions: { defaultPermissions: { opendoist: ['read'] } },
+        permissions: { defaultPermissions: { opentask: ['read'] } },
       }),
       ...(config.oidc
         ? [

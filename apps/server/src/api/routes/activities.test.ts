@@ -1,4 +1,4 @@
-import { ActivityPageSchema } from '@opendoist/core'
+import { ActivityPageSchema } from '@opentask/core'
 import { describe, expect, it } from 'vitest'
 import { user } from '../../db/auth-schema'
 import type { Db } from '../../db/db'

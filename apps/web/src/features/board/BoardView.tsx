@@ -20,7 +20,7 @@ import {
   groupTasks,
   sortTasks,
   type ViewPrefs,
-} from '@opendoist/core'
+} from '@opentask/core'
 import type { Section, Task } from '@/api/schemas'
 import type { InlineComposerContext } from '@/components/quick-add/inline-composer'
 import { byChildOrder, byDayOrder, dueOn, overdue } from '@/lib/derive'

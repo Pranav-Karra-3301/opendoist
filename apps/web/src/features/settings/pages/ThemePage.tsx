@@ -18,7 +18,7 @@ import {
   type Appearance,
   resolveAccent,
   resolveAppearance,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { Check, type LucideIcon, Monitor, Moon, Sun } from 'lucide-react'
 import { useThemeSync } from '@/lib/theme'
 import { cn } from '@/lib/utils'
@@ -90,7 +90,7 @@ function AppearanceControl({
 /**
  * A single accent choice rendered as a mini app-preview. Setting `data-accent` on the card
  * redefines the accent family for its subtree while it inherits the app's current appearance
- * (`data-mode`/`.system-dark` on <html>), so `--od-accent`/neutral tokens resolve to THIS accent in
+ * (`data-mode`/`.system-dark` on <html>), so `--ot-accent`/neutral tokens resolve to THIS accent in
  * the CURRENT mode — the swatch previews exactly how the accent will look after selecting it.
  */
 function AccentSwatch({
@@ -114,7 +114,7 @@ function AccentSwatch({
     >
       <div
         data-accent={name}
-        style={{ background: 'var(--od-bg)', borderColor: 'var(--od-border)' }}
+        style={{ background: 'var(--ot-bg)', borderColor: 'var(--ot-border)' }}
         className={cn(
           'relative h-20 w-full overflow-hidden rounded-lg border',
           selected && 'outline-2 outline-offset-2 outline-focus-ring',
@@ -122,16 +122,16 @@ function AccentSwatch({
       >
         <div className="absolute inset-0 flex">
           {/* sidebar strip */}
-          <div className="h-full w-[32%]" style={{ background: 'var(--od-surface)' }}>
+          <div className="h-full w-[32%]" style={{ background: 'var(--ot-surface)' }}>
             <div className="mt-2 ml-1.5 flex flex-col gap-1.5">
-              <span className="h-1.5 w-7 rounded-full" style={{ background: 'var(--od-accent)' }} />
+              <span className="h-1.5 w-7 rounded-full" style={{ background: 'var(--ot-accent)' }} />
               <span
                 className="h-1.5 w-5 rounded-full opacity-40"
-                style={{ background: 'var(--od-text-tertiary)' }}
+                style={{ background: 'var(--ot-text-tertiary)' }}
               />
               <span
                 className="h-1.5 w-6 rounded-full opacity-40"
-                style={{ background: 'var(--od-text-tertiary)' }}
+                style={{ background: 'var(--ot-text-tertiary)' }}
               />
             </div>
           </div>
@@ -139,17 +139,17 @@ function AccentSwatch({
           <div className="flex-1 p-2">
             <span
               className="mb-2 block h-2 w-8 rounded-full"
-              style={{ background: 'var(--od-accent)' }}
+              style={{ background: 'var(--ot-accent)' }}
             />
             {[0, 1, 2].map((row) => (
               <div key={row} className="mb-1.5 flex items-center gap-1.5">
                 <span
                   className="size-2 shrink-0 rounded-full border-2"
-                  style={{ borderColor: 'var(--od-accent)' }}
+                  style={{ borderColor: 'var(--ot-accent)' }}
                 />
                 <span
                   className="h-1.5 flex-1 rounded-full opacity-35"
-                  style={{ background: 'var(--od-text-tertiary)' }}
+                  style={{ background: 'var(--ot-text-tertiary)' }}
                 />
               </div>
             ))}
@@ -158,9 +158,9 @@ function AccentSwatch({
         {selected ? (
           <span
             className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full"
-            style={{ background: 'var(--od-accent)' }}
+            style={{ background: 'var(--ot-accent)' }}
           >
-            <Check size={11} style={{ color: 'var(--od-on-accent)' }} aria-hidden="true" />
+            <Check size={11} style={{ color: 'var(--ot-on-accent)' }} aria-hidden="true" />
           </span>
         ) : null}
       </div>
@@ -185,7 +185,7 @@ export default function ThemePage() {
 
   return (
     <div className="max-w-2xl">
-      <SettingsSection title="Theme" description="Choose how OpenDoist looks.">
+      <SettingsSection title="Theme" description="Choose how OpenTask looks.">
         <div className="p-4">
           <div id="theme-appearance-label" className="mb-3 font-medium text-body text-text-primary">
             Appearance

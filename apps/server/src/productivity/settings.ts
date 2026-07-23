@@ -11,7 +11,7 @@
  * the PATCH route should publish it after calling updateProductivitySettings, mirroring
  * api/routes/user.ts.
  */
-import { UserSettingsSchema } from '@opendoist/core'
+import { UserSettingsSchema } from '@opentask/core'
 import type { Db } from '../db/db'
 import { userSettings } from '../db/schema'
 import { nowIso } from '../lib/ids'

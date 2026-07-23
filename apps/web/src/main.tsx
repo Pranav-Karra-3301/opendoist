@@ -21,7 +21,7 @@ createRoot(container).render(
         {/* phase 9 (Task O): slim update-available banner; renders nothing unless an update exists */}
         <UpdateBanner />
         {/* desktop (Task B): in the Tauri shell, gate the app behind pairing until an
-            instance + od_ token are stored. On the web `DesktopGate` is a pass-through,
+            instance + ot_ token are stored. On the web `DesktopGate` is a pass-through,
             so the browser build renders exactly `<RouterProvider>` as before. */}
         <DesktopGate>
           <RouterProvider router={router} />

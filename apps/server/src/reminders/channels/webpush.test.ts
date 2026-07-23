@@ -8,7 +8,7 @@ vi.mock('../../secrets', () => ({
   getOrCreateVapidKeys: () => ({
     publicKey: 'test-public-key',
     privateKey: 'test-private-key',
-    subject: 'mailto:admin@opendoist.local',
+    subject: 'mailto:admin@opentask.local',
   }),
 }))
 
@@ -58,13 +58,13 @@ function makePayload(over: Partial<ReminderPayload> = {}): ReminderPayload {
 }
 
 // Silence the lazy diagnostic logger the error path builds from config.
-const prevLogLevel = process.env.OPENDOIST_LOG_LEVEL
+const prevLogLevel = process.env.OPENTASK_LOG_LEVEL
 beforeAll(() => {
-  process.env.OPENDOIST_LOG_LEVEL = 'silent'
+  process.env.OPENTASK_LOG_LEVEL = 'silent'
 })
 afterAll(() => {
-  if (prevLogLevel === undefined) delete process.env.OPENDOIST_LOG_LEVEL
-  else process.env.OPENDOIST_LOG_LEVEL = prevLogLevel
+  if (prevLogLevel === undefined) delete process.env.OPENTASK_LOG_LEVEL
+  else process.env.OPENTASK_LOG_LEVEL = prevLogLevel
 })
 beforeEach(() => {
   vi.mocked(sendNotification).mockReset()
@@ -78,7 +78,7 @@ describe('sendWebPush', () => {
 
     // VAPID is initialised lazily from the persisted keys before the first send.
     expect(setVapidDetails).toHaveBeenCalledWith(
-      'mailto:admin@opendoist.local',
+      'mailto:admin@opentask.local',
       'test-public-key',
       'test-private-key',
     )

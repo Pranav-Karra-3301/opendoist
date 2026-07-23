@@ -1,6 +1,6 @@
 # Ramble — voice capture → tasks
 
-Ramble turns a spoken voice note into structured OpenDoist tasks. You hold a mic
+Ramble turns a spoken voice note into structured OpenTask tasks. You hold a mic
 button in Quick Add, the audio is transcribed by a pluggable speech-to-text (STT)
 provider, an optional LLM splits the transcript into discrete task drafts, and you
 review and edit those drafts before they become real tasks.
@@ -65,30 +65,30 @@ stage failed.
 Ramble reads two independent provider "slots" — STT and LLM — from environment variables.
 These are **instance defaults**; each user can override the whole slot from
 **Settings → Integrations** (see the note below). This page documents only the Ramble STT
-and LLM variables; see [Configuration](configuration.md) for every other OpenDoist
+and LLM variables; see [Configuration](configuration.md) for every other OpenTask
 environment variable.
 
 | Variable | Values / example | Notes |
 |---|---|---|
-| `OPENDOIST_STT_PROVIDER` | `openai-compatible` · `deepgram` · `elevenlabs` | Selects the STT adapter. **Unset = Ramble disabled** — uploads are rejected with a `409`. |
-| `OPENDOIST_STT_BASE_URL` | `https://api.openai.com/v1` | API base URL. For `openai-compatible` the adapter appends `/audio/transcriptions`, so include the `/v1` segment. Leave unset for `deepgram`/`elevenlabs` to use their default hosts. |
-| `OPENDOIST_STT_MODEL` | `gpt-4o-mini-transcribe` | Model id. Defaults per provider — see the [matrix](#provider-matrix). |
-| `OPENDOIST_STT_API_KEY` | `sk-...` | API key. **Optional for local sidecars** (Speaches / whisper.cpp need none). |
-| `OPENDOIST_LLM_PROVIDER` | `openai-compatible` · `none` | Task extraction. `none` (or unset) = one task per ramble with the transcript in its description. |
-| `OPENDOIST_LLM_BASE_URL` | `https://api.openai.com/v1` | API base URL. The adapter appends `/chat/completions`, so include the `/v1` segment. |
-| `OPENDOIST_LLM_MODEL` | `gpt-4o-mini` | Chat model id. |
-| `OPENDOIST_LLM_API_KEY` | `sk-...` | API key. **Optional for local runtimes** (e.g. Ollama needs none). |
+| `OPENTASK_STT_PROVIDER` | `openai-compatible` · `deepgram` · `elevenlabs` | Selects the STT adapter. **Unset = Ramble disabled** — uploads are rejected with a `409`. |
+| `OPENTASK_STT_BASE_URL` | `https://api.openai.com/v1` | API base URL. For `openai-compatible` the adapter appends `/audio/transcriptions`, so include the `/v1` segment. Leave unset for `deepgram`/`elevenlabs` to use their default hosts. |
+| `OPENTASK_STT_MODEL` | `gpt-4o-mini-transcribe` | Model id. Defaults per provider — see the [matrix](#provider-matrix). |
+| `OPENTASK_STT_API_KEY` | `sk-...` | API key. **Optional for local sidecars** (Speaches / whisper.cpp need none). |
+| `OPENTASK_LLM_PROVIDER` | `openai-compatible` · `none` | Task extraction. `none` (or unset) = one task per ramble with the transcript in its description. |
+| `OPENTASK_LLM_BASE_URL` | `https://api.openai.com/v1` | API base URL. The adapter appends `/chat/completions`, so include the `/v1` segment. |
+| `OPENTASK_LLM_MODEL` | `gpt-4o-mini` | Chat model id. |
+| `OPENTASK_LLM_API_KEY` | `sk-...` | API key. **Optional for local runtimes** (e.g. Ollama needs none). |
 
 A minimal hosted-OpenAI setup for both slots:
 
 ```bash
-OPENDOIST_STT_PROVIDER=openai-compatible
-OPENDOIST_STT_MODEL=gpt-4o-mini-transcribe
-OPENDOIST_STT_API_KEY=sk-...
-OPENDOIST_LLM_PROVIDER=openai-compatible
-OPENDOIST_LLM_MODEL=gpt-4o-mini
-OPENDOIST_LLM_API_KEY=sk-...
-# OPENDOIST_STT_BASE_URL / OPENDOIST_LLM_BASE_URL default to https://api.openai.com/v1
+OPENTASK_STT_PROVIDER=openai-compatible
+OPENTASK_STT_MODEL=gpt-4o-mini-transcribe
+OPENTASK_STT_API_KEY=sk-...
+OPENTASK_LLM_PROVIDER=openai-compatible
+OPENTASK_LLM_MODEL=gpt-4o-mini
+OPENTASK_LLM_API_KEY=sk-...
+# OPENTASK_STT_BASE_URL / OPENTASK_LLM_BASE_URL default to https://api.openai.com/v1
 ```
 
 **Per-user overrides & key storage.** Any user can override a whole slot in
@@ -105,7 +105,7 @@ The `openai-compatible` adapter is the primary one: a single implementation cove
 Speaches, whisper.cpp, and other OpenAI-shaped endpoints (Groq, LocalAI, …) purely by
 changing the base URL and model. Deepgram and ElevenLabs are thin extra adapters.
 
-| Provider | `OPENDOIST_STT_PROVIDER` | Default model | Price ballpark | API key |
+| Provider | `OPENTASK_STT_PROVIDER` | Default model | Price ballpark | API key |
 |---|---|---|---|---|
 | OpenAI | `openai-compatible` | `gpt-4o-mini-transcribe` | ~$0.003/min | required |
 | Deepgram | `deepgram` | `nova-3` | ~$0.0043/min (batch, EN); $200 free credit | required |
@@ -121,24 +121,24 @@ local sidecar.
 
 [Speaches](https://speaches.ai/) (formerly faster-whisper-server) exposes an
 OpenAI-compatible `/v1/audio/transcriptions` endpoint and downloads Whisper models from
-Hugging Face on demand. It is the easiest local STT to run alongside OpenDoist.
+Hugging Face on demand. It is the easiest local STT to run alongside OpenTask.
 
 Add it to your Compose file as a sidecar. Because both services live in the same Compose
-project they share the default network, so OpenDoist reaches Speaches at the `speaches`
+project they share the default network, so OpenTask reaches Speaches at the `speaches`
 hostname:
 
 ```yaml
 services:
-  opendoist:
-    image: ghcr.io/pranav-karra-3301/opendoist
+  opentask:
+    image: ghcr.io/pranav-karra-3301/opentask
     ports:
       - '7968:7968'
     volumes:
       - ./data:/data
     environment:
-      OPENDOIST_STT_PROVIDER: openai-compatible
-      OPENDOIST_STT_BASE_URL: http://speaches:8000/v1
-      OPENDOIST_STT_MODEL: Systran/faster-whisper-small
+      OPENTASK_STT_PROVIDER: openai-compatible
+      OPENTASK_STT_BASE_URL: http://speaches:8000/v1
+      OPENTASK_STT_MODEL: Systran/faster-whisper-small
     depends_on:
       - speaches
 
@@ -153,14 +153,14 @@ volumes:
   hf-hub-cache:
 ```
 
-The three lines that point OpenDoist at the sidecar (already inline above; shown here for a
+The three lines that point OpenTask at the sidecar (already inline above; shown here for a
 plain `.env`):
 
 ```bash
-OPENDOIST_STT_PROVIDER=openai-compatible
-OPENDOIST_STT_BASE_URL=http://speaches:8000/v1
-OPENDOIST_STT_MODEL=Systran/faster-whisper-small
-# no OPENDOIST_STT_API_KEY — the local sidecar needs no key
+OPENTASK_STT_PROVIDER=openai-compatible
+OPENTASK_STT_BASE_URL=http://speaches:8000/v1
+OPENTASK_STT_MODEL=Systran/faster-whisper-small
+# no OPENTASK_STT_API_KEY — the local sidecar needs no key
 ```
 
 Smoke-test the sidecar directly (this is the same request the `openai-compatible` adapter
@@ -185,14 +185,14 @@ talk to it unchanged:
   --inference-path /v1/audio/transcriptions   # mimic the OpenAI route
 ```
 
-Point OpenDoist at it:
+Point OpenTask at it:
 
 ```bash
-OPENDOIST_STT_PROVIDER=openai-compatible
-OPENDOIST_STT_BASE_URL=http://whisper:8080/v1
-OPENDOIST_STT_MODEL=whisper-1
+OPENTASK_STT_PROVIDER=openai-compatible
+OPENTASK_STT_BASE_URL=http://whisper:8080/v1
+OPENTASK_STT_MODEL=whisper-1
 # whisper.cpp ignores the model field (the model is fixed by -m at launch),
-# but OpenDoist always sends one — any non-empty value works.
+# but OpenTask always sends one — any non-empty value works.
 ```
 
 **`--convert` requires ffmpeg** inside that container. whisper.cpp natively wants WAV; the
@@ -201,15 +201,15 @@ WAV on the fly. Without ffmpeg (or without `--convert`), non-WAV uploads fail.
 
 ## LLM task extraction
 
-When an LLM slot is configured, OpenDoist sends the transcript to a `/chat/completions`
+When an LLM slot is configured, OpenTask sends the transcript to a `/chat/completions`
 endpoint and asks for a **strict JSON-schema** response of the shape
 `{ "tasks": [{ "title", "notes", "due", "priority", "labels" }] }`. Key behaviors:
 
 - **The LLM never invents dates.** `due` is kept as the *spoken phrase* exactly
-  (`"tomorrow 5pm"`, `"every friday"`). OpenDoist parses it with its own date/recurrence
+  (`"tomorrow 5pm"`, `"every friday"`). OpenTask parses it with its own date/recurrence
   engine at confirm time, so time zones and relative dates are always resolved by the same
   code that powers Quick Add.
-- **Priority** follows OpenDoist's convention: `1` = highest … `4` = default; the model is
+- **Priority** follows OpenTask's convention: `1` = highest … `4` = default; the model is
   told to set one only when the speaker signals urgency, else `null` (which becomes `4`).
 - **Labels** are constrained to your existing label names.
 - **Empty is valid.** If nothing actionable was said, the model may return zero tasks.
@@ -219,7 +219,7 @@ schema-violating JSON the request is re-sent **once** with the validation error 
 second failure marks the extract stage `failed` (retryable). This matters for local models
 (e.g. Ollama's `llama3.1:8b`), whose strict-schema adherence is weaker than hosted models.
 
-**`none` fallback.** With no LLM provider — `OPENDOIST_LLM_PROVIDER=none` or simply unset —
+**`none` fallback.** With no LLM provider — `OPENTASK_LLM_PROVIDER=none` or simply unset —
 extraction is skipped and the ramble becomes a **single task**: the title is the first line
 of the transcript (truncated at a word boundary), the full transcript goes in the
 description. This path never fails; you still get to review before saving.
@@ -228,16 +228,16 @@ description. This path never fails; you still get to review before saving.
 drops into the same adapter:
 
 ```bash
-OPENDOIST_LLM_PROVIDER=openai-compatible
-OPENDOIST_LLM_BASE_URL=http://ollama:11434/v1
-OPENDOIST_LLM_MODEL=llama3.1:8b
-# no OPENDOIST_LLM_API_KEY — Ollama needs no key
+OPENTASK_LLM_PROVIDER=openai-compatible
+OPENTASK_LLM_BASE_URL=http://ollama:11434/v1
+OPENTASK_LLM_MODEL=llama3.1:8b
+# no OPENTASK_LLM_API_KEY — Ollama needs no key
 ```
 
 ## Troubleshooting
 
 **`409` on upload / "No speech-to-text provider is configured".** No STT slot is set. Set
-`OPENDOIST_STT_PROVIDER` (plus base URL / model / key as needed), or configure it per-user
+`OPENTASK_STT_PROVIDER` (plus base URL / model / key as needed), or configure it per-user
 in **Settings → Integrations**. In the web app the mic button is disabled with this tooltip
 until an STT provider exists.
 
@@ -247,14 +247,14 @@ URL, or a provider-side error. `failedStage` tells you whether it was `transcrib
 `extract`. Fix the provider config, then press **Retry** (or POST the matching stage
 endpoint); the audio and transcript are still on the row, so you never re-record.
 
-**`413` on upload.** The recording exceeds `OPENDOIST_UPLOAD_MAX_MB` (default `25`). Increase
+**`413` on upload.** The recording exceeds `OPENTASK_UPLOAD_MAX_MB` (default `25`). Increase
 that limit or record a shorter note. At ~0.36 MB/min for Opus, 25 MB is roughly an hour.
 
 **Microphone permission.** The browser must grant microphone access, and recording requires
 a **secure context** (HTTPS, or `localhost` in development). If you denied the prompt,
 re-enable the microphone for the site in the browser's permission settings and reload.
 
-**iOS / PWA recording format.** OpenDoist records `audio/webm;codecs=opus` where supported —
+**iOS / PWA recording format.** OpenTask records `audio/webm;codecs=opus` where supported —
 including iOS Safari since **18.4 (March 2025)** — and falls back to `audio/mp4` (AAC) on
 older iOS. Both formats are accepted server-side and by every provider above; no
 transcoding happens in the browser.

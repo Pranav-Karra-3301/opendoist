@@ -26,14 +26,14 @@
   gap: 8px;
   padding: 14px 16px 12px;
   border-radius: var(--radius-lg);
-  border: 1px solid var(--od-border);
+  border: 1px solid var(--ot-border);
   /* Slightly translucent surface + backdrop blur → macOS "vibrancy" over the transparent
      window, while staying opaque enough to keep highlighted text legible. */
-  background: color-mix(in srgb, var(--od-surface-raised) 88%, transparent);
+  background: color-mix(in srgb, var(--ot-surface-raised) 88%, transparent);
   -webkit-backdrop-filter: blur(30px) saturate(180%);
   backdrop-filter: blur(30px) saturate(180%);
   box-shadow: var(--shadow-popover);
-  color: var(--od-text-primary);
+  color: var(--ot-text-primary);
   font-family: var(--font-sans, -apple-system, system-ui, sans-serif);
 }
 
@@ -43,7 +43,7 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--od-text-tertiary);
+  color: var(--ot-text-tertiary);
   user-select: none;
   -webkit-user-select: none;
 }
@@ -70,7 +70,7 @@
 }
 
 .qa-error {
-  color: var(--od-danger);
+  color: var(--ot-danger);
 }
 
 .qa-footer {
@@ -80,7 +80,7 @@
   gap: 18px;
   padding-top: 6px;
   font-size: 11px;
-  color: var(--od-text-tertiary);
+  color: var(--ot-text-tertiary);
   user-select: none;
   -webkit-user-select: none;
 }
@@ -89,10 +89,10 @@
   display: inline-block;
   min-width: 16px;
   padding: 1px 5px;
-  border: 1px solid var(--od-border);
+  border: 1px solid var(--ot-border);
   border-radius: var(--radius-xs, 3px);
-  background: var(--od-hover);
-  color: var(--od-text-secondary);
+  background: var(--ot-hover);
+  color: var(--ot-text-secondary);
   font-family: inherit;
   font-size: 11px;
   line-height: 14px;
@@ -110,21 +110,21 @@
 .qa-message-title {
   font-size: var(--text-subtitle, 16px);
   font-weight: 600;
-  color: var(--od-text-primary);
+  color: var(--ot-text-primary);
 }
 
 .qa-message-body {
   font-size: var(--text-copy, 13px);
   line-height: 18px;
-  color: var(--od-text-secondary);
+  color: var(--ot-text-secondary);
 }
 
 .qa-open-main {
   padding: 7px 14px;
   border: none;
   border-radius: var(--radius-sm, 5px);
-  background: var(--od-accent);
-  color: var(--od-on-accent);
+  background: var(--ot-accent);
+  color: var(--ot-on-accent);
   font-family: inherit;
   font-size: var(--text-copy, 13px);
   font-weight: 600;
@@ -132,10 +132,10 @@
 }
 
 .qa-open-main:hover {
-  background: var(--od-accent-hover);
+  background: var(--ot-accent-hover);
 }
 
 .qa-open-main:focus-visible {
-  outline: 2px solid var(--od-focus-ring);
+  outline: 2px solid var(--ot-focus-ring);
   outline-offset: 2px;
 }

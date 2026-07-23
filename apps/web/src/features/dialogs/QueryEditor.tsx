@@ -13,7 +13,7 @@ import {
   filterTasks,
   parseFilter,
   splitPanesRaw,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { useEffect, useMemo, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -82,7 +82,7 @@ function SyntaxHelp() {
     <Popover>
       <PopoverTrigger
         type="button"
-        className="cursor-pointer rounded-xs text-accent text-caption hover:underline focus-visible:outline-2 focus-visible:outline-[var(--od-focus-ring)] focus-visible:outline-offset-2"
+        className="cursor-pointer rounded-xs text-accent text-caption hover:underline focus-visible:outline-2 focus-visible:outline-[var(--ot-focus-ring)] focus-visible:outline-offset-2"
       >
         Syntax help
       </PopoverTrigger>

@@ -47,7 +47,7 @@ export function UpdateBanner() {
       className="relative flex items-center justify-center border-border border-b bg-accent-soft px-9 py-1.5 text-copy text-text-primary"
     >
       <span>
-        OpenDoist v{update.latestVersion} is available —{' '}
+        OpenTask v{update.latestVersion} is available —{' '}
         <a
           href={update.url}
           target="_blank"
@@ -62,7 +62,7 @@ export function UpdateBanner() {
         type="button"
         onClick={dismiss}
         aria-label="Dismiss update notification"
-        className="-translate-y-1/2 absolute top-1/2 right-2 inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-text-secondary hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+        className="-translate-y-1/2 absolute top-1/2 right-2 inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-text-secondary hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
       >
         <X size={14} aria-hidden="true" />
       </button>

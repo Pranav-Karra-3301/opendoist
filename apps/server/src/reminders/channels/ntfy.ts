@@ -1,5 +1,5 @@
 // Task F (phase 6): ntfy channel adapter — one JSON publish to the server root (dossier §5.5).
-import type { Priority } from '@opendoist/core'
+import type { Priority } from '@opentask/core'
 import {
   type ChannelAdapter,
   type ChannelDeps,
@@ -9,7 +9,7 @@ import {
   type SendOutcome,
 } from '../contracts'
 
-/** OpenDoist priority (1 = highest … 4 = default) → ntfy scale (1 min … 5 max). FROZEN. */
+/** OpenTask priority (1 = highest … 4 = default) → ntfy scale (1 min … 5 max). FROZEN. */
 const NTFY_PRIORITY: Record<Priority, number> = { 1: 5, 2: 4, 3: 3, 4: 3 }
 
 const REQUEST_TIMEOUT_MS = 10_000

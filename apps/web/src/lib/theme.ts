@@ -3,7 +3,7 @@
  *  - APPEARANCE (`light` | `dark` | `system`) → `data-mode="light|dark"`, or `.system-dark`
  *    (toggled by the OS) when `system`. Explicit light/dark win over the OS, both ways.
  *  - ACCENT (the palette) → `data-accent="<name>"`, applied in BOTH light and dark.
- * Both are mirrored to localStorage (`od-appearance` / `od-accent`) so index.html's head script
+ * Both are mirrored to localStorage (`ot-appearance` / `ot-accent`) so index.html's head script
  * paints the same result pre-hydration on the next load.
  *
  * The account settings are the single source of truth: `useThemeSync` (mounted in AppLayout, and
@@ -18,7 +18,7 @@ import {
   resolveAppearance,
   type ThemeReadable,
   type UserSettingsPatch,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { useEffect } from 'react'
 import { useUserSettings } from '@/features/settings/useSettings'
 
@@ -47,8 +47,8 @@ export const THEME_CHOICES: readonly ThemeChoice[] = [
   'raspberry',
 ]
 
-const APPEARANCE_KEY = 'od-appearance'
-const ACCENT_KEY = 'od-accent'
+const APPEARANCE_KEY = 'ot-appearance'
+const ACCENT_KEY = 'ot-accent'
 
 function osPrefersDark(): boolean {
   return window.matchMedia('(prefers-color-scheme: dark)').matches

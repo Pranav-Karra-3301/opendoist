@@ -1,5 +1,5 @@
 import { styleText } from 'node:util'
-import type { Priority } from '@opendoist/core'
+import type { Priority } from '@opentask/core'
 import Table from 'cli-table3'
 import type { FilterDto, LabelDto, ProjectDto, SectionDto, TaskDto } from './api'
 import type { FmtOpts } from './context'

@@ -5,7 +5,7 @@
  * project/section/label/comment, view_prefs, due.is_recurring). Parallel tasks import
  * from here and never redeclare shapes.
  */
-import { type Due, DueSchema, type Priority, PrioritySchema } from '@opendoist/core'
+import { type Due, DueSchema, type Priority, PrioritySchema } from '@opentask/core'
 import { z } from 'zod'
 
 export const TaskSchema = z.object({

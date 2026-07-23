@@ -167,7 +167,7 @@ export const channelRoutes = () => {
       if (row === undefined) return problem(c, 404, 'not found')
       const appRoot = (config.publicUrl ?? 'http://localhost:7968').replace(/\/+$/, '')
       const payload: ReminderPayload = {
-        title: 'Test notification from OpenDoist',
+        title: 'Test notification from OpenTask',
         body: `Your ${row.name} channel works.`,
         url: appRoot,
         tag: `channel-test-${row.id}`,

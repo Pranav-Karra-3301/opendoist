@@ -105,16 +105,16 @@ describe('CreatedApiTokenSchema', () => {
     id: 'k1',
     name: 'ci token',
     scope: 'read' as const,
-    start: 'od_3fa9',
+    start: 'ot_3fa9',
     createdAt: '2026-07-15T10:00:00.000Z',
     lastUsedAt: null,
   }
 
-  it('accepts tokens with the od_ prefix', () => {
-    expect(CreatedApiTokenSchema.parse({ ...base, token: 'od_abc123' }).token).toBe('od_abc123')
+  it('accepts tokens with the ot_ prefix', () => {
+    expect(CreatedApiTokenSchema.parse({ ...base, token: 'ot_abc123' }).token).toBe('ot_abc123')
   })
 
-  it('rejects tokens not starting with od_', () => {
+  it('rejects tokens not starting with ot_', () => {
     expect(() => CreatedApiTokenSchema.parse({ ...base, token: 'sk_abc123' })).toThrow()
   })
 })

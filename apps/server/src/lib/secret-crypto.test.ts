@@ -57,17 +57,17 @@ describe('encryptSecret / decryptSecret', () => {
 })
 
 describe('getEncryptionKey', () => {
-  const originalDataDir = process.env.OPENDOIST_DATA_DIR
+  const originalDataDir = process.env.OPENTASK_DATA_DIR
   const dirs: string[] = []
 
   afterEach(() => {
-    if (originalDataDir === undefined) delete process.env.OPENDOIST_DATA_DIR
-    else process.env.OPENDOIST_DATA_DIR = originalDataDir
+    if (originalDataDir === undefined) delete process.env.OPENTASK_DATA_DIR
+    else process.env.OPENTASK_DATA_DIR = originalDataDir
     for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true })
   })
 
   function writeSecretsFixture(encryptionKey: string): void {
-    const dir = mkdtempSync(join(tmpdir(), 'opendoist-key-'))
+    const dir = mkdtempSync(join(tmpdir(), 'opentask-key-'))
     dirs.push(dir)
     writeFileSync(
       join(dir, 'secrets.json'),
@@ -78,7 +78,7 @@ describe('getEncryptionKey', () => {
         encryptionKey,
       }),
     )
-    process.env.OPENDOIST_DATA_DIR = dir
+    process.env.OPENTASK_DATA_DIR = dir
   }
 
   it('decodes the base64url encryptionKey to the exact 32 bytes', () => {

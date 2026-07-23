@@ -8,9 +8,9 @@ import type { Label, Project } from '@/api/schemas'
 import { useDialogStore } from '@/features/dialogs/store'
 import { cn } from '@/lib/utils'
 
-/** `berry_red` → `var(--od-palette-berry-red, …)`; unknown names fall back to tertiary. */
+/** `berry_red` → `var(--ot-palette-berry-red, …)`; unknown names fall back to tertiary. */
 function paletteVar(color: string): string {
-  return `var(--od-palette-${color.replace(/_/g, '-')}, var(--od-text-tertiary))`
+  return `var(--ot-palette-${color.replace(/_/g, '-')}, var(--ot-text-tertiary))`
 }
 
 const FAV_LINK_CLASS =

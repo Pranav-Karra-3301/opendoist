@@ -198,7 +198,7 @@ function ReviewBody({
         <button
           type="button"
           onClick={addRow}
-          className="flex h-9 items-center gap-2 rounded-sm border border-border-subtle border-dashed px-3 text-copy text-text-secondary outline-none transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+          className="flex h-9 items-center gap-2 rounded-sm border border-border-subtle border-dashed px-3 text-copy text-text-secondary outline-none transition-colors duration-150 hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
         >
           <Plus size={16} aria-hidden />
           Add task

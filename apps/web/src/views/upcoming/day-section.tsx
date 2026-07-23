@@ -3,7 +3,7 @@
  * `Jul 16 ‧ Today ‧ Wednesday`), a droppable body accepting cross-day drags, the day's
  * dated tasks, and a per-day quick-add scoped to that date. The whole section is a
  * dnd-kit droppable (`day-<date>`) so drops on empty space still land on the day; the
- * heading pins just below the week strip via the measured `--od-strip-h` offset.
+ * heading pins just below the week strip via the measured `--ot-strip-h` offset.
  */
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
@@ -37,7 +37,7 @@ function AddTaskRow({ context }: { context: InlineComposerContext }) {
     <button
       type="button"
       onClick={() => setOpen(true)}
-      className="group flex h-9 w-full items-center gap-2 rounded-sm px-[5px] text-left text-body text-text-secondary transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)]"
+      className="group flex h-9 w-full items-center gap-2 rounded-sm px-[5px] text-left text-body text-text-secondary transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)]"
     >
       <Plus size={18} className="text-accent" aria-hidden />
       Add task
@@ -54,9 +54,9 @@ export function DaySection({ date, tasks, today, sortable = true }: DaySectionPr
       ref={setNodeRef}
       id={`day-${date}`}
       aria-label={`${monthDayLabel(date)} ${weekdayLongLabel(date)}`}
-      className="scroll-mt-[var(--od-strip-h)] pt-3"
+      className="scroll-mt-[var(--ot-strip-h)] pt-3"
     >
-      <h2 className="-mx-6 sticky top-[var(--od-strip-h)] z-10 bg-bg px-6 py-1.5 font-medium text-copy">
+      <h2 className="-mx-6 sticky top-[var(--ot-strip-h)] z-10 bg-bg px-6 py-1.5 font-medium text-copy">
         <span className="text-text-primary">{monthDayLabel(date)}</span>
         {isToday && (
           <>

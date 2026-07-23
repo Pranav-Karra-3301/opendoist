@@ -61,7 +61,7 @@ describe('applyAppearance (light/dark/system → data-mode / .system-dark)', () 
     applyAppearance('dark')
     expect(root.getAttribute('data-mode')).toBe('dark')
     expect(root.classList.contains('system-dark')).toBe(false)
-    expect(store.get('od-appearance')).toBe('dark')
+    expect(store.get('ot-appearance')).toBe('dark')
   })
 
   it('sets data-mode="light" and clears system-dark for explicit Light, ignoring a dark OS', () => {
@@ -69,7 +69,7 @@ describe('applyAppearance (light/dark/system → data-mode / .system-dark)', () 
     applyAppearance('light')
     expect(root.getAttribute('data-mode')).toBe('light')
     expect(root.classList.contains('system-dark')).toBe(false)
-    expect(store.get('od-appearance')).toBe('light')
+    expect(store.get('ot-appearance')).toBe('light')
   })
 
   it('clears data-mode and follows the OS via system-dark for System', () => {
@@ -81,7 +81,7 @@ describe('applyAppearance (light/dark/system → data-mode / .system-dark)', () 
     osDark = false
     applyAppearance('system')
     expect(root.classList.contains('system-dark')).toBe(false)
-    expect(store.get('od-appearance')).toBe('system')
+    expect(store.get('ot-appearance')).toBe('system')
   })
 })
 
@@ -91,7 +91,7 @@ describe('applyAccent (data-accent + persistence)', () => {
     applyAccent('tangerine')
     expect(root.getAttribute('data-accent')).toBe('tangerine')
     expect(root.getAttribute('data-mode')).toBe('dark') // accent switch does not disturb the mode
-    expect(store.get('od-accent')).toBe('tangerine')
+    expect(store.get('ot-accent')).toBe('tangerine')
   })
 })
 

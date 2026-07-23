@@ -1,4 +1,4 @@
-import { DEFAULT_USER_SETTINGS } from '@opendoist/core'
+import { DEFAULT_USER_SETTINGS } from '@opentask/core'
 import { describe, expect, it } from 'vitest'
 import { SIDEBAR_VIEW_TOGGLES, sidebarPatch } from './sidebar-logic'
 

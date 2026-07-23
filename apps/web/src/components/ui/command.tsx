@@ -1,5 +1,5 @@
 /**
- * shadcn-compatible Command on cmdk + the OpenDoist Dialog.
+ * shadcn-compatible Command on cmdk + the OpenTask Dialog.
  * FROZEN by Task A — later tasks import, never edit.
  */
 import { Command as CommandPrimitive } from 'cmdk'

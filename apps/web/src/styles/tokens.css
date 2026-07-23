@@ -1,4 +1,4 @@
-/* app/tokens.css — OpenDoist design tokens (default: Kale) */
+/* app/tokens.css — OpenTask design tokens (default: Kale) */
 @import "tailwindcss";
 
 /* dark utilities follow the resolved appearance (explicit dark) OR the OS (system) */
@@ -72,7 +72,7 @@
 
   /* ===== accent families (light + dark values); default = Kale =====
      Every [data-accent] block below redefines these; the mode blocks (:root vs
-     [data-mode="dark"]/.system-dark) select which half drives the --od-accent* + selection
+     [data-mode="dark"]/.system-dark) select which half drives the --ot-accent* + selection
      tokens, so the accent applies in BOTH light and dark. */
   --accent-light: #4c7a45;
   --accent-light-hover: #3e6737;
@@ -90,163 +90,163 @@
   --accent-dark-selected-text: #a5cf99;
 
   /* accent tokens — LIGHT mode selects the light half of the active accent */
-  --od-accent: var(--accent-light);
-  --od-accent-hover: var(--accent-light-hover);
-  --od-accent-disabled: var(--accent-light-disabled);
-  --od-on-accent: #ffffff;
-  --od-accent-soft: var(--accent-light-soft); /* soft chip/selection tint */
-  --od-selected: var(--accent-light-selected); /* selected row bg */
-  --od-selected-text: var(--accent-light-selected-text);
+  --ot-accent: var(--accent-light);
+  --ot-accent-hover: var(--accent-light-hover);
+  --ot-accent-disabled: var(--accent-light-disabled);
+  --ot-on-accent: #ffffff;
+  --ot-accent-soft: var(--accent-light-soft); /* soft chip/selection tint */
+  --ot-selected: var(--accent-light-selected); /* selected row bg */
+  --ot-selected-text: var(--accent-light-selected-text);
 
   /* canvas & surfaces */
-  --od-bg: #ffffff; /* app canvas */
-  --od-surface: var(--accent-light-surface); /* sidebar / aside (accent-tinted) */
-  --od-surface-raised: #ffffff; /* cards, dropdowns, dialogs */
-  --od-surface-overlay: #282828; /* tooltips/toasts (inverted) */
-  --od-hover: #f3f3f3; /* generic option hover */
-  --od-btn-secondary-bg: #f5f5f5; /* secondary button idle (dossier §2.7) */
-  --od-btn-secondary-bg-hover: #e5e5e5;
-  --od-sidebar-hover: var(--accent-light-sidebar-hover);
+  --ot-bg: #ffffff; /* app canvas */
+  --ot-surface: var(--accent-light-surface); /* sidebar / aside (accent-tinted) */
+  --ot-surface-raised: #ffffff; /* cards, dropdowns, dialogs */
+  --ot-surface-overlay: #282828; /* tooltips/toasts (inverted) */
+  --ot-hover: #f3f3f3; /* generic option hover */
+  --ot-btn-secondary-bg: #f5f5f5; /* secondary button idle (dossier §2.7) */
+  --ot-btn-secondary-bg-hover: #e5e5e5;
+  --ot-sidebar-hover: var(--accent-light-sidebar-hover);
   /* borders */
-  --od-border: #eeeeee; /* divider primary */
-  --od-border-subtle: #f5f5f5; /* row dividers */
-  --od-input-border: #e6e6e6;
-  --od-input-border-focus: #b8b8b8;
+  --ot-border: #eeeeee; /* divider primary */
+  --ot-border-subtle: #f5f5f5; /* row dividers */
+  --ot-input-border: #e6e6e6;
+  --ot-input-border-focus: #b8b8b8;
   /* text */
-  --od-text-primary: #202020;
-  --od-text-secondary: #666666;
+  --ot-text-primary: #202020;
+  --ot-text-secondary: #666666;
   /* Todoist-parity #999999 fails WCAG AA (2.7–2.8:1) and the spec's axe gate; #6d6d6d keeps
-   * ≥4.5:1 on every light-theme surface INCLUDING --od-hover #f3f3f3 (4.66 worst case —
+   * ≥4.5:1 on every light-theme surface INCLUDING --ot-hover #f3f3f3 (4.66 worst case —
    * #707070 was 4.46:1 there, phase-10 a11y integration fix). */
-  --od-text-tertiary: #6d6d6d;
+  --ot-text-tertiary: #6d6d6d;
   /* status */
-  --od-danger: #d1453b; /* == P1 */
-  --od-danger-hover: #b03d32;
-  --od-success: #058527;
-  --od-warning: #eb8909;
-  --od-info: #246fe0;
+  --ot-danger: #d1453b; /* == P1 */
+  --ot-danger-hover: #b03d32;
+  --ot-success: #058527;
+  --ot-warning: #eb8909;
+  --ot-info: #246fe0;
   /* priorities */
-  --od-p1: #d1453b;
-  --od-p1-disabled: #edb5b1;
-  --od-p2: #eb8909;
-  --od-p2-disabled: #f7d09d;
-  --od-p3: #246fe0;
-  --od-p3-disabled: #a7c5f3;
-  --od-p4: #999999;
-  --od-p4-disabled: #d6d6d6;
+  --ot-p1: #d1453b;
+  --ot-p1-disabled: #edb5b1;
+  --ot-p2: #eb8909;
+  --ot-p2-disabled: #f7d09d;
+  --ot-p3: #246fe0;
+  --ot-p3-disabled: #a7c5f3;
+  --ot-p4: #999999;
+  --ot-p4-disabled: #d6d6d6;
   /* dates */
-  --od-date-today: #058527;
-  --od-date-tomorrow: #ad6200;
-  --od-date-weekend: #246fe0;
-  --od-date-next-week: #692ec2;
-  /* Todoist-parity #d1453b is only 4.41:1 as 12px chip text on the accent-tinted --od-surface
+  --ot-date-today: #058527;
+  --ot-date-tomorrow: #ad6200;
+  --ot-date-weekend: #246fe0;
+  --ot-date-next-week: #692ec2;
+  /* Todoist-parity #d1453b is only 4.41:1 as 12px chip text on the accent-tinted --ot-surface
    * card/sidebar backgrounds (#fcfcf8 …), failing WCAG AA and the board pass's axe gate; #c53c35
-   * keeps ≥4.5:1 on every light surface the chip renders on, INCLUDING --od-hover #f3f3f3
-   * (4.65 worst case — board-view a11y fix, same precedent as --od-text-tertiary). */
-  --od-date-overdue: #c53c35;
+   * keeps ≥4.5:1 on every light surface the chip renders on, INCLUDING --ot-hover #f3f3f3
+   * (4.65 worst case — board-view a11y fix, same precedent as --ot-text-tertiary). */
+  --ot-date-overdue: #c53c35;
   /* focus (always blue, never accent) */
-  --od-focus-ring: #1f60c2;
-  --od-focus-ring-outer: #dceaff;
-  --od-row-focus-ring: rgb(31 96 194 / 0.4);
-  --od-row-focus-bg: #fafafa; /* focused task row bg (dossier §2.7) */
+  --ot-focus-ring: #1f60c2;
+  --ot-focus-ring-outer: #dceaff;
+  --ot-row-focus-ring: rgb(31 96 194 / 0.4);
+  --ot-row-focus-bg: #fafafa; /* focused task row bg (dossier §2.7) */
   /* scrollbar */
-  --od-scrollbar-thumb: #c1c1c1;
+  --ot-scrollbar-thumb: #c1c1c1;
   /* project palette (light display values) */
-  --od-palette-berry-red: #b8255f;
-  --od-palette-red: #cf473a;
-  --od-palette-orange: #c77100;
-  --od-palette-yellow: #b29104;
-  --od-palette-olive-green: #949c31;
-  --od-palette-lime-green: #65a33a;
-  --od-palette-green: #369307;
-  --od-palette-mint-green: #42a393;
-  --od-palette-teal: #148fad;
-  --od-palette-sky-blue: #319dc0;
-  --od-palette-light-blue: #6988a4;
-  --od-palette-blue: #2a67e2;
-  --od-palette-grape: #692ec2;
-  --od-palette-violet: #ac30cc;
-  --od-palette-lavender: #a4698c;
-  --od-palette-magenta: #e05095;
-  --od-palette-salmon: #b2635c;
-  --od-palette-charcoal: #808080;
-  --od-palette-grey: #999999;
-  --od-palette-taupe: #8f7a69;
+  --ot-palette-berry-red: #b8255f;
+  --ot-palette-red: #cf473a;
+  --ot-palette-orange: #c77100;
+  --ot-palette-yellow: #b29104;
+  --ot-palette-olive-green: #949c31;
+  --ot-palette-lime-green: #65a33a;
+  --ot-palette-green: #369307;
+  --ot-palette-mint-green: #42a393;
+  --ot-palette-teal: #148fad;
+  --ot-palette-sky-blue: #319dc0;
+  --ot-palette-light-blue: #6988a4;
+  --ot-palette-blue: #2a67e2;
+  --ot-palette-grape: #692ec2;
+  --ot-palette-violet: #ac30cc;
+  --ot-palette-lavender: #a4698c;
+  --ot-palette-magenta: #e05095;
+  --ot-palette-salmon: #b2635c;
+  --ot-palette-charcoal: #808080;
+  --ot-palette-grey: #999999;
+  --ot-palette-taupe: #8f7a69;
 }
 
 /* DARK appearance — explicit dark (`data-mode="dark"`) OR system+OS-dark (`.system-dark`).
    Swaps the neutral tokens to dark and selects the active accent's DARK half; neutrals are
-   accent-independent, only --od-accent* / selection follow --accent-dark*. */
+   accent-independent, only --ot-accent* / selection follow --accent-dark*. */
 [data-mode="dark"],
 .system-dark {
   color-scheme: dark;
   /* accent tokens — DARK mode selects the dark half of the active accent */
-  --od-accent: var(--accent-dark);
-  --od-accent-hover: var(--accent-dark-hover);
-  --od-accent-disabled: var(--accent-dark-disabled);
+  --ot-accent: var(--accent-dark);
+  --ot-accent-hover: var(--accent-dark-hover);
+  --ot-accent-disabled: var(--accent-dark-disabled);
   /* dark text on the brightened accent (≥4.5:1); white was 2.7:1 on kale, under the AA floor
    * for button labels (phase-10 a11y integration fix). */
-  --od-on-accent: #1e1e1e;
-  --od-accent-soft: var(--accent-dark-soft);
-  --od-selected: var(--accent-dark-selected);
-  --od-selected-text: var(--accent-dark-selected-text);
+  --ot-on-accent: #1e1e1e;
+  --ot-accent-soft: var(--accent-dark-soft);
+  --ot-selected: var(--accent-dark-selected);
+  --ot-selected-text: var(--accent-dark-selected-text);
   /* neutral dark surfaces (accent-independent) */
-  --od-bg: #1e1e1e;
-  --od-surface: #262626;
-  --od-surface-raised: #282828;
-  --od-surface-overlay: #404040;
-  --od-hover: #363636;
-  --od-btn-secondary-bg: #292929; /* dossier §2.9 Button row (dark) */
-  --od-btn-secondary-bg-hover: #3d3d3d;
-  --od-sidebar-hover: #2b302a; /* (derived; Todoist dark: #322f2a) */
-  --od-border: #3d3d3d;
-  --od-border-subtle: #282828;
-  --od-input-border: #3d3d3d;
-  --od-input-border-focus: #707070;
-  --od-text-primary: #ffffff; /* rgba(255,255,255,.87) also used */
-  --od-text-secondary: #cccccc;
+  --ot-bg: #1e1e1e;
+  --ot-surface: #262626;
+  --ot-surface-raised: #282828;
+  --ot-surface-overlay: #404040;
+  --ot-hover: #363636;
+  --ot-btn-secondary-bg: #292929; /* dossier §2.9 Button row (dark) */
+  --ot-btn-secondary-bg-hover: #3d3d3d;
+  --ot-sidebar-hover: #2b302a; /* (derived; Todoist dark: #322f2a) */
+  --ot-border: #3d3d3d;
+  --ot-border-subtle: #282828;
+  --ot-input-border: #3d3d3d;
+  --ot-input-border-focus: #707070;
+  --ot-text-primary: #ffffff; /* rgba(255,255,255,.87) also used */
+  --ot-text-secondary: #cccccc;
   /* ≥4.5:1 on every dark text surface INCLUDING the #363636 hover/selected row that the
    * palette keycap hints render on (4.62 worst case; the derived #808080 was 3.7–4.2:1,
    * failing AA — phase-10 a11y integration fix). */
-  --od-text-tertiary: #a0a0a0;
-  --od-danger: #ff7066;
-  --od-danger-hover: #e36564;
-  --od-success: #25b84c;
-  --od-warning: #ff9a14;
-  --od-info: #5297ff;
-  --od-p1: #ff7066;
-  --od-p1-disabled: #79403c;
-  --od-p2: #ff9a13;
-  --od-p2-disabled: #79511b;
-  --od-p3: #5297ff;
-  --od-p3-disabled: #345079;
-  --od-p4: #a9a9a9;
-  --od-p4-disabled: #575757;
-  --od-date-today: #25b84c;
-  --od-date-tomorrow: #ff9a14;
-  --od-date-weekend: #5297ff;
-  --od-date-next-week: #a970ff;
-  --od-date-overdue: #ff7066;
-  --od-focus-ring: #1f60c2;
-  --od-focus-ring-outer: #2a4c80;
-  --od-row-focus-ring: #175bc2;
-  --od-row-focus-bg: #363636; /* (derived: dark focused-row value unverified; == --od-hover) */
-  --od-scrollbar-thumb: #6b6b6b;
+  --ot-text-tertiary: #a0a0a0;
+  --ot-danger: #ff7066;
+  --ot-danger-hover: #e36564;
+  --ot-success: #25b84c;
+  --ot-warning: #ff9a14;
+  --ot-info: #5297ff;
+  --ot-p1: #ff7066;
+  --ot-p1-disabled: #79403c;
+  --ot-p2: #ff9a13;
+  --ot-p2-disabled: #79511b;
+  --ot-p3: #5297ff;
+  --ot-p3-disabled: #345079;
+  --ot-p4: #a9a9a9;
+  --ot-p4-disabled: #575757;
+  --ot-date-today: #25b84c;
+  --ot-date-tomorrow: #ff9a14;
+  --ot-date-weekend: #5297ff;
+  --ot-date-next-week: #a970ff;
+  --ot-date-overdue: #ff7066;
+  --ot-focus-ring: #1f60c2;
+  --ot-focus-ring-outer: #2a4c80;
+  --ot-row-focus-ring: #175bc2;
+  --ot-row-focus-bg: #363636; /* (derived: dark focused-row value unverified; == --ot-hover) */
+  --ot-scrollbar-thumb: #6b6b6b;
   --shadow-menu: 0 10px 20px rgb(0 0 0 / 0.19), 0 6px 6px rgb(0 0 0 / 0.23);
   --shadow-dialog: 0 1px 4px rgb(0 0 0 / 0.08), 0 15px 50px rgb(0 0 0 / 0.6);
   --shadow-drag: 0 5px 8px rgb(0 0 0 / 0.5);
   /* palette dark overrides (Todoist-verified) */
-  --od-palette-berry-red: #d62b6f;
-  --od-palette-orange: #f48318;
-  --od-palette-olive-green: #aeb83a;
-  --od-palette-lime-green: #7ecc48;
-  --od-palette-mint-green: #52ccb8;
-  --od-palette-sky-blue: #3ab9e2;
-  --od-palette-light-blue: #96c3eb;
-  --od-palette-grape: #8758ce;
-  --od-palette-lavender: #eb96c8;
-  --od-palette-salmon: #ff8e84;
-  --od-palette-taupe: #ccae96;
+  --ot-palette-berry-red: #d62b6f;
+  --ot-palette-orange: #f48318;
+  --ot-palette-olive-green: #aeb83a;
+  --ot-palette-lime-green: #7ecc48;
+  --ot-palette-mint-green: #52ccb8;
+  --ot-palette-sky-blue: #3ab9e2;
+  --ot-palette-light-blue: #96c3eb;
+  --ot-palette-grape: #8758ce;
+  --ot-palette-lavender: #eb96c8;
+  --ot-palette-salmon: #ff8e84;
+  --ot-palette-taupe: #ccae96;
 }
 
 /* SYSTEM AUTO-DARK: no @media block needed — index.html's head script toggles `.system-dark`
@@ -255,7 +255,7 @@
 
 /* ---------- accent palettes as [data-accent=X] ---------- */
 /* Each block defines the accent's LIGHT and DARK families; the mode blocks (:root vs
-   [data-mode="dark"]/.system-dark) select which half drives --od-accent* + the selection tokens,
+   [data-mode="dark"]/.system-dark) select which half drives --ot-accent* + the selection tokens,
    so an accent shows in BOTH appearances. Light values are Todoist-verified (dossier §2.5); dark
    values are brightened for ≥4.5:1 accent-as-text contrast on EVERY dark surface — the #363636
    hover/selected row is the tightest (kale/todoist/raspberry are nudged a hair to clear it) — and
@@ -374,85 +374,85 @@
 }
 
 /* ---------- nested [data-accent] scopes (Settings accent swatches) ----------
-   The mode blocks above CONCRETIZE --od-accent* at <html> (custom-property substitution runs
+   The mode blocks above CONCRETIZE --ot-accent* at <html> (custom-property substitution runs
    where the property is defined, then the resolved COLOR inherits), so an inner data-accent that
    only redefines the --accent-* family would never re-resolve them. Re-declare the family→token
    mapping on any [data-accent] element so a nested scope previews ITS OWN accent. Order + the
    compound html selectors keep the app-level cascade intact: on <html> these repeat the existing
    mappings verbatim, and the (0,2,0) dark selectors outrank the (0,1,0) light rule. */
 [data-accent] {
-  --od-accent: var(--accent-light);
-  --od-accent-hover: var(--accent-light-hover);
-  --od-accent-disabled: var(--accent-light-disabled);
-  --od-accent-soft: var(--accent-light-soft);
-  --od-selected: var(--accent-light-selected);
-  --od-selected-text: var(--accent-light-selected-text);
+  --ot-accent: var(--accent-light);
+  --ot-accent-hover: var(--accent-light-hover);
+  --ot-accent-disabled: var(--accent-light-disabled);
+  --ot-accent-soft: var(--accent-light-soft);
+  --ot-selected: var(--accent-light-selected);
+  --ot-selected-text: var(--accent-light-selected-text);
 }
 [data-mode="dark"] [data-accent],
 .system-dark [data-accent],
 [data-mode="dark"][data-accent],
 .system-dark[data-accent] {
-  --od-accent: var(--accent-dark);
-  --od-accent-hover: var(--accent-dark-hover);
-  --od-accent-disabled: var(--accent-dark-disabled);
-  --od-accent-soft: var(--accent-dark-soft);
-  --od-selected: var(--accent-dark-selected);
-  --od-selected-text: var(--accent-dark-selected-text);
+  --ot-accent: var(--accent-dark);
+  --ot-accent-hover: var(--accent-dark-hover);
+  --ot-accent-disabled: var(--accent-dark-disabled);
+  --ot-accent-soft: var(--accent-dark-soft);
+  --ot-selected: var(--accent-dark-selected);
+  --ot-selected-text: var(--accent-dark-selected-text);
 }
 
 /* ---------- bridge semantic vars into Tailwind utilities ---------- */
 @theme inline {
-  --color-bg: var(--od-bg);
-  --color-surface: var(--od-surface);
-  --color-surface-raised: var(--od-surface-raised);
-  --color-surface-overlay: var(--od-surface-overlay);
-  --color-hover: var(--od-hover);
-  --color-selected: var(--od-selected);
-  --color-selected-text: var(--od-selected-text);
-  --color-sidebar-hover: var(--od-sidebar-hover);
-  --color-border: var(--od-border);
-  --color-border-subtle: var(--od-border-subtle);
-  --color-input-border: var(--od-input-border);
-  --color-input-border-focus: var(--od-input-border-focus);
-  --color-text-primary: var(--od-text-primary);
-  --color-text-secondary: var(--od-text-secondary);
-  --color-text-tertiary: var(--od-text-tertiary);
-  --color-accent: var(--od-accent);
-  --color-accent-hover: var(--od-accent-hover);
-  --color-accent-disabled: var(--od-accent-disabled);
-  --color-on-accent: var(--od-on-accent);
-  --color-accent-soft: var(--od-accent-soft);
-  --color-danger: var(--od-danger);
-  --color-danger-hover: var(--od-danger-hover);
-  --color-success: var(--od-success);
-  --color-warning: var(--od-warning);
-  --color-info: var(--od-info);
-  --color-p1: var(--od-p1);
-  --color-p2: var(--od-p2);
-  --color-p3: var(--od-p3);
-  --color-p4: var(--od-p4);
-  --color-focus-ring: var(--od-focus-ring);
-  --color-focus-ring-outer: var(--od-focus-ring-outer);
-  --color-palette-berry-red: var(--od-palette-berry-red);
-  --color-palette-red: var(--od-palette-red);
-  --color-palette-orange: var(--od-palette-orange);
-  --color-palette-yellow: var(--od-palette-yellow);
-  --color-palette-olive-green: var(--od-palette-olive-green);
-  --color-palette-lime-green: var(--od-palette-lime-green);
-  --color-palette-green: var(--od-palette-green);
-  --color-palette-mint-green: var(--od-palette-mint-green);
-  --color-palette-teal: var(--od-palette-teal);
-  --color-palette-sky-blue: var(--od-palette-sky-blue);
-  --color-palette-light-blue: var(--od-palette-light-blue);
-  --color-palette-blue: var(--od-palette-blue);
-  --color-palette-grape: var(--od-palette-grape);
-  --color-palette-violet: var(--od-palette-violet);
-  --color-palette-lavender: var(--od-palette-lavender);
-  --color-palette-magenta: var(--od-palette-magenta);
-  --color-palette-salmon: var(--od-palette-salmon);
-  --color-palette-charcoal: var(--od-palette-charcoal);
-  --color-palette-grey: var(--od-palette-grey);
-  --color-palette-taupe: var(--od-palette-taupe);
+  --color-bg: var(--ot-bg);
+  --color-surface: var(--ot-surface);
+  --color-surface-raised: var(--ot-surface-raised);
+  --color-surface-overlay: var(--ot-surface-overlay);
+  --color-hover: var(--ot-hover);
+  --color-selected: var(--ot-selected);
+  --color-selected-text: var(--ot-selected-text);
+  --color-sidebar-hover: var(--ot-sidebar-hover);
+  --color-border: var(--ot-border);
+  --color-border-subtle: var(--ot-border-subtle);
+  --color-input-border: var(--ot-input-border);
+  --color-input-border-focus: var(--ot-input-border-focus);
+  --color-text-primary: var(--ot-text-primary);
+  --color-text-secondary: var(--ot-text-secondary);
+  --color-text-tertiary: var(--ot-text-tertiary);
+  --color-accent: var(--ot-accent);
+  --color-accent-hover: var(--ot-accent-hover);
+  --color-accent-disabled: var(--ot-accent-disabled);
+  --color-on-accent: var(--ot-on-accent);
+  --color-accent-soft: var(--ot-accent-soft);
+  --color-danger: var(--ot-danger);
+  --color-danger-hover: var(--ot-danger-hover);
+  --color-success: var(--ot-success);
+  --color-warning: var(--ot-warning);
+  --color-info: var(--ot-info);
+  --color-p1: var(--ot-p1);
+  --color-p2: var(--ot-p2);
+  --color-p3: var(--ot-p3);
+  --color-p4: var(--ot-p4);
+  --color-focus-ring: var(--ot-focus-ring);
+  --color-focus-ring-outer: var(--ot-focus-ring-outer);
+  --color-palette-berry-red: var(--ot-palette-berry-red);
+  --color-palette-red: var(--ot-palette-red);
+  --color-palette-orange: var(--ot-palette-orange);
+  --color-palette-yellow: var(--ot-palette-yellow);
+  --color-palette-olive-green: var(--ot-palette-olive-green);
+  --color-palette-lime-green: var(--ot-palette-lime-green);
+  --color-palette-green: var(--ot-palette-green);
+  --color-palette-mint-green: var(--ot-palette-mint-green);
+  --color-palette-teal: var(--ot-palette-teal);
+  --color-palette-sky-blue: var(--ot-palette-sky-blue);
+  --color-palette-light-blue: var(--ot-palette-light-blue);
+  --color-palette-blue: var(--ot-palette-blue);
+  --color-palette-grape: var(--ot-palette-grape);
+  --color-palette-violet: var(--ot-palette-violet);
+  --color-palette-lavender: var(--ot-palette-lavender);
+  --color-palette-magenta: var(--ot-palette-magenta);
+  --color-palette-salmon: var(--ot-palette-salmon);
+  --color-palette-charcoal: var(--ot-palette-charcoal);
+  --color-palette-grey: var(--ot-palette-grey);
+  --color-palette-taupe: var(--ot-palette-taupe);
 }
 
 /* ---------- z-index (no @theme namespace in v4; plain vars + z-[var(--z-*)]) ---------- */
@@ -477,29 +477,29 @@
 }
 
 /* ---------- shadcn/ui bridge (phase 4 Task A) ---------- */
-/* Maps shadcn variable names onto the active OpenDoist theme so shadcn-flavored code
+/* Maps shadcn variable names onto the active OpenTask theme so shadcn-flavored code
    follows the appearance (data-mode) × accent (data-accent) tokens automatically. Bridge
    values only — the token blocks above are the source of truth and are never edited here.
-   There is deliberately NO `.dark` block: dark values flow in through the --od-* indirection. */
+   There is deliberately NO `.dark` block: dark values flow in through the --ot-* indirection. */
 :root {
-  --background: var(--od-bg);
-  --foreground: var(--od-text-primary);
-  --card: var(--od-surface-raised);
-  --card-foreground: var(--od-text-primary);
-  --popover: var(--od-surface-raised);
-  --popover-foreground: var(--od-text-primary);
-  --primary: var(--od-accent);
-  --primary-foreground: var(--od-on-accent);
-  --secondary: var(--od-hover);
-  --secondary-foreground: var(--od-text-primary);
-  --muted: var(--od-hover);
-  --muted-foreground: var(--od-text-secondary);
-  --accent: var(--od-hover);
-  --accent-foreground: var(--od-text-primary);
-  --destructive: var(--od-danger);
-  --border: var(--od-border);
-  --input: var(--od-input-border);
-  --ring: var(--od-focus-ring);
+  --background: var(--ot-bg);
+  --foreground: var(--ot-text-primary);
+  --card: var(--ot-surface-raised);
+  --card-foreground: var(--ot-text-primary);
+  --popover: var(--ot-surface-raised);
+  --popover-foreground: var(--ot-text-primary);
+  --primary: var(--ot-accent);
+  --primary-foreground: var(--ot-on-accent);
+  --secondary: var(--ot-hover);
+  --secondary-foreground: var(--ot-text-primary);
+  --muted: var(--ot-hover);
+  --muted-foreground: var(--ot-text-secondary);
+  --accent: var(--ot-hover);
+  --accent-foreground: var(--ot-text-primary);
+  --destructive: var(--ot-danger);
+  --border: var(--ot-border);
+  --input: var(--ot-input-border);
+  --ring: var(--ot-focus-ring);
   --radius: 10px;
 }
 
@@ -509,11 +509,11 @@
    (grey) instead of appearing instantly blue. Utilities still win over this base rule. */
 @layer base {
   * {
-    outline-color: var(--od-focus-ring);
+    outline-color: var(--ot-focus-ring);
   }
 }
 
-/* NOTE: --color-accent and --color-border are NOT re-bridged below — the OpenDoist
+/* NOTE: --color-accent and --color-border are NOT re-bridged below — the OpenTask
    @theme inline block above already binds them (bg-accent = theme accent, not the
    shadcn hover-wash meaning; re-mapping them here would clobber the tokens law). */
 @theme inline {

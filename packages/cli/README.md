@@ -1,9 +1,9 @@
-# opendoist
+# opentask
 
-Command-line client for [OpenDoist](https://github.com/pranav-karra-3301/opendoist) — the self-hosted, keyboard-first task manager. It speaks the same Quick Add grammar and filter language as the web app and evaluates them with the same bundled parser, so what you type in the terminal behaves exactly like what you type in the browser.
+Command-line client for [OpenTask](https://github.com/pranav-karra-3301/opentask) — the self-hosted, keyboard-first task manager. It speaks the same Quick Add grammar and filter language as the web app and evaluates them with the same bundled parser, so what you type in the terminal behaves exactly like what you type in the browser.
 
 ```
-opendoist add "Submit report tom 4pm p1 #Work @email"
+opentask add "Submit report tom 4pm p1 #Work @email"
 ✓ added  tsk_7Hq2  Submit report
   parsed: p1 · due Jul 16 4:00pm · #Work · @email
 ```
@@ -11,19 +11,19 @@ opendoist add "Submit report tom 4pm p1 #Work @email"
 ## Install
 
 ```sh
-npm install -g opendoist
+npm install -g opentask
 ```
 
 Requires **Node ≥ 22**. The published package is a single self-contained bundle — no runtime dependencies to install.
 
 > **Not on npm yet as of 0.1.0.** Until the first npm release lands, use the copy bundled in
 > the Docker image (see [Docker](#docker) below) or build from the monorepo with
-> `pnpm --filter opendoist build` and run `node packages/cli/dist/index.js`.
+> `pnpm --filter opentask build` and run `node packages/cli/dist/index.js`.
 
 Most people alias it to `od`:
 
 ```sh
-alias od=opendoist   # add to ~/.bashrc, ~/.zshrc, etc.
+alias od=opentask   # add to ~/.bashrc, ~/.zshrc, etc.
 ```
 
 ## Quickstart
@@ -31,22 +31,22 @@ alias od=opendoist   # add to ~/.bashrc, ~/.zshrc, etc.
 Point the CLI at your server and save a token (both are stored locally, `chmod 600`):
 
 ```sh
-opendoist login
+opentask login
 # Server URL (e.g. https://todo.example.com): todo.example.com
-# API token (Settings → Integrations, starts with od_): od_xxxxxxxxxxxx
-✓ logged in to https://todo.example.com as you@example.com — OpenDoist v0.1.0
-config: ~/.config/opendoist/config.json (0600)
+# API token (Settings → Integrations, starts with ot_): ot_xxxxxxxxxxxx
+✓ logged in to https://todo.example.com as you@example.com — OpenTask v0.1.0
+config: ~/.config/opentask/config.json (0600)
 ```
 
-Create the token in the web app under **Settings → Integrations** (it starts with `od_`). Then start adding tasks:
+Create the token in the web app under **Settings → Integrations** (it starts with `ot_`). Then start adding tasks:
 
 ```sh
-opendoist add "Submit report tom 4pm p1 #Work @email"
-opendoist today
-opendoist done "submit report"
+opentask add "Submit report tom 4pm p1 #Work @email"
+opentask today
+opentask done "submit report"
 ```
 
-`opendoist login` accepts `--url` and `--token` flags if you would rather not be prompted (handy for scripts and provisioning).
+`opentask login` accepts `--url` and `--token` flags if you would rather not be prompted (handy for scripts and provisioning).
 
 ## Commands
 
@@ -54,32 +54,32 @@ Every command accepts the global `--json` flag (see [Scripting](#scripting)), pl
 
 | Command | What it does | Example |
 |---|---|---|
-| `login [--url <url>] [--token <token>]` | Save server URL + API token | `opendoist login` |
-| `logout` | Remove the saved credentials | `opendoist logout` |
-| `whoami` | Show the current user, server, and credential source | `opendoist whoami` |
-| `add <text...>` | Add a task using the full Quick Add grammar | `opendoist add "Pay rent {aug 1} p2"` |
-| `list [query]` | List tasks — grouped by project, or filtered by a query | `opendoist list "p1 & #Work"` |
-| `today` | Tasks due today, with overdue tasks first | `opendoist today` |
-| `upcoming [--days <n>]` | Upcoming tasks grouped by day (n = 1–30, default 7) | `opendoist upcoming --days 14` |
-| `done <task> [-y, --yes]` | Complete a task by id or fuzzy content match | `opendoist done "submit report"` |
-| `reopen <task> [-y, --yes]` | Reopen a completed task | `opendoist reopen tsk_7Hq2` |
-| `rm <task> [-y, --yes]` | Delete a task (always confirms unless `--yes`) | `opendoist rm tsk_7Hq2 --yes` |
-| `projects` | List projects (tree order, Inbox first) | `opendoist projects` |
-| `projects add <name> [--color <c>] [--parent <ref>]` | Create a project | `opendoist projects add Work --color green` |
-| `sections [--project <ref>]` | List sections, optionally within one project | `opendoist sections --project Work` |
-| `sections add <name> --project <ref>` | Create a section (project required) | `opendoist sections add Admin --project Work` |
-| `labels` | List labels | `opendoist labels` |
-| `labels add <name> [--color <c>]` | Create a label | `opendoist labels add errands --color yellow` |
-| `filters` | List saved filters (`★` marks favorites) | `opendoist filters` |
-| `filters add <name> <query> [--color <c>]` | Create a saved filter (query is validated first) | `opendoist filters add Urgent "(p1 \| p2) & 14 days"` |
-| `search <query...> [-n, --limit <n>]` | Full-text search across tasks (default limit 30) | `opendoist search meeting notes` |
-| `open [target]` | Open the web app, a view, or a task in your browser | `opendoist open today` |
+| `login [--url <url>] [--token <token>]` | Save server URL + API token | `opentask login` |
+| `logout` | Remove the saved credentials | `opentask logout` |
+| `whoami` | Show the current user, server, and credential source | `opentask whoami` |
+| `add <text...>` | Add a task using the full Quick Add grammar | `opentask add "Pay rent {aug 1} p2"` |
+| `list [query]` | List tasks — grouped by project, or filtered by a query | `opentask list "p1 & #Work"` |
+| `today` | Tasks due today, with overdue tasks first | `opentask today` |
+| `upcoming [--days <n>]` | Upcoming tasks grouped by day (n = 1–30, default 7) | `opentask upcoming --days 14` |
+| `done <task> [-y, --yes]` | Complete a task by id or fuzzy content match | `opentask done "submit report"` |
+| `reopen <task> [-y, --yes]` | Reopen a completed task | `opentask reopen tsk_7Hq2` |
+| `rm <task> [-y, --yes]` | Delete a task (always confirms unless `--yes`) | `opentask rm tsk_7Hq2 --yes` |
+| `projects` | List projects (tree order, Inbox first) | `opentask projects` |
+| `projects add <name> [--color <c>] [--parent <ref>]` | Create a project | `opentask projects add Work --color green` |
+| `sections [--project <ref>]` | List sections, optionally within one project | `opentask sections --project Work` |
+| `sections add <name> --project <ref>` | Create a section (project required) | `opentask sections add Admin --project Work` |
+| `labels` | List labels | `opentask labels` |
+| `labels add <name> [--color <c>]` | Create a label | `opentask labels add errands --color yellow` |
+| `filters` | List saved filters (`★` marks favorites) | `opentask filters` |
+| `filters add <name> <query> [--color <c>]` | Create a saved filter (query is validated first) | `opentask filters add Urgent "(p1 \| p2) & 14 days"` |
+| `search <query...> [-n, --limit <n>]` | Full-text search across tasks (default limit 30) | `opentask search meeting notes` |
+| `open [target]` | Open the web app, a view, or a task in your browser | `opentask open today` |
 
 `done`, `reopen`, and `rm` accept either a task id (`tsk_…`) or a case-insensitive substring of the task's content. A fuzzy match asks for confirmation before mutating; an ambiguous match lists the candidates so you can pass the id. `open [target]` understands `inbox`, `today`, `upcoming`, a task id, or a fuzzy task reference — with no target it opens the app root.
 
 ## Filters
 
-`list [query]` and `filters add` use OpenDoist's filter language — identical to the web app's. A few examples:
+`list [query]` and `filters add` use OpenTask's filter language — identical to the web app's. A few examples:
 
 | Query | Matches |
 |---|---|
@@ -97,28 +97,28 @@ Credentials live in a single JSON file, written with `0600` permissions (owner r
 
 | OS | Path |
 |---|---|
-| Linux | `~/.config/opendoist/config.json` |
-| macOS | `~/Library/Preferences/opendoist/config.json` |
-| Windows | `%APPDATA%\opendoist\Config\config.json` |
+| Linux | `~/.config/opentask/config.json` |
+| macOS | `~/Library/Preferences/opentask/config.json` |
+| Windows | `%APPDATA%\opentask\Config\config.json` |
 
 Environment variables override the file (useful in CI, containers, and shared machines):
 
 | Variable | Effect |
 |---|---|
-| `OPENDOIST_URL` | Server URL — **beats** the saved config |
-| `OPENDOIST_TOKEN` | API token — **beats** the saved config |
-| `OPENDOIST_CONFIG_PATH` | Use a config file at a custom path |
+| `OPENTASK_URL` | Server URL — **beats** the saved config |
+| `OPENTASK_TOKEN` | API token — **beats** the saved config |
+| `OPENTASK_CONFIG_PATH` | Use a config file at a custom path |
 | `NO_COLOR` | Disable ANSI colors |
 | `FORCE_COLOR` | Force colors even when stdout is not a TTY |
 
-`whoami` reports which source is in effect (`env`, `config`, or `mixed`). When `OPENDOIST_URL` and `OPENDOIST_TOKEN` are both set you don't need to `login` at all.
+`whoami` reports which source is in effect (`env`, `config`, or `mixed`). When `OPENTASK_URL` and `OPENTASK_TOKEN` are both set you don't need to `login` at all.
 
 ## Scripting
 
 Pass `--json` to any command for stable, machine-readable output on stdout. Human tables never appear in JSON mode, and prompts/errors go to stderr, so the stdout stream is always clean to pipe.
 
 ```sh
-opendoist today --json | jq '.[].content'
+opentask today --json | jq '.[].content'
 ```
 
 Success shapes:
@@ -152,18 +152,18 @@ Exit codes are stable:
 
 ## Docker
 
-The CLI is baked into the OpenDoist server image (as both `opendoist` and `od`), so you can drive your instance without installing anything on the host:
+The CLI is baked into the OpenTask server image (as both `opentask` and `od`), so you can drive your instance without installing anything on the host:
 
 ```sh
-docker exec -e OPENDOIST_TOKEN=od_xxxxxxxxxxxx <container> opendoist today
+docker exec -e OPENTASK_TOKEN=ot_xxxxxxxxxxxx <container> opentask today
 ```
 
-Inside the container `OPENDOIST_URL` already defaults to the local server (`http://127.0.0.1:7968`), so you only need to supply a token.
+Inside the container `OPENTASK_URL` already defaults to the local server (`http://127.0.0.1:7968`), so you only need to supply a token.
 
 ## Priorities
 
-OpenDoist stores priorities as **`p1` = highest … `p4` = default (no priority)**. Todoist's REST API inverts this (its `priority: 4` is the urgent one) — OpenDoist does **not**. What you see is what you type: `p1` is the most urgent, everywhere.
+OpenTask stores priorities as **`p1` = highest … `p4` = default (no priority)**. Todoist's REST API inverts this (its `priority: 4` is the urgent one) — OpenTask does **not**. What you see is what you type: `p1` is the most urgent, everywhere.
 
 ## License
 
-[AGPL-3.0-only](https://github.com/pranav-karra-3301/opendoist/blob/main/LICENSE). Source, issues, and docs: <https://github.com/pranav-karra-3301/opendoist>.
+[AGPL-3.0-only](https://github.com/pranav-karra-3301/opentask/blob/main/LICENSE). Source, issues, and docs: <https://github.com/pranav-karra-3301/opentask>.

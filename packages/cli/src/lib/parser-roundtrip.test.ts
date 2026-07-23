@@ -3,7 +3,7 @@ import {
   type ParseContext,
   type Priority,
   parseQuickAdd,
-} from '@opendoist/core'
+} from '@opentask/core'
 import { describe, expect, test } from 'vitest'
 
 // Fixed clock + zone so bare natural-language dates resolve to stable calendar dates. This pins the

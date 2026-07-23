@@ -146,7 +146,7 @@ function ProfileSection({
   }
 
   return (
-    <SettingsSection title="Profile" description="How you appear across OpenDoist.">
+    <SettingsSection title="Profile" description="How you appear across OpenTask.">
       <Cell>
         <form onSubmit={save} className="flex flex-col gap-2">
           <div className="flex items-end justify-between gap-4">

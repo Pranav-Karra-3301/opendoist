@@ -4,7 +4,7 @@ import { openQuickAdd, SEL } from './helpers'
 /**
  * Phase 7 (Task N gate) — Ramble smoke against the real stack.
  *
- * The e2e server boots with no `OPENDOIST_STT_*` / `OPENDOIST_LLM_*` env (playwright.config
+ * The e2e server boots with no `OPENTASK_STT_*` / `OPENTASK_LLM_*` env (playwright.config
  * webServer), so both provider slots resolve to `source: 'none'`. That is exactly the state
  * this smoke pins down: the Settings → Integrations page renders the two Voice & AI provider
  * cards with their "Not configured" defaults, and the Quick Add mic button is disabled with

@@ -44,12 +44,12 @@ function seedBackup(t: TestApp, filename: string, kind: BackupInfo['kind'], crea
     .run()
 }
 
-it('createBackup produces a zip whose opendoist.db passes integrity_check', async () => {
+it('createBackup produces a zip whose opentask.db passes integrity_check', async () => {
   const t = await make()
   const info = await createBackup(t.deps, { kind: 'manual' })
 
   expect(info.kind).toBe('manual')
-  expect(info.filename).toMatch(/^opendoist-backup-\d{4}-\d{2}-\d{2}\.zip$/)
+  expect(info.filename).toMatch(/^opentask-backup-\d{4}-\d{2}-\d{2}\.zip$/)
   expect(info.sizeBytes).toBeGreaterThan(0)
   expect(info.id).toBeTruthy()
   // meta row persisted.
@@ -62,15 +62,15 @@ it('createBackup produces a zip whose opendoist.db passes integrity_check', asyn
     version: string
     includesAttachments: boolean
   }
-  expect(meta.app).toBe('opendoist')
+  expect(meta.app).toBe('opentask')
   expect(meta.schema).toBe('v1')
   expect(typeof meta.version).toBe('string')
   expect(meta.includesAttachments).toBe(true)
 
   const out = mkdtempSync(join(tmpdir(), 'od-verify-'))
   tmpDirs.push(out)
-  const dbOut = join(out, 'opendoist.db')
-  await zip.extract('opendoist.db', dbOut)
+  const dbOut = join(out, 'opentask.db')
+  await zip.extract('opentask.db', dbOut)
   await zip.close()
 
   const restored = new Database(dbOut, { readonly: true })
@@ -89,7 +89,7 @@ it('effectiveBackupSettings falls back row ?? env ?? default', async () => {
   })
 
   const env = await make({
-    env: { OPENDOIST_BACKUP_RETENTION: '7', OPENDOIST_BACKUP_INCLUDE_ATTACHMENTS: 'false' },
+    env: { OPENTASK_BACKUP_RETENTION: '7', OPENTASK_BACKUP_INCLUDE_ATTACHMENTS: 'false' },
   })
   expect(effectiveBackupSettings(env.deps)).toEqual({ retentionDays: 7, includeAttachments: false })
 
@@ -127,8 +127,8 @@ it('appends a timestamped suffix on a same-day filename collision', async () => 
   const first = await createBackup(t.deps, { kind: 'manual' })
   const second = await createBackup(t.deps, { kind: 'manual' })
 
-  expect(first.filename).toMatch(/^opendoist-backup-\d{4}-\d{2}-\d{2}\.zip$/)
-  expect(second.filename).toMatch(/^opendoist-backup-\d{4}-\d{2}-\d{2}-\d{6}\.zip$/)
+  expect(first.filename).toMatch(/^opentask-backup-\d{4}-\d{2}-\d{2}\.zip$/)
+  expect(second.filename).toMatch(/^opentask-backup-\d{4}-\d{2}-\d{2}-\d{6}\.zip$/)
   expect(second.filename).not.toBe(first.filename)
   const onDisk = readdirSync(join(t.dataDir, 'backups')).filter((f) => f.endsWith('.zip'))
   expect(onDisk).toContain(first.filename)
@@ -138,16 +138,16 @@ it('appends a timestamped suffix on a same-day filename collision', async () => 
 it('pre_restore backups use the prerestore prefix and are always timestamped', async () => {
   const t = await make()
   const info = await createBackup(t.deps, { kind: 'pre_restore' })
-  expect(info.filename).toMatch(/^opendoist-prerestore-\d{4}-\d{2}-\d{2}-\d{6}\.zip$/)
+  expect(info.filename).toMatch(/^opentask-prerestore-\d{4}-\d{2}-\d{2}-\d{6}\.zip$/)
 })
 
 it('pruneBackups keeps the newest retentionDays regular + newest 3 pre_restore', async () => {
   const t = await make()
   for (const d of ['10', '11', '12', '13', '14']) {
-    seedBackup(t, `opendoist-backup-2026-07-${d}.zip`, 'scheduled', `2026-07-${d}T03:00:00.000Z`)
+    seedBackup(t, `opentask-backup-2026-07-${d}.zip`, 'scheduled', `2026-07-${d}T03:00:00.000Z`)
   }
   for (const s of ['00', '01', '02', '03']) {
-    const name = `opendoist-prerestore-2026-07-10-1200${s}.zip`
+    const name = `opentask-prerestore-2026-07-10-1200${s}.zip`
     seedBackup(t, name, 'pre_restore', `2026-07-10T12:00:${s}.000Z`)
   }
   t.deps.db.insert(backupSettings).values({ id: 1, retentionDays: 2 }).run()
@@ -155,10 +155,10 @@ it('pruneBackups keeps the newest retentionDays regular + newest 3 pre_restore',
   const deleted = await pruneBackups(t.deps)
   expect(deleted.sort()).toEqual(
     [
-      'opendoist-backup-2026-07-10.zip',
-      'opendoist-backup-2026-07-11.zip',
-      'opendoist-backup-2026-07-12.zip',
-      'opendoist-prerestore-2026-07-10-120000.zip',
+      'opentask-backup-2026-07-10.zip',
+      'opentask-backup-2026-07-11.zip',
+      'opentask-backup-2026-07-12.zip',
+      'opentask-prerestore-2026-07-10-120000.zip',
     ].sort(),
   )
 
@@ -175,35 +175,35 @@ it('listBackups drops vanished rows and adopts orphan files, newest first', asyn
   // Delete the real file → its row must be dropped.
   rmSync(backupFilePath(t.dataDir, real.filename))
   // Drop an orphan file with no meta row → must be adopted.
-  writeFileSync(join(t.dataDir, 'backups', 'opendoist-backup-2026-06-01.zip'), 'orphan')
-  writeFileSync(join(t.dataDir, 'backups', 'opendoist-prerestore-2026-06-02-090000.zip'), 'orphan')
+  writeFileSync(join(t.dataDir, 'backups', 'opentask-backup-2026-06-01.zip'), 'orphan')
+  writeFileSync(join(t.dataDir, 'backups', 'opentask-prerestore-2026-06-02-090000.zip'), 'orphan')
 
   const list = await listBackups(t.deps)
   const names = list.map((b) => b.filename)
   expect(names).not.toContain(real.filename)
-  expect(names).toContain('opendoist-backup-2026-06-01.zip')
-  expect(names).toContain('opendoist-prerestore-2026-06-02-090000.zip')
+  expect(names).toContain('opentask-backup-2026-06-01.zip')
+  expect(names).toContain('opentask-prerestore-2026-06-02-090000.zip')
   // Adopted kinds inferred from name.
-  expect(list.find((b) => b.filename === 'opendoist-backup-2026-06-01.zip')?.kind).toBe('scheduled')
-  expect(list.find((b) => b.filename === 'opendoist-prerestore-2026-06-02-090000.zip')?.kind).toBe(
+  expect(list.find((b) => b.filename === 'opentask-backup-2026-06-01.zip')?.kind).toBe('scheduled')
+  expect(list.find((b) => b.filename === 'opentask-prerestore-2026-06-02-090000.zip')?.kind).toBe(
     'pre_restore',
   )
   // Newest first (2026-06-02 > 2026-06-01).
-  expect(names[0]).toBe('opendoist-prerestore-2026-06-02-090000.zip')
+  expect(names[0]).toBe('opentask-prerestore-2026-06-02-090000.zip')
   // Reconciliation persisted: vanished row gone, orphans adopted.
   expect(t.deps.db.select().from(backupsMeta).all()).toHaveLength(2)
 })
 
 it('backupFilePath validates the filename against traversal', async () => {
   const t = await make()
-  expect(backupFilePath(t.dataDir, 'opendoist-backup-2026-07-17.zip')).toBe(
-    join(t.dataDir, 'backups', 'opendoist-backup-2026-07-17.zip'),
+  expect(backupFilePath(t.dataDir, 'opentask-backup-2026-07-17.zip')).toBe(
+    join(t.dataDir, 'backups', 'opentask-backup-2026-07-17.zip'),
   )
-  expect(backupFilePath(t.dataDir, 'opendoist-prerestore-2026-07-17-120000.zip')).toBe(
-    join(t.dataDir, 'backups', 'opendoist-prerestore-2026-07-17-120000.zip'),
+  expect(backupFilePath(t.dataDir, 'opentask-prerestore-2026-07-17-120000.zip')).toBe(
+    join(t.dataDir, 'backups', 'opentask-prerestore-2026-07-17-120000.zip'),
   )
   expect(() => backupFilePath(t.dataDir, '../evil.zip')).toThrow()
-  expect(() => backupFilePath(t.dataDir, 'opendoist-backup-2026-07-17.zip/../x')).toThrow()
+  expect(() => backupFilePath(t.dataDir, 'opentask-backup-2026-07-17.zip/../x')).toThrow()
 })
 
 it('runNightlyBackup creates a scheduled backup and never throws', async () => {

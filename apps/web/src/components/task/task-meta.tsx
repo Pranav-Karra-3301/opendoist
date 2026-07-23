@@ -1,4 +1,4 @@
-import { dateInTz, timeInTz } from '@opendoist/core'
+import { dateInTz, timeInTz } from '@opentask/core'
 import { CalendarDays, Clock, Flag, Repeat, Tag } from 'lucide-react'
 import { useLabels } from '@/api/hooks/labels'
 import { useProjects } from '@/api/hooks/projects'
@@ -45,9 +45,9 @@ export function contextualDueChip(
   return { label: timeOnly, tone: chip.tone }
 }
 
-/** `berry_red` → `var(--od-palette-berry-red)`; unknown/blank falls back to grey. */
+/** `berry_red` → `var(--ot-palette-berry-red)`; unknown/blank falls back to grey. */
 function paletteVar(color: string): string {
-  return color === '' ? 'var(--od-palette-grey)' : `var(--od-palette-${color.replace(/_/g, '-')})`
+  return color === '' ? 'var(--ot-palette-grey)' : `var(--ot-palette-${color.replace(/_/g, '-')})`
 }
 
 function durationLabel(minutes: number): string {
@@ -97,7 +97,7 @@ export function TaskMeta({ task, showProject, hideDueChipWhen }: TaskMetaProps) 
         </span>
       )}
       {task.deadline_date !== null && (
-        <span className="flex items-center gap-1" style={{ color: 'var(--od-date-overdue)' }}>
+        <span className="flex items-center gap-1" style={{ color: 'var(--ot-date-overdue)' }}>
           <Flag size={16} strokeWidth={2} />
           {
             formatDueChip({ date: task.deadline_date, time: task.deadline_time ?? null }, today)
@@ -119,9 +119,9 @@ export function TaskMeta({ task, showProject, hideDueChipWhen }: TaskMetaProps) 
           // mint, yellow, grey) fall under the WCAG AA 4.5:1 floor. Mixing in 35% of the
           // theme's primary text color deepens them in light and lifts them in dark, so
           // every palette clears AA on all scan surfaces (worst light case: grey 4.53:1
-          // on --od-hover). Phase-10 a11y integration fix.
+          // on --ot-hover). Phase-10 a11y integration fix.
           style={{
-            color: `color-mix(in srgb, ${paletteVar(labels?.find((l) => l.name === name)?.color ?? '')} 65%, var(--od-text-primary))`,
+            color: `color-mix(in srgb, ${paletteVar(labels?.find((l) => l.name === name)?.color ?? '')} 65%, var(--ot-text-primary))`,
           }}
         >
           <Tag size={12} strokeWidth={2} />

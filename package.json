@@ -1,5 +1,5 @@
 {
-  "name": "opendoist-monorepo",
+  "name": "opentask-monorepo",
   "private": true,
   "packageManager": "pnpm@10.34.5",
   "engines": {
@@ -14,7 +14,7 @@
     "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "changeset": "changeset",
     "icons": "node scripts/generate-icons.mjs",
-    "seed": "pnpm --filter @opendoist/server seed",
+    "seed": "pnpm --filter @opentask/server seed",
     "screenshots": "node scripts/capture-screenshots.mjs",
     "check:bundle": "node scripts/check-bundle.mjs",
     "smoke:docker": "bash scripts/smoke-docker.sh"

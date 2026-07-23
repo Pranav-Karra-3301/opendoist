@@ -66,14 +66,14 @@ export function AutostartToggle() {
   return (
     <SettingRow
       label="Launch at login"
-      description="Start OpenDoist automatically when you sign in to your Mac."
+      description="Start OpenTask automatically when you sign in to your Mac."
       control={
         <div className="flex flex-col items-end gap-1">
           <Switch
             checked={state === 'on'}
             onCheckedChange={handleChange}
             disabled={state === 'loading' || pending}
-            aria-label="Launch OpenDoist at login"
+            aria-label="Launch OpenTask at login"
           />
           {error !== null && (
             <span className="max-w-[15rem] text-right text-caption text-danger">{error}</span>
@@ -156,7 +156,7 @@ export function DesktopSettings() {
   return (
     <SettingsSection
       title="Desktop app"
-      description="Options for the OpenDoist macOS app. They have no effect in the browser."
+      description="Options for the OpenTask macOS app. They have no effect in the browser."
     >
       <AutostartToggle />
       <NotificationsSetting />

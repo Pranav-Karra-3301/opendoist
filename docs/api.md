@@ -1,6 +1,6 @@
 # API
 
-OpenDoist ships a full REST API under `/api/v1` — the same API the web app and the
+OpenTask ships a full REST API under `/api/v1` — the same API the web app and the
 [CLI](cli.md) use, so anything the app can do, a script can do too.
 
 This page is a **quick orientation**, not the full reference. The complete,
@@ -33,11 +33,11 @@ authenticate:
 - **API token** — for scripts and the CLI. Send it as a bearer token:
 
   ```
-  Authorization: Bearer od_…
+  Authorization: Bearer ot_…
   ```
 
-  Create tokens in **Settings → Integrations**. Every OpenDoist token starts with
-  the `od_` prefix.
+  Create tokens in **Settings → Integrations**. Every OpenTask token starts with
+  the `ot_` prefix.
 
 **Scopes.** A token is either **`read`** or **`read_write`**:
 
@@ -64,7 +64,7 @@ edits, completes, or deletes.
 - **Errors** — non-2xx responses are [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457)
   problem documents (`Content-Type: application/problem+json`) with `type`,
   `title`, `status`, and an optional `detail`.
-- **Priority is `1 = highest`.** OpenDoist stores `1` = p1 (highest) through `4` =
+- **Priority is `1 = highest`.** OpenTask stores `1` = p1 (highest) through `4` =
   p4 (default) — the **opposite** of Todoist's API, where `4` is urgent. Keep this
   in mind whenever you read or write a `priority` field. (The Todoist
   [importer](import-todoist.md) converts this for you automatically.)
@@ -75,8 +75,8 @@ The fastest way to create a task is the Quick Add endpoint, which parses the sam
 one-line grammar as the app and CLI:
 
 ```sh
-curl -X POST "$OPENDOIST_URL/api/v1/tasks/quick" \
-  -H "Authorization: Bearer od_…" \
+curl -X POST "$OPENTASK_URL/api/v1/tasks/quick" \
+  -H "Authorization: Bearer ot_…" \
   -H "Content-Type: application/json" \
   -d '{"text": "Pay rent tomorrow 9am p1 #Home"}'
 ```
@@ -105,7 +105,7 @@ Your tasks are also published as a read-only iCalendar feed:
 ```
 
 Subscribe to it from any calendar app (Apple Calendar, Google Calendar, Outlook,
-…). This feed uses its **own dedicated feed token — not an `od_` API token** —
+…). This feed uses its **own dedicated feed token — not an `ot_` API token** —
 which you create and **rotate** in **Settings → Integrations**. Rotating the
 token invalidates the old URL immediately.
 

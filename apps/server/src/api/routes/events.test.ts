@@ -211,7 +211,7 @@ describe('events route (SSE)', () => {
   }
 
   it('never delivers another user’s live events (cross-tenant isolation)', async () => {
-    const t = await createTestApp({ env: { OPENDOIST_ALLOW_REGISTRATION: 'true' } })
+    const t = await createTestApp({ env: { OPENTASK_ALLOW_REGISTRATION: 'true' } })
     try {
       const cookieB = await signupSecondUser(t)
 
@@ -241,7 +241,7 @@ describe('events route (SSE)', () => {
   })
 
   it('never replays another user’s buffered events on reconnect', async () => {
-    const t = await createTestApp({ env: { OPENDOIST_ALLOW_REGISTRATION: 'true' } })
+    const t = await createTestApp({ env: { OPENTASK_ALLOW_REGISTRATION: 'true' } })
     try {
       const cookieB = await signupSecondUser(t)
 

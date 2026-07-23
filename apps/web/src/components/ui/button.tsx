@@ -8,7 +8,7 @@ import type * as React from 'react'
 import { cn } from '@/lib/utils'
 
 export const buttonVariants = cva(
-  'inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-sm font-medium text-copy transition-colors duration-300 ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--od-focus-ring)] disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0',
+  'inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-sm font-medium text-copy transition-colors duration-300 ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ot-focus-ring)] disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -17,7 +17,7 @@ export const buttonVariants = cva(
         outline:
           'border border-input-border bg-surface-raised text-text-primary hover:bg-hover disabled:opacity-60',
         secondary:
-          'bg-[var(--od-btn-secondary-bg)] text-text-primary hover:bg-[var(--od-btn-secondary-bg-hover)] disabled:opacity-60',
+          'bg-[var(--ot-btn-secondary-bg)] text-text-primary hover:bg-[var(--ot-btn-secondary-bg-hover)] disabled:opacity-60',
         ghost: 'text-text-secondary hover:bg-hover hover:text-text-primary disabled:opacity-60',
         link: 'text-accent underline-offset-4 hover:underline disabled:opacity-60',
       },

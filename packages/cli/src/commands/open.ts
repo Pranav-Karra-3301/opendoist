@@ -69,7 +69,7 @@ export function registerOpenCommand(program: Command): void {
   program
     .command('open')
     .argument('[target]', 'inbox | today | upcoming | a task id or text (default: app home)')
-    .description('open OpenDoist in your browser (deep-link to a view or task)')
+    .description('open OpenTask in your browser (deep-link to a view or task)')
     .action(
       runAction(
         async (target: string | undefined, _options: Record<string, unknown>, command: Command) => {

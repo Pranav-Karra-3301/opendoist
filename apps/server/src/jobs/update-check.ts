@@ -19,11 +19,11 @@ export interface UpdateState {
   checkedAt: string
 }
 
-/** GitHub releases API for the published OpenDoist repo (dossier §4.5). */
+/** GitHub releases API for the published OpenTask repo (dossier §4.5). */
 const RELEASES_LATEST_URL =
-  'https://api.github.com/repos/pranav-karra-3301/opendoist/releases/latest'
+  'https://api.github.com/repos/pranav-karra-3301/opentask/releases/latest'
 /** Fallback when a release has no `html_url` (should not happen for real releases). */
-const RELEASES_PAGE_URL = 'https://github.com/pranav-karra-3301/opendoist/releases'
+const RELEASES_PAGE_URL = 'https://github.com/pranav-karra-3301/opentask/releases'
 
 /** Module state: most recent successful check. `checkForUpdate` writes `stateRef.current`. */
 const stateRef: { current: UpdateState | null } = { current: null }
@@ -59,7 +59,7 @@ export async function checkForUpdate(
     const res = await doFetch(RELEASES_LATEST_URL, {
       headers: {
         Accept: 'application/vnd.github+json',
-        'User-Agent': `opendoist/${currentVersion}`,
+        'User-Agent': `opentask/${currentVersion}`,
       },
     })
     if (!res.ok) {

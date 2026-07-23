@@ -8,7 +8,7 @@
  * parse the FULL ProductivityDto (mirrors apps/server/src/productivity/types.ts, frozen
  * by Task A) so whichever consumer mounts first leaves a complete cache entry.
  */
-import { isoWeekday } from '@opendoist/core'
+import { isoWeekday } from '@opentask/core'
 import { useQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { z } from 'zod'
@@ -159,7 +159,7 @@ function BarChart({
           x2={plotW}
           y1={baseline}
           y2={baseline}
-          stroke="var(--od-border)"
+          stroke="var(--ot-border)"
           strokeWidth={1}
         />
         {/* goal line + label */}
@@ -168,7 +168,7 @@ function BarChart({
           x2={plotW}
           y1={goalY}
           y2={goalY}
-          stroke="var(--od-text-tertiary)"
+          stroke="var(--ot-text-tertiary)"
           strokeWidth={1}
           strokeDasharray="4 3"
         />
@@ -177,7 +177,7 @@ function BarChart({
           y={Math.max(goalY - 4, 10)}
           textAnchor="end"
           fontSize={11}
-          fill="var(--od-text-tertiary)"
+          fill="var(--ot-text-tertiary)"
         >
           {goalLabel}
         </text>
@@ -195,7 +195,7 @@ function BarChart({
                   width={col.w + GAP}
                   height={PLOT_H}
                   rx={3}
-                  fill="var(--od-accent-soft)"
+                  fill="var(--ot-accent-soft)"
                 />
               )}
               {/* full-height hover target so zero-completion days still show a tooltip */}
@@ -209,7 +209,7 @@ function BarChart({
                   width={col.w}
                   height={Math.max(baseline - top, 2)}
                   rx={3}
-                  fill="var(--od-accent)"
+                  fill="var(--ot-accent)"
                   opacity={bar.muted ? 0.4 : 1}
                 >
                   <title>{bar.tooltip}</title>
@@ -221,7 +221,7 @@ function BarChart({
                 textAnchor="middle"
                 fontSize={11}
                 fontWeight={bar.highlight ? 600 : 400}
-                fill={bar.highlight ? 'var(--od-accent)' : 'var(--od-text-tertiary)'}
+                fill={bar.highlight ? 'var(--ot-accent)' : 'var(--ot-text-tertiary)'}
               >
                 {bar.label}
               </text>
@@ -270,7 +270,7 @@ function KarmaSparkline({ points, ariaLabel }: { points: number[]; ariaLabel: st
         <polyline
           points={coords}
           fill="none"
-          stroke="var(--od-accent)"
+          stroke="var(--ot-accent)"
           strokeWidth={2}
           strokeLinejoin="round"
           strokeLinecap="round"

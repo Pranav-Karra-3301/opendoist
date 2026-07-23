@@ -4,7 +4,7 @@ import {
   parseRecurrenceText,
   type RecurrenceSpec,
   resolveNaturalDate,
-} from '@opendoist/core'
+} from '@opentask/core'
 import {
   and,
   desc,

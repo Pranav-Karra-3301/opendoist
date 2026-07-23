@@ -1,6 +1,6 @@
 name: Desktop Release
 
-# Builds, ad-hoc-signs, and publishes the OpenDoist macOS app (Tauri 2) to a GitHub Release,
+# Builds, ad-hoc-signs, and publishes the OpenTask macOS app (Tauri 2) to a GitHub Release,
 # together with the minisign-signed updater artifacts (latest.json + *.app.tar.gz.sig) that the
 # in-app updater consumes.
 #
@@ -66,27 +66,27 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Minisign UPDATER key (not Apple code signing). Set locally with
-          #   gh secret set TAURI_SIGNING_PRIVATE_KEY < ~/.tauri/opendoist_updater.key
-          #   gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD < ~/.tauri/opendoist_updater.password.txt
+          #   gh secret set TAURI_SIGNING_PRIVATE_KEY < ~/.tauri/opentask_updater.key
+          #   gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD < ~/.tauri/opentask_updater.password.txt
           # The matching public key lives in apps/desktop/src-tauri/tauri.conf.json.
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: apps/desktop
-          # `tauri build` runs beforeBuildCommand (pnpm --filter @opendoist/web build) itself,
+          # `tauri build` runs beforeBuildCommand (pnpm --filter @opentask/web build) itself,
           # so the SPA + quickadd bundles are produced before the Rust shell is packaged.
           tagName: ${{ github.event.inputs.tag || github.ref_name }}
-          releaseName: 'OpenDoist Desktop v__VERSION__'
+          releaseName: 'OpenTask Desktop v__VERSION__'
           releaseBody: |
-            Native macOS build of OpenDoist — universal (Apple Silicon + Intel), ~5–10 MB.
+            Native macOS build of OpenTask — universal (Apple Silicon + Intel), ~5–10 MB.
 
             **Install**
-            1. Download the `.dmg` below and drag **OpenDoist** into Applications.
+            1. Download the `.dmg` below and drag **OpenTask** into Applications.
             2. First launch is blocked because the app is ad-hoc signed, not notarized by Apple.
-               Open **System Settings → Privacy & Security**, scroll to the OpenDoist notice,
+               Open **System Settings → Privacy & Security**, scroll to the OpenTask notice,
                click **Open Anyway**, and authenticate.
-               Fallback: `xattr -dr com.apple.quarantine /Applications/OpenDoist.app`
-            3. **Pair**: enter your instance URL (`https://…`) and an `od_` API token minted in
+               Fallback: `xattr -dr com.apple.quarantine /Applications/OpenTask.app`
+            3. **Pair**: enter your instance URL (`https://…`) and an `ot_` API token minted in
                your instance's *Settings → Integrations*.
 
             Updates after this install are automatic via the in-app updater.
