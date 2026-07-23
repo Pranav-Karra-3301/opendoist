@@ -52,8 +52,25 @@ export function accelFromChord(e: ChordKeys): string | null {
   return [...mods, key].join('+')
 }
 
-/** Display form for the recorder button — macOS symbols (this surface is mac-only). */
-export function prettyAccel(accel: string): string {
+/**
+ * Display form for the recorder button: macOS gets the symbol glyphs (⌘⇧Space);
+ * Windows/Linux get spelled-out `Ctrl+Shift+Space` (CmdOrCtrl resolves to Ctrl there).
+ */
+export function prettyAccel(accel: string, mac: boolean): string {
+  if (!mac) {
+    const word: Record<string, string> = {
+      CmdOrCtrl: 'Ctrl',
+      CommandOrControl: 'Ctrl',
+      Cmd: 'Ctrl',
+      Super: 'Super',
+      Control: 'Ctrl',
+      Option: 'Alt',
+    }
+    return accel
+      .split('+')
+      .map((part) => word[part] ?? part)
+      .join('+')
+  }
   const symbol: Record<string, string> = {
     CmdOrCtrl: '⌘',
     CommandOrControl: '⌘',
@@ -69,4 +86,9 @@ export function prettyAccel(accel: string): string {
     .split('+')
     .map((part) => symbol[part] ?? part)
     .join('')
+}
+
+/** Is this webview running on macOS? Drives symbol-vs-word shortcut display. */
+export function isMacPlatform(): boolean {
+  return typeof navigator !== 'undefined' && navigator.platform.toUpperCase().includes('MAC')
 }

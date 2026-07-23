@@ -26,6 +26,14 @@ function followSystemTheme(): void {
 
 followSystemTheme()
 
+// Platform stamp for popover CSS: Linux gets a solid card (transparency needs a compositor
+// and looks like a black slab without one); macOS/Windows keep the translucent treatment.
+const platform = navigator.platform.toUpperCase()
+document.documentElement.setAttribute(
+  'data-os',
+  platform.includes('MAC') ? 'mac' : platform.includes('WIN') ? 'windows' : 'linux',
+)
+
 const container = document.getElementById('root')
 if (!container) throw new Error('missing #root element')
 

@@ -36,9 +36,15 @@ describe('accelFromChord', () => {
 })
 
 describe('prettyAccel', () => {
-  test('renders macOS symbols', () => {
-    expect(prettyAccel('CmdOrCtrl+Shift+Space')).toBe('⌘⇧Space')
-    expect(prettyAccel('Ctrl+Alt+7')).toBe('⌃⌥7')
-    expect(prettyAccel('Alt+F19')).toBe('⌥F19')
+  test('renders macOS symbols on mac', () => {
+    expect(prettyAccel('CmdOrCtrl+Shift+Space', true)).toBe('⌘⇧Space')
+    expect(prettyAccel('Ctrl+Alt+7', true)).toBe('⌃⌥7')
+    expect(prettyAccel('Alt+F19', true)).toBe('⌥F19')
+  })
+
+  test('spells out modifiers on Windows/Linux, resolving CmdOrCtrl to Ctrl', () => {
+    expect(prettyAccel('CmdOrCtrl+Shift+Space', false)).toBe('Ctrl+Shift+Space')
+    expect(prettyAccel('Ctrl+Alt+7', false)).toBe('Ctrl+Alt+7')
+    expect(prettyAccel('Alt+F19', false)).toBe('Alt+F19')
   })
 })

@@ -1,16 +1,20 @@
 name: Desktop Release
 
-# Builds, ad-hoc-signs, and publishes the OpenTask macOS app (Tauri 2) to a GitHub Release,
-# together with the minisign-signed updater artifacts (latest.json + *.app.tar.gz.sig) that the
-# in-app updater consumes.
+# Builds, signs (minisign updater artifacts), and publishes the OpenTask desktop app for
+# macOS (universal .app/.dmg), Windows (NSIS installer), and Linux (AppImage + .deb) to a
+# single GitHub Release, then refreshes the fixed `desktop-latest` updater feed the in-app
+# updater polls (latest.json carries darwin-universal, windows-x86_64 and linux-x86_64 —
+# tauri-action merges the platform entries as each matrix job uploads).
 #
 # Deliberately SEPARATE from the server pipelines: docker.yml ships the container image and
-# prepare-release.yml cuts the `vX.Y.Z` server releases (docker-compose files). This one only
-# ever fires on `desktop-v*` tags, so the two streams never collide.
+# prepare-release.yml cuts the `vX.Y.Z` server releases. This one only ever fires on
+# `desktop-v*` tags, so the two streams never collide — and desktop releases NEVER claim
+# GitHub's "Latest" pointer (that belongs to the server releases).
 #
-# Distribution model: ad-hoc signed (bundle.macOS.signingIdentity "-"), NOT notarized. That
-# needs NO Apple Developer account and NO Apple secrets — the only secrets are the Tauri
-# minisign updater key and its password (separate from Apple code signing).
+# Distribution model: macOS is ad-hoc signed (no Apple account; Gatekeeper needs one
+# "Open Anyway"), Windows is unsigned (SmartScreen needs one "Run anyway"), Linux AppImage
+# is the updater-capable format (.deb is a convenience install without auto-update). The
+# only secrets are the Tauri minisign updater key and its password.
 
 on:
   push:
@@ -19,30 +23,40 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag to build & publish (e.g. desktop-v0.1.0). Created at the current commit if it does not already exist.'
+        description: 'Release tag to build & publish (e.g. desktop-v0.3.0). Created at the current commit if it does not already exist.'
         required: true
 
 permissions:
-  contents: write # create the Release and upload the .dmg / .app.tar.gz / .sig / latest.json
+  contents: write # create the Release and upload the installers / updater artifacts
 
 concurrency:
   group: desktop-release-${{ github.event.inputs.tag || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
-  release:
-    # A single Apple-Silicon runner builds one UNIVERSAL (arm64 + x86_64) bundle. tauri-action
-    # then writes ONE latest.json whose `darwin-aarch64` and `darwin-x86_64` keys both point at
-    # the universal artifact (verified in tauri-action's upload-version-json.ts) — so the
-    # updater's single `/releases/latest/` endpoint serves both Mac architectures with no
-    # cross-job latest.json race.
-    runs-on: macos-14
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # One Apple-Silicon runner builds one UNIVERSAL (arm64 + x86_64) mac bundle;
+          # latest.json's darwin-aarch64/darwin-x86_64 keys both point at it.
+          - os: macos-14
+            args: --target universal-apple-darwin --bundles app,dmg
+            rust-targets: aarch64-apple-darwin,x86_64-apple-darwin
+          - os: windows-latest
+            args: --bundles nsis
+            rust-targets: ''
+          - os: ubuntu-22.04
+            args: --bundles appimage,deb
+            rust-targets: ''
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
-      # pnpm must be set up before setup-node so `cache: pnpm` can find it. Version comes from
-      # the root package.json `packageManager` pin (same as ci.yml / prepare-release.yml).
+      # pnpm must be set up before setup-node so `cache: pnpm` can find it. Version comes
+      # from the root package.json `packageManager` pin (same as ci.yml).
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
@@ -52,53 +66,61 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-apple-darwin,x86_64-apple-darwin
+          targets: ${{ matrix.rust-targets }}
 
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: apps/desktop/src-tauri
 
+      - name: Install Linux system dependencies
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build, ad-hoc sign, minisign & upload
+      - name: Build, sign updater artifacts & upload to the draft release
         uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Minisign UPDATER key (not Apple code signing). Set locally with
-          #   gh secret set TAURI_SIGNING_PRIVATE_KEY < ~/.tauri/opentask_updater.key
-          #   gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD < ~/.tauri/opentask_updater.password.txt
-          # The matching public key lives in apps/desktop/src-tauri/tauri.conf.json.
+          # Minisign UPDATER key (not OS code signing) — the matching public key lives in
+          # apps/desktop/src-tauri/tauri.conf.json.
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: apps/desktop
-          # `tauri build` runs beforeBuildCommand (pnpm --filter @opentask/web build) itself,
-          # so the SPA + quickadd bundles are produced before the Rust shell is packaged.
+          # `tauri build` runs beforeBuildCommand (pnpm --filter @opentask/web build) itself.
           tagName: ${{ github.event.inputs.tag || github.ref_name }}
           releaseName: 'OpenTask Desktop v__VERSION__'
           releaseBody: |
-            Native macOS build of OpenTask — universal (Apple Silicon + Intel), ~5–10 MB.
+            OpenTask for the desktop — macOS, Windows, and Linux.
 
             **Install**
-            1. Download the `.dmg` below and drag **OpenTask** into Applications.
-            2. First launch is blocked because the app is ad-hoc signed, not notarized by Apple.
-               Open **System Settings → Privacy & Security**, scroll to the OpenTask notice,
-               click **Open Anyway**, and authenticate.
-               Fallback: `xattr -dr com.apple.quarantine /Applications/OpenTask.app`
-            3. **Pair**: enter your instance URL (`https://…`) and an `ot_` API token minted in
-               your instance's *Settings → Integrations*.
+            - **macOS**: download the `.dmg`, drag **OpenTask** into Applications. First launch
+              is blocked (ad-hoc signed, not notarized): System Settings → Privacy & Security →
+              **Open Anyway**. Fallback: `xattr -dr com.apple.quarantine /Applications/OpenTask.app`
+            - **Windows**: run the `*-setup.exe`. SmartScreen will warn (unsigned build):
+              **More info → Run anyway**.
+            - **Linux**: `chmod +x` the `.AppImage` and run it (auto-updates), or install the
+              `.deb` (no auto-update). Wayland note: the global Quick Add shortcut needs X11/XWayland;
+              on pure Wayland use the tray menu.
 
-            Updates after this install are automatic via the in-app updater.
-            Full docs: `apps/desktop/README.md`.
-          # Create as a draft, upload every artifact, THEN publish (next step) so the updater's
-          # `/releases/latest/` endpoint never resolves to a half-uploaded release.
+            **Pair**: enter your instance URL (`https://…`) and an `ot_` API token minted in
+            your instance's *Settings → Integrations*.
+
+            Updates after install are automatic via the in-app updater (macOS + Windows + AppImage).
+          # Create as a draft; every matrix job uploads its artifacts + merges its platform
+          # into latest.json; the publish job below flips it live once ALL platforms landed.
           releaseDraft: true
           prerelease: false
-          # uploadUpdaterJson / uploadUpdaterSignatures default to true — latest.json and the
-          # *.sig files are generated and attached automatically.
-          args: --target universal-apple-darwin
+          args: ${{ matrix.args }}
 
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       - name: Publish the release (never as "Latest" — that pointer belongs to server vX.Y.Z releases)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

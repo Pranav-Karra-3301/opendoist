@@ -5,7 +5,9 @@
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+use tauri::tray::TrayIconBuilder;
+#[cfg(not(target_os = "linux"))]
+use tauri::tray::{MouseButton, MouseButtonState, TrayIconEvent};
 use tauri::{AppHandle, Emitter, Manager};
 
 /// Whether the LAST summon happened while another app was frontmost. Dismissing the
@@ -32,6 +34,9 @@ fn dismiss_quickadd(app: AppHandle) {
     if let Some(w) = app.get_webview_window("quickadd") {
         let _ = w.hide();
     }
+    // `AppHandle::hide` is macOS-only (NSApp hide → previous app regains focus). On
+    // Windows/Linux the window manager hands focus back on its own when the popover hides.
+    #[cfg(target_os = "macos")]
     if SUMMONED_FROM_OUTSIDE.load(Ordering::Relaxed) {
         let _ = app.hide();
     }
@@ -103,19 +108,51 @@ fn toggle_quickadd(app: AppHandle) {
     }
 }
 
-/// Menu-bar icon: template (monochrome) glyph, left click toggles the Quick Add popover.
-/// Every tray event is forwarded to the positioner so `Position::TrayCenter` can anchor
-/// the popover under the icon.
+/// Tray icon. macOS/Windows: template/colored glyph, left click toggles the Quick Add
+/// popover (every tray event is forwarded to the positioner so `Position::TrayCenter`
+/// can anchor it under the icon). Linux: appindicator trays deliver no reliable click
+/// events, so the tray carries a menu (Quick Add / Open OpenTask / Quit) instead.
 fn build_tray(app: &AppHandle) -> tauri::Result<()> {
     let icon = app
         .default_window_icon()
         .cloned()
         .expect("bundle.icon must list at least one PNG");
-    TrayIconBuilder::with_id("main")
+    let builder = TrayIconBuilder::with_id("main")
         .icon(icon)
         .icon_as_template(true)
+        .tooltip("OpenTask");
+
+    #[cfg(target_os = "linux")]
+    let builder = {
+        use tauri::menu::{MenuBuilder, MenuItemBuilder};
+        let quick_add = MenuItemBuilder::with_id("quickadd", "Quick Add").build(app)?;
+        let open = MenuItemBuilder::with_id("open", "Open OpenTask").build(app)?;
+        let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
+        let menu = MenuBuilder::new(app)
+            .item(&quick_add)
+            .item(&open)
+            .separator()
+            .item(&quit)
+            .build()?;
+        builder
+            .menu(&menu)
+            .show_menu_on_left_click(true)
+            .on_menu_event(|app, event| match event.id().as_ref() {
+                "quickadd" => toggle_quickadd_centered(app),
+                "open" => {
+                    if let Some(w) = app.get_webview_window("main") {
+                        let _ = w.show();
+                        let _ = w.set_focus();
+                    }
+                }
+                "quit" => app.exit(0),
+                _ => {}
+            })
+    };
+
+    #[cfg(not(target_os = "linux"))]
+    let builder = builder
         .show_menu_on_left_click(false)
-        .tooltip("OpenTask")
         .on_tray_icon_event(|tray, event| {
             tauri_plugin_positioner::on_tray_event(tray.app_handle(), &event);
             if let TrayIconEvent::Click {
@@ -126,8 +163,9 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
             {
                 toggle_quickadd(tray.app_handle().clone());
             }
-        })
-        .build(app)?;
+        });
+
+    builder.build(app)?;
     Ok(())
 }
 

@@ -1,11 +1,11 @@
-# OpenTask for macOS
+# OpenTask Desktop
 
-A fast, light **native macOS app** for your self-hosted [OpenTask](https://github.com/Pranav-Karra-3301/opentask) instance, built with [Tauri 2](https://v2.tauri.app/) (system WebKit + a Rust core — **~5–10 MB download, ~30–50 MB RAM**, versus ~150 MB for an Electron equivalent).
+A fast, light **native desktop app** (macOS · Windows · Linux) for your self-hosted [OpenTask](https://github.com/Pranav-Karra-3301/opentask) instance, built with [Tauri 2](https://v2.tauri.app/) (system WebKit + a Rust core — **~5–10 MB download, ~30–50 MB RAM**, versus ~150 MB for an Electron equivalent).
 
 It is the same React app you use in the browser, wrapped in a native shell that adds:
 
-- **Menu-bar Quick Add** — a frameless popover summoned from anywhere with `⌘⇧Space` (or a click on the tray icon) to capture a task in natural language without leaving what you're doing.
-- **Native reminder notifications** — a background watcher polls your instance and fires real macOS notifications when reminders come due.
+- **Tray Quick Add** — a frameless popover summoned from anywhere with a configurable shortcut (`⌘⇧Space` on macOS, `Ctrl+Shift+Space` on Windows/Linux) or the tray icon, to capture a task in natural language without leaving what you're doing. On Linux the tray shows a small menu (appindicator trays have no click events), and pure-Wayland sessions need XWayland for the global shortcut.
+- **Native reminder notifications** — a background watcher polls your instance and fires real native notifications when reminders come due.
 - **Launch at login** — an optional toggle so the tray is always there.
 - **Automatic updates** — a minisign-verified in-app updater, so you never re-download manually.
 

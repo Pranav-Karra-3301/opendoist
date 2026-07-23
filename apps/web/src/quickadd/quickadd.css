@@ -53,6 +53,14 @@
   transform: translateY(8px);
 }
 
+/* Linux: window transparency requires a compositor (and often shows as a black slab even
+   with one, per-WM) — render the card fully opaque there. */
+:root[data-os="linux"] .qa-card {
+  background: var(--ot-surface-raised);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
 .qa-header {
   flex: none;
   font-size: 11px;

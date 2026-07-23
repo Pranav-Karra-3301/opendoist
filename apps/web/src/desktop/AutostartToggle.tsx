@@ -19,7 +19,7 @@ import { isTauri } from '@/api/transport'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { SettingRow, SettingsSection } from '@/features/settings/ui'
-import { accelFromChord, DEFAULT_QUICKADD_SHORTCUT, prettyAccel } from './shortcut'
+import { accelFromChord, DEFAULT_QUICKADD_SHORTCUT, isMacPlatform, prettyAccel } from './shortcut'
 
 type ToggleState = 'loading' | 'on' | 'off'
 
@@ -67,7 +67,7 @@ export function AutostartToggle() {
   return (
     <SettingRow
       label="Launch at login"
-      description="Start OpenTask automatically when you sign in to your Mac."
+      description="Start OpenTask automatically when you sign in."
       control={
         <div className="flex flex-col items-end gap-1">
           <Switch
@@ -126,7 +126,7 @@ export function NotificationsSetting() {
   return (
     <SettingRow
       label="Reminder notifications"
-      description="Show a native macOS notification when a reminder is due."
+      description="Show a native notification when a reminder is due."
       control={
         <div className="flex flex-col items-end gap-1">
           {granted === true ? (
@@ -157,7 +157,7 @@ export function DesktopSettings() {
   return (
     <SettingsSection
       title="Desktop app"
-      description="Options for the OpenTask macOS app. They have no effect in the browser."
+      description="Options for the OpenTask desktop app. They have no effect in the browser."
     >
       <AutostartToggle />
       <NotificationsSetting />
@@ -239,7 +239,11 @@ export function QuickAddShortcutSetting() {
               aria-label={recording ? 'Recording — press the new shortcut' : 'Change shortcut'}
               className={recording ? 'ring-2 ring-[var(--ot-focus-ring)]' : undefined}
             >
-              {recording ? 'Press keys…' : accel !== null ? prettyAccel(accel) : '…'}
+              {recording
+                ? 'Press keys…'
+                : accel !== null
+                  ? prettyAccel(accel, isMacPlatform())
+                  : '…'}
             </Button>
             {accel !== null && accel !== DEFAULT_QUICKADD_SHORTCUT && (
               <Button
