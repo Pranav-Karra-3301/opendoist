@@ -1,12 +1,18 @@
-//! OpenTask desktop shell (Task A). Owns the tray icon, the global summon shortcut
-//! (Cmd+Shift+Space), the `toggle_quickadd` command shared by both, single-instance,
+//! OpenTask desktop shell (Task A). Owns the tray icon, the configurable global summon shortcut
+//! (default ⌘⇧Space, stored in settings.json), the `toggle_quickadd` command shared by both, single-instance,
 //! and plugin registration. The reminders watcher (`src/reminders.rs`, Task D) and the
 //! self-update loop (`src/updater.rs`, Task D/E) are spawned from `setup`.
 
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Manager};
-use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 use tauri_plugin_positioner::{Position, WindowExt};
+use tauri_plugin_store::StoreExt;
+
+/// Tauri-store key (shared `settings.json` beside the pairing) for the summon accelerator.
+const QUICKADD_SHORTCUT_KEY: &str = "quickadd-shortcut";
+/// Default summon combo (⌘⇧Space on macOS) — also what "Reset" in settings restores.
+const DEFAULT_QUICKADD_SHORTCUT: &str = "CmdOrCtrl+Shift+Space";
 
 /// Reminders watcher — polls the paired instance and fires native notifications for
 /// freshly-fired reminders (Task D, `src/reminders.rs`). Spawned in `setup` below.
@@ -18,7 +24,7 @@ mod reminders;
 mod updater;
 
 /// Show the Quick Add popover anchored under the tray icon, or hide it when visible.
-/// Invoked from the tray left-click, the global shortcut, and JS (`invoke('toggle_quickadd')`).
+/// Invoked from the tray left-click and JS; the global shortcut path uses the centered variant.
 #[tauri::command]
 fn toggle_quickadd(app: AppHandle) {
     let Some(w) = app.get_webview_window("quickadd") else {
@@ -70,15 +76,69 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
     Ok(())
 }
 
-/// Cmd+Shift+Space from anywhere toggles the Quick Add popover.
-fn register_summon_shortcut(app: &AppHandle) -> Result<(), tauri_plugin_global_shortcut::Error> {
-    let summon = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::Space);
+/// Show/hide the popover CENTERED on the current monitor — the global-shortcut path
+/// (Spotlight-style), deliberately different from the tray path's under-the-icon anchor.
+fn toggle_quickadd_centered(app: &AppHandle) {
+    let Some(w) = app.get_webview_window("quickadd") else {
+        return;
+    };
+    if w.is_visible().unwrap_or(false) {
+        let _ = w.hide();
+    } else {
+        let _ = w.center();
+        let _ = w.show();
+        let _ = w.set_focus();
+    }
+}
+
+/// The persisted summon accelerator, or the default when none was ever customized.
+fn stored_shortcut(app: &AppHandle) -> String {
+    app.store("settings.json")
+        .ok()
+        .and_then(|store| store.get(QUICKADD_SHORTCUT_KEY))
+        .and_then(|value| value.as_str().map(str::to_string))
+        .unwrap_or_else(|| DEFAULT_QUICKADD_SHORTCUT.to_string())
+}
+
+/// Parse + OS-register `accel` as the (centered) summon shortcut.
+fn register_summon(app: &AppHandle, accel: &str) -> Result<(), String> {
+    let shortcut: Shortcut = accel
+        .parse()
+        .map_err(|err| format!("invalid shortcut: {err}"))?;
     app.global_shortcut()
-        .on_shortcut(summon, |app, _shortcut, event| {
+        .on_shortcut(shortcut, |app, _shortcut, event| {
             if event.state() == ShortcutState::Pressed {
-                toggle_quickadd(app.clone());
+                toggle_quickadd_centered(app);
             }
         })
+        .map_err(|err| format!("could not register: {err}"))
+}
+
+/// Current summon accelerator — the settings recorder's initial value.
+#[tauri::command]
+fn get_quickadd_shortcut(app: AppHandle) -> String {
+    stored_shortcut(&app)
+}
+
+/// Re-bind the summon shortcut live, persisting only after the OS accepts it. On any
+/// failure the previous binding is restored, so the summon can never end up dead.
+#[tauri::command]
+fn set_quickadd_shortcut(app: AppHandle, accel: String) -> Result<String, String> {
+    let accel = accel.trim().to_string();
+    if accel.is_empty() {
+        return Err("shortcut is empty".into());
+    }
+    let previous = stored_shortcut(&app);
+    let _ = app.global_shortcut().unregister_all();
+    if let Err(err) = register_summon(&app, &accel) {
+        let _ = register_summon(&app, &previous);
+        return Err(err);
+    }
+    if let Ok(store) = app.store("settings.json") {
+        store.set(QUICKADD_SHORTCUT_KEY, serde_json::Value::String(accel.clone()));
+        let _ = store.save();
+    }
+    Ok(accel)
 }
 
 pub fn run() {
@@ -101,10 +161,20 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
-        .invoke_handler(tauri::generate_handler![toggle_quickadd])
+        .invoke_handler(tauri::generate_handler![
+            toggle_quickadd,
+            get_quickadd_shortcut,
+            set_quickadd_shortcut
+        ])
         .setup(|app| {
             build_tray(app.handle())?;
-            register_summon_shortcut(app.handle())?;
+            // Register the stored (or default) summon combo; a corrupt stored value must
+            // never kill the summon, so fall back to the default before giving up.
+            let stored = stored_shortcut(app.handle());
+            if register_summon(app.handle(), &stored).is_err() {
+                eprintln!("[opentask] stored shortcut {stored:?} rejected — using default");
+                let _ = register_summon(app.handle(), DEFAULT_QUICKADD_SHORTCUT);
+            }
             reminders::spawn(app.handle().clone());
             updater::spawn(app.handle().clone());
             Ok(())

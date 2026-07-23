@@ -14,11 +14,12 @@
  * request button here is the same call from the settings surface Task D does own, so a user
  * can always (re-)grant permission from Settings.
  */
-import { useEffect, useState } from 'react'
+import { type KeyboardEvent as ReactKeyboardEvent, useEffect, useState } from 'react'
 import { isTauri } from '@/api/transport'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { SettingRow, SettingsSection } from '@/features/settings/ui'
+import { accelFromChord, DEFAULT_QUICKADD_SHORTCUT, prettyAccel } from './shortcut'
 
 type ToggleState = 'loading' | 'on' | 'off'
 
@@ -160,6 +161,102 @@ export function DesktopSettings() {
     >
       <AutostartToggle />
       <NotificationsSetting />
+      <QuickAddShortcutSetting />
     </SettingsSection>
+  )
+}
+
+/**
+ * Global Quick Add summon shortcut recorder. The current combo lives in the Tauri store
+ * (`quickadd-shortcut`) and is registered by Rust at launch; `set_quickadd_shortcut`
+ * re-registers live (validating the combo with the OS) before persisting, so a bad combo
+ * can never brick the summon — Rust rolls back to the previous one on failure.
+ */
+export function QuickAddShortcutSetting() {
+  const [accel, setAccel] = useState<string | null>(null)
+  const [recording, setRecording] = useState(false)
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core')
+        const current = await invoke<string>('get_quickadd_shortcut')
+        if (!cancelled) setAccel(current)
+      } catch {
+        if (!cancelled) setAccel(DEFAULT_QUICKADD_SHORTCUT)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  async function apply(candidate: string) {
+    setPending(true)
+    setError(null)
+    try {
+      const { invoke } = await import('@tauri-apps/api/core')
+      const applied = await invoke<string>('set_quickadd_shortcut', { accel: candidate })
+      setAccel(applied)
+    } catch (err) {
+      setError(typeof err === 'string' ? err : "Couldn't register that shortcut.")
+    } finally {
+      setPending(false)
+    }
+  }
+
+  function handleKeyDown(event: ReactKeyboardEvent<HTMLButtonElement>) {
+    if (!recording) return
+    event.preventDefault()
+    event.stopPropagation()
+    if (event.code === 'Escape') {
+      setRecording(false)
+      return
+    }
+    const candidate = accelFromChord(event)
+    if (candidate === null) return // modifier-only or unsupported key — keep listening
+    setRecording(false)
+    void apply(candidate)
+  }
+
+  return (
+    <SettingRow
+      label="Quick Add shortcut"
+      description="Summon the Quick Add bar from anywhere — it pops up centered on your screen."
+      control={
+        <div className="flex flex-col items-end gap-1">
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={accel === null || pending}
+              onClick={() => setRecording(true)}
+              onKeyDown={handleKeyDown}
+              onBlur={() => setRecording(false)}
+              aria-label={recording ? 'Recording — press the new shortcut' : 'Change shortcut'}
+              className={recording ? 'ring-2 ring-[var(--ot-focus-ring)]' : undefined}
+            >
+              {recording ? 'Press keys…' : accel !== null ? prettyAccel(accel) : '…'}
+            </Button>
+            {accel !== null && accel !== DEFAULT_QUICKADD_SHORTCUT && (
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={pending}
+                onClick={() => void apply(DEFAULT_QUICKADD_SHORTCUT)}
+              >
+                Reset
+              </Button>
+            )}
+          </div>
+          {error !== null && (
+            <span className="max-w-[15rem] text-right text-caption text-danger">{error}</span>
+          )}
+        </div>
+      }
+    />
   )
 }
