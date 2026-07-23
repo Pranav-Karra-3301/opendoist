@@ -67,14 +67,21 @@ export function AppLayout() {
           aria-label="Toggle sidebar"
           title="Toggle sidebar · M"
           onClick={toggleSidebar}
-          className="absolute top-2.5 left-2 z-[var(--z-sidebar)] flex size-8 items-center justify-center rounded-sm bg-surface text-text-secondary shadow-menu outline-none transition-colors hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          className="absolute top-[calc(0.625rem+var(--ot-desktop-drag))] left-2 z-[var(--z-sidebar)] flex size-8 items-center justify-center rounded-sm bg-surface text-text-secondary shadow-menu outline-none transition-colors hover:bg-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
           <PanelLeft size={20} strokeWidth={1.75} aria-hidden="true" />
         </button>
       )}
       <div className="grid h-full grid-cols-[auto_1fr]">
         <Sidebar />
-        <div className="flex min-w-0 flex-col overflow-hidden">
+        <div className="relative flex min-w-0 flex-col overflow-hidden pt-[var(--ot-desktop-drag)]">
+          {/* Desktop: the padded band above the content is the window drag region (the
+              sidebar header is its own drag region). Renders as a 0-height no-op on web. */}
+          <div
+            aria-hidden="true"
+            data-tauri-drag-region
+            className="absolute inset-x-0 top-0 z-10 h-[var(--ot-desktop-drag)]"
+          />
           <main
             id="main"
             tabIndex={-1}

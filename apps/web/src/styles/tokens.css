@@ -70,6 +70,11 @@
 :root {
   color-scheme: light;
 
+  /* Desktop (Tauri macOS) overlay title bar: height of the traffic-light band both
+     columns pad down by (the band itself is the window drag region). 0 everywhere
+     except when main.tsx stamps data-desktop-chrome="mac". */
+  --ot-desktop-drag: 0px;
+
   /* ===== accent families (light + dark values); default = Kale =====
      Every [data-accent] block below redefines these; the mode blocks (:root vs
      [data-mode="dark"]/.system-dark) select which half drives the --ot-accent* + selection
@@ -465,6 +470,13 @@
   --z-popover: 100;
   --z-toast: 400;
   --z-tooltip: 1000; /* toast/tooltip values are Todoist's */
+}
+
+/* Tauri macOS shell (stamped pre-paint by initDesktopChrome): a 36px traffic-light band
+   above BOTH columns (lights are conf-positioned at x16/y12 = vertically centered in it);
+   the sidebar and content pad down by it and the band itself is the drag region. */
+:root[data-desktop-chrome="mac"] {
+  --ot-desktop-drag: 36px;
 }
 
 /* ---------- layout constants ---------- */

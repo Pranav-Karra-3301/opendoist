@@ -123,16 +123,26 @@ export function Sidebar() {
         !dragging && 'transition-[width] duration-300 ease-standard',
       )}
     >
+      {/* Desktop: the traffic-light band above the sidebar content is a window drag
+          region (0-height no-op on web). */}
+      <div
+        aria-hidden="true"
+        data-tauri-drag-region
+        className="absolute inset-x-0 top-0 z-10 h-[var(--ot-desktop-drag)]"
+      />
       <div
         inert={collapsed || undefined}
         style={{ width }}
-        className="flex h-full flex-col transition-transform duration-300 ease-standard group-data-[collapsed=true]/sidebar:-translate-x-full"
+        className="flex h-full flex-col pt-[var(--ot-desktop-drag)] transition-transform duration-300 ease-standard group-data-[collapsed=true]/sidebar:-translate-x-full"
       >
         {/* Former top-bar chrome, relocated here (Views & Chrome pass): account menu +
             notifications + productivity + shortcuts + collapse on the top row, then the
-            red Add task with the Ramble mic beside it, then Search. */}
-        <header className="flex flex-col gap-2 px-2 pt-2.5">
-          <div className="flex items-center gap-0.5">
+            red Add task with the Ramble mic beside it, then Search.
+            Desktop (Tauri macOS): the whole sidebar sits below the traffic-light band
+            (the aside pads down by --ot-desktop-drag); the header still doubles as a
+            window drag region. */}
+        <header data-tauri-drag-region className="flex flex-col gap-2 px-2 pt-2.5">
+          <div data-tauri-drag-region className="flex items-center gap-0.5">
             <UserMenu />
             <div className="flex-1" />
             <Link

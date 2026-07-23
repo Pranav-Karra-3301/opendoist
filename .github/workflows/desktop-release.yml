@@ -99,15 +99,32 @@ jobs:
           # *.sig files are generated and attached automatically.
           args: --target universal-apple-darwin
 
-      - name: Publish the release and mark it latest
+      - name: Publish the release (never as "Latest" — that pointer belongs to server vX.Y.Z releases)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # `--latest` makes `/releases/latest/download/latest.json` resolve here — the endpoint
-        # pinned in tauri.conf.json. (The server's `vX.Y.Z` releases are distributed via Docker,
-        # not this download URL; if a future server release also claims "Latest", revisit the
-        # updater endpoint — see apps/desktop/README.md → Releasing.)
         run: |
           gh release edit "${{ github.event.inputs.tag || github.ref_name }}" \
             --repo "${{ github.repository }}" \
             --draft=false \
-            --latest
+            --latest=false
+
+      - name: Refresh the desktop-latest updater feed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # The in-app updater polls the FIXED endpoint
+        #   /releases/download/desktop-latest/latest.json   (pinned in tauri.conf.json)
+        # so desktop updates never race the server releases over GitHub's per-repo "Latest"
+        # pointer. `desktop-latest` is a permanent prerelease that only carries the newest
+        # latest.json; its platform URLs point into the versioned desktop release's assets.
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          gh release download "$TAG" --repo "${{ github.repository }}" --pattern latest.json --output latest.json --clobber
+          if ! gh release view desktop-latest --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh release create desktop-latest \
+              --repo "${{ github.repository }}" \
+              --title "Desktop updater feed" \
+              --notes "Machine-consumed feed for the in-app updater. Install from the newest desktop-v* release instead." \
+              --prerelease \
+              --latest=false
+          fi
+          gh release upload desktop-latest latest.json --repo "${{ github.repository }}" --clobber

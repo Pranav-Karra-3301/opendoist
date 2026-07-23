@@ -20,6 +20,7 @@ import { AuthField, AuthShell } from '@/auth/auth-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { normalizeInstanceUrl, normalizeToken } from './session-store'
+import { DesktopDragStrip } from './window-chrome'
 
 /** API version prefix (mirrors the private `BASE` in api/client.ts). The instance URL is
  *  the user-supplied origin; the leaf paths come from the frozen `endpoints` map. */
@@ -116,6 +117,9 @@ export function PairingScreen({ onPaired }: PairingScreenProps) {
       title="Connect OpenTask"
       subtitle="Pair this app with your self-hosted instance to get started."
     >
+      {/* Overlay-title-bar drag strip: AppLayout is not mounted yet, so the pairing
+          screen carries its own (renders nothing outside the macOS Tauri shell). */}
+      <DesktopDragStrip />
       <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
         <AuthField id="pairing-url" label="Instance URL">
           <Input

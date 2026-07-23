@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "OpenTask",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "identifier": "com.opentask.desktop",
   "build": {
     "beforeDevCommand": "pnpm --filter @opentask/web dev",
@@ -19,7 +19,11 @@
         "height": 720,
         "minWidth": 720,
         "minHeight": 480,
-        "visible": true
+        "visible": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "trafficLightPosition": { "x": 16, "y": 12 },
+        "backgroundColor": "#fcfcf8"
       },
       {
         "label": "quickadd",
@@ -51,7 +55,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDhCODA3NzJEMkFDRDA4MkQKUldRdENNMHFMWGVBaThQa2F0Wkx6SHhhbnRHZGZQWUdlajVva3FTaVV3czJLQ0xzbUF2dDEwZUMK",
       "endpoints": [
-        "https://github.com/Pranav-Karra-3301/opentask/releases/latest/download/latest.json"
+        "https://github.com/Pranav-Karra-3301/opentask/releases/download/desktop-latest/latest.json"
       ]
     }
   }

@@ -20,6 +20,7 @@ import {
   type UserSettingsPatch,
 } from '@opentask/core'
 import { useEffect } from 'react'
+import { syncWindowBackground } from '@/desktop/window-chrome'
 import { useUserSettings } from '@/features/settings/useSettings'
 
 /** The nine legacy quick-toggle choices (user menu + palette) — a coarse control mapped onto the
@@ -69,6 +70,8 @@ export function applyAppearance(appearance: Appearance): void {
   } else {
     root.setAttribute('data-mode', appearance)
   }
+  // Desktop shell: keep the native NSWindow background on the resolved theme (no-op on web).
+  syncWindowBackground()
 }
 
 /** Apply the accent palette to <html> (`data-accent`) and persist it for the pre-hydration script. */
