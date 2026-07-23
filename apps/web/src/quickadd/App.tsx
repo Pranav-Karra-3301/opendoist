@@ -12,7 +12,13 @@
  * #projects/@labels), so the popover submits exactly what the user typed and never runs the
  * structured-submit path.
  */
-import { DEFAULT_PARSE_CONTEXT_SETTINGS, type ParseContext, parseQuickAdd } from '@opentask/core'
+import {
+  DEFAULT_PARSE_CONTEXT_SETTINGS,
+  DEFAULT_USER_SETTINGS,
+  type ParseContext,
+  parseQuickAdd,
+  UserSettingsSchema,
+} from '@opentask/core'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { z } from 'zod'
 import { ApiError, api, apiAllPages, endpoints } from '@/api/client'
@@ -27,6 +33,7 @@ import {
 } from '@/api/schemas'
 import { isTauri } from '@/api/transport'
 import type { AutocompleteResources } from '@/components/quick-add/autocomplete'
+import { ChipRowBase } from '@/components/quick-add/chip-row'
 import { QuickAddInput, type QuickAddInputHandle } from '@/components/quick-add/quick-add-input'
 import './quickadd.css'
 
@@ -73,6 +80,7 @@ export function App({ initialText = '' }: { initialText?: string } = {}) {
   const [projects, setProjects] = useState<Project[]>([])
   const [sections, setSections] = useState<Section[]>([])
   const [labels, setLabels] = useState<Label[]>([])
+  const [quickAddPrefs, setQuickAddPrefs] = useState(DEFAULT_USER_SETTINGS.quickAdd)
 
   const inputRef = useRef<QuickAddInputHandle>(null)
   const confirmTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -131,6 +139,14 @@ export function App({ initialText = '' }: { initialText?: string } = {}) {
     } catch {
       // Offline or transient failure: leave the lists empty. Highlighting + raw submit still
       // work; the sigil menu simply has nothing to match until the next successful refresh.
+    }
+    try {
+      // Chip prefs ride the same refresh so the popover's chip row mirrors the user's
+      // configured chips; on failure the defaults stay (the row still renders fully).
+      const settings = await api(endpoints.userSettings, { schema: UserSettingsSchema })
+      setQuickAddPrefs(settings.quickAdd)
+    } catch {
+      // Defaults remain.
     }
   }, [])
 
@@ -241,7 +257,6 @@ export function App({ initialText = '' }: { initialText?: string } = {}) {
   return (
     <div className="qa-frame">
       <div className="qa-card">
-        <div className="qa-header">Quick Add</div>
         <div className="qa-input">
           <QuickAddInput
             handleRef={inputRef}
@@ -264,7 +279,19 @@ export function App({ initialText = '' }: { initialText?: string } = {}) {
             placeholder={flash ? 'Added ✓' : 'Add a task…'}
             className="qa-textarea"
           />
+          {parsed.description !== null && <p className="qa-description">{parsed.description}</p>}
         </div>
+        {/* The main dialog's chip row ("the filters"), settings-free: same chips, same
+            pickers, editing the same raw text through the same caret contract. */}
+        <ChipRowBase
+          text={value}
+          parsed={parsed}
+          activeTokens={parsed.tokens}
+          ctx={ctx}
+          chips={quickAddPrefs.chips}
+          labeled={quickAddPrefs.labeled}
+          onEdit={(text, caret) => inputRef.current?.setValueWithCaret(text, caret)}
+        />
         <div className="qa-status" role="status" aria-live="polite">
           {error !== null ? <span className="qa-error">{error}</span> : null}
         </div>

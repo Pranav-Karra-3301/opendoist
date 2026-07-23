@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "OpenTask",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "identifier": "com.opentask.desktop",
   "build": {
     "beforeDevCommand": "pnpm --filter @opentask/web dev",
@@ -28,7 +28,7 @@
       {
         "label": "quickadd",
         "url": "quickadd.html",
-        "width": 400,
+        "width": 660,
         "height": 460,
         "resizable": false,
         "decorations": false,

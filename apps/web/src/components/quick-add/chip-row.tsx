@@ -37,7 +37,7 @@ import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from '@/compone
 import { useUserSettings } from '@/features/settings/useSettings'
 import { DUE_TONE_VAR, formatDueChip } from '@/lib/format-date'
 import { cn } from '@/lib/utils'
-import { normalizeChips, partitionChips } from './chip-prefs'
+import { type ChipPref, normalizeChips, partitionChips } from './chip-prefs'
 import { DeadlinePicker } from './pickers/deadline-picker'
 import { DurationMenu } from './pickers/duration-menu'
 import { ReminderPicker } from './pickers/reminder-picker'
@@ -393,9 +393,30 @@ function ProjectChip({ rc }: { rc: RenderCtx }) {
   )
 }
 
-export function ChipRow({ text, parsed, activeTokens, ctx, onEdit, onClearContext }: ChipRowProps) {
+export function ChipRow(props: ChipRowProps) {
   const { settings } = useUserSettings()
-  const { visible, hidden } = partitionChips(normalizeChips(settings.quickAdd.chips))
+  return (
+    <ChipRowBase {...props} chips={settings.quickAdd.chips} labeled={settings.quickAdd.labeled} />
+  )
+}
+
+/**
+ * Settings-free chip row: the quick-add prefs (`chips` order/visibility + the `labeled`
+ * icon-vs-label mode) come in as props instead of `useUserSettings()`, so hosts without
+ * the SPA's query client (the desktop Quick Add popover) can render the exact same chip
+ * row by supplying prefs they fetched themselves.
+ */
+export function ChipRowBase({
+  text,
+  parsed,
+  activeTokens,
+  ctx,
+  onEdit,
+  onClearContext,
+  chips,
+  labeled,
+}: ChipRowProps & { chips: readonly ChipPref[]; labeled: boolean }) {
+  const { visible, hidden } = partitionChips(normalizeChips(chips))
 
   const today = dateInTz(ctx.now, ctx.timezone)
   const withSpace = (t: string): string => (t === '' || t.endsWith(' ') ? t : `${t} `)
@@ -410,7 +431,7 @@ export function ChipRow({ text, parsed, activeTokens, ctx, onEdit, onClearContex
     activeTokens,
     ctx,
     today,
-    labeled: settings.quickAdd.labeled,
+    labeled,
     insert,
     rewrite,
     clearContext: (kind) => onClearContext?.(kind),

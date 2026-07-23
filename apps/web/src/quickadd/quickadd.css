@@ -19,7 +19,10 @@
 
 .qa-card {
   box-sizing: border-box;
-  flex: 1;
+  /* Auto-height: the card hugs its content (input + chip row + footer) — the rest of the
+     transparent window is just breathing room for the autocomplete + chip pickers. */
+  flex: none;
+  width: 100%;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -52,6 +55,16 @@
 .qa-input {
   flex: none;
   position: relative;
+}
+
+/* `// description` preview under the input — mirrors the main dialog's line. */
+.qa-description {
+  margin: 4px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-copy, 13px);
+  color: var(--ot-text-secondary);
 }
 
 /* Bump the reused Quick Add field to a prominent, Spotlight-like size. Unlayered, so it wins

@@ -70,14 +70,18 @@ describe('desktopParseContext', () => {
 // The App import legitimately pays the whole component-graph transform on a cold CI runner;
 // budget for it instead of flaking at the 5s default (a real hang still fails at 20s).
 describe('App rendering', { timeout: 20_000 }, () => {
-  it('renders the capture card with the labelled input and key hints', async () => {
+  it('renders the capture card with the labelled input, the chip row, and key hints', async () => {
     const { App } = await import('./App')
     const html = renderToStaticMarkup(<App />)
     expect(html).toContain('aria-label="Quick add task"')
-    expect(html).toContain('Quick Add')
     expect(html).toContain('Add a task')
     expect(html).toContain('Cancel')
     expect(html).toContain('esc')
+    // The main dialog's chip row ("the filters") renders here too — spot-check the
+    // customizable chips plus the always-on Project chip.
+    for (const chip of ['Date', 'Deadline', 'Priority', 'Reminders', 'Labels', 'Project']) {
+      expect(html).toContain(`aria-label="${chip}"`)
+    }
   })
 
   it('live-highlights a sample string via @opentask/core', async () => {
