@@ -1,6 +1,7 @@
 import type { Priority } from '@opentask/core'
 import { Check } from 'lucide-react'
 import { type MouseEvent, useState } from 'react'
+import { playCue } from '@/lib/sound'
 import { cn } from '@/lib/utils'
 
 export interface TaskCheckboxProps {
@@ -45,9 +46,11 @@ export function TaskCheckbox({
   function handleClick(event: MouseEvent) {
     event.stopPropagation()
     if (checked) {
+      playCue('tick')
       onToggle()
       return
     }
+    playCue('success')
     setCompleting(true)
   }
 

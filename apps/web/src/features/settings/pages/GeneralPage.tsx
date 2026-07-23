@@ -376,6 +376,17 @@ export default function GeneralPage() {
             />
           }
         />
+        <SettingRow
+          label="Audio cues"
+          description="Tiny interaction sounds — task complete, quick add, toggles, drag and drop."
+          control={
+            <Switch
+              checked={settings.soundCues}
+              onCheckedChange={(soundCues) => update({ soundCues })}
+              aria-label="Audio cues"
+            />
+          }
+        />
       </SettingsSection>
 
       {/* Desktop-only (Tauri) section: launch-at-login + notification permission.

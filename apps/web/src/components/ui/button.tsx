@@ -5,6 +5,7 @@
  */
 import { cva, type VariantProps } from 'class-variance-authority'
 import type * as React from 'react'
+import { playCue } from '@/lib/sound'
 import { cn } from '@/lib/utils'
 
 export const buttonVariants = cva(
@@ -39,12 +40,27 @@ export interface ButtonProps
   extends React.ComponentProps<'button'>,
     VariantProps<typeof buttonVariants> {}
 
-export function Button({ className, variant, size, type = 'button', ...props }: ButtonProps) {
+export function Button({
+  className,
+  variant,
+  size,
+  type = 'button',
+  onPointerDown,
+  ...props
+}: ButtonProps) {
   return (
     <button
       data-slot="button"
       type={type}
       className={cn(buttonVariants({ variant, size, className }))}
+      onPointerDown={(event) => {
+        // Audio cue on PRIMARY actions only (default/destructive) — secondary/ghost/icon
+        // buttons stay silent so the UI doesn't click on every hover-menu interaction.
+        if (variant === 'default' || variant === undefined || variant === 'destructive') {
+          playCue('press')
+        }
+        onPointerDown?.(event)
+      }}
       {...props}
     />
   )

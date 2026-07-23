@@ -11,6 +11,7 @@
  * That import forms a cycle (router → project view → here → router), which is safe because
  * `queryClient` is only ever *read inside a function body*, never at module-eval time.
  */
+
 import { useQueryClient } from '@tanstack/react-query'
 import { create } from 'zustand'
 import { apiVoid, endpoints } from '@/api/client'
@@ -19,6 +20,7 @@ import { qk } from '@/api/keys'
 import { type Task, toMoveBody } from '@/api/schemas'
 import { byChildOrder } from '@/lib/derive'
 import { arrayMove, type DragEndEvent, useAppSensors } from '@/lib/dnd'
+import { playCue } from '@/lib/sound'
 import { queryClient } from '@/router'
 import { toast } from '@/stores/toasts'
 
@@ -173,7 +175,9 @@ export function useProjectDnd(projectId: string): {
       )
       const from = group.findIndex((t) => t.id === activeId)
       const to = group.findIndex((t) => t.id === overId)
-      for (const patch of reorderChildOrder(group, from, to)) {
+      const patches = reorderChildOrder(group, from, to)
+      if (patches.length > 0) playCue('droplet')
+      for (const patch of patches) {
         update.mutate({ id: patch.id, patch: { child_order: patch.child_order }, silent: true })
       }
       return
@@ -182,6 +186,7 @@ export function useProjectDnd(projectId: string): {
     // Cross-container drop: move to the target section as a top-level task (server appends
     // at the end — POST /tasks/{id}/move ignores child_order). Undo is wired by Task B.
     if (!sameContainer) {
+      playCue('droplet')
       move.mutate({
         id: activeId,
         to: { project_id: projectId, section_id: target.sectionId, parent_id: null },

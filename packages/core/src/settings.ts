@@ -159,6 +159,8 @@ export const UserSettingsSchema = z.object({
    *  derive them from `theme`/`autoDark` when absent. Once written, they are authoritative. */
   appearance: AppearanceSchema.optional(),
   accent: AccentSchema.optional(),
+  /** Tiny synthesized interaction sounds (task complete, quick add, toggles, …). */
+  soundCues: z.boolean().default(true),
   dailyGoal: z.number().int().min(0).max(100).default(5),
   weeklyGoal: z.number().int().min(0).max(700).default(25),
   daysOff: z.array(WeekdaySchema).default([6, 7]),

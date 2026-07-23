@@ -29,12 +29,14 @@
  * (Enter) opens the detail panel, which edits project/section, due date, priority, and labels —
  * the exact PATCH/move shapes the drops fire.
  */
+
 import { addDaysIso, type Due, dateInTz } from '@opentask/core'
 import { useState } from 'react'
 import { useTaskMutations } from '@/api/hooks/tasks'
 import type { Task } from '@/api/schemas'
 import { arrayMove, type DragEndEvent, type DragStartEvent, useAppSensors } from '@/lib/dnd'
 import { useParseCtx } from '@/lib/parse-context'
+import { playCue } from '@/lib/sound'
 import { reorderChildOrder } from '@/views/project/use-project-dnd'
 import type { BoardColumnModel, BoardDrop } from './BoardView'
 
@@ -140,13 +142,16 @@ export function useBoardDnd(columns: BoardColumnModel[]): UseBoardDnd {
 
   function reorderWithin(column: BoardColumnModel, from: number, to: number): void {
     if (column.reorder === 'child_order') {
-      for (const patch of reorderChildOrder(column.tasks, from, to)) {
+      const patches = reorderChildOrder(column.tasks, from, to)
+      if (patches.length > 0) playCue('droplet')
+      for (const patch of patches) {
         update.mutate({ id: patch.id, patch: { child_order: patch.child_order }, silent: true })
       }
       return
     }
     if (column.reorder === 'day_order') {
       if (from === -1 || to === -1 || from === to) return
+      playCue('droplet')
       arrayMove(column.tasks, from, to).forEach((t, i) => {
         if (t.day_order !== i) update.mutate({ id: t.id, patch: { day_order: i }, silent: true })
       })
@@ -157,6 +162,7 @@ export function useBoardDnd(columns: BoardColumnModel[]): UseBoardDnd {
     const today = dateInTz(ctx.now, ctx.timezone)
     const m = planCrossDrop(source.task, source.column.drop, target.drop, today)
     if (m === null) return
+    playCue('droplet')
     if (m.kind === 'move') {
       move.mutate({ id: m.id, to: m.to })
       return

@@ -169,3 +169,11 @@ describe('UserSettingsPatchSchema', () => {
     expect(() => UserSettingsPatchSchema.parse({ theme: 'neon' })).toThrow()
   })
 })
+
+describe('soundCues setting', () => {
+  it('defaults ON and old rows without the key parse to true', () => {
+    expect(UserSettingsSchema.parse({}).soundCues).toBe(true)
+    expect(UserSettingsSchema.parse({ theme: 'kale', autoDark: true }).soundCues).toBe(true)
+    expect(UserSettingsSchema.parse({ soundCues: false }).soundCues).toBe(false)
+  })
+})

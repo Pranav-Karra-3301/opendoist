@@ -10,6 +10,7 @@ import { Toaster } from '@/components/toast/toaster'
 import DialogHost from '@/features/dialogs/DialogHost'
 import UndoHost from '@/features/undo/UndoHost'
 import { GlobalHotkeys } from '@/keyboard'
+import { useSoundCuesSync } from '@/lib/sound'
 import { useThemeSync } from '@/lib/theme'
 import { initPushOnBoot, PushPrompts } from '@/push'
 import { RambleReview } from '@/ramble/RambleReview'
@@ -46,6 +47,7 @@ function clearSelectionOnEmptyClick(event: MouseEvent): void {
 export function AppLayout() {
   useSseInvalidation()
   useThemeSync()
+  useSoundCuesSync()
   const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed)
   const toggleSidebar = useUiStore((s) => s.toggleSidebar)
   // phase 6: re-sync any existing push subscription once per app boot (Task K implements)

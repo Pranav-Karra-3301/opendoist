@@ -15,6 +15,7 @@ allowBuilds:
   sharp: true
 
 catalog:
+  cuelume: ^0.1.2
   typescript: ^5.9.0
   vitest: ^4.1.10
   '@biomejs/biome': ^2.5.4

@@ -7,9 +7,23 @@ import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import { X } from 'lucide-react'
 import type * as React from 'react'
 import { useState } from 'react'
+import { playCue } from '@/lib/sound'
 import { cn } from '@/lib/utils'
 
-export const Dialog = DialogPrimitive.Root
+type DialogRootProps = React.ComponentProps<typeof DialogPrimitive.Root>
+
+/** Root with audio cues: opening presses, closing releases (same export surface). */
+export function Dialog({ onOpenChange, ...props }: DialogRootProps) {
+  return (
+    <DialogPrimitive.Root
+      {...props}
+      onOpenChange={(...args: Parameters<NonNullable<DialogRootProps['onOpenChange']>>) => {
+        playCue(args[0] ? 'press' : 'release')
+        onOpenChange?.(...args)
+      }}
+    />
+  )
+}
 
 export const DialogTrigger = DialogPrimitive.Trigger
 

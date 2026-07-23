@@ -35,6 +35,7 @@ import { isTauri } from '@/api/transport'
 import type { AutocompleteResources } from '@/components/quick-add/autocomplete'
 import { ChipRowBase } from '@/components/quick-add/chip-row'
 import { QuickAddInput, type QuickAddInputHandle } from '@/components/quick-add/quick-add-input'
+import { playCue, setCuesEnabled } from '@/lib/sound'
 import './quickadd.css'
 
 /** How long the "Added ✓" confirmation lingers before the popover hides itself (ms). */
@@ -153,6 +154,8 @@ export function App({ initialText = '' }: { initialText?: string } = {}) {
       // configured chips; on failure the defaults stay (the row still renders fully).
       const settings = await api(endpoints.userSettings, { schema: UserSettingsSchema })
       setQuickAddPrefs(settings.quickAdd)
+      // The popover has no query client / useSoundCuesSync — push the setting directly.
+      setCuesEnabled(settings.soundCues)
     } catch {
       // Defaults remain.
     }
@@ -249,7 +252,8 @@ export function App({ initialText = '' }: { initialText?: string } = {}) {
       )
       return
     }
-    // Success: clear the draft, flash a confirmation, fade the card down, then hide.
+    // Success: clear the draft, chime, flash a confirmation, fade the card down, then hide.
+    playCue('chime')
     setBusy(false)
     setValue('')
     setFlash(true)

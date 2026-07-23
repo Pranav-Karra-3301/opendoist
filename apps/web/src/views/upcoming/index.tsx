@@ -6,6 +6,7 @@
  * mutation layer). Every day derives its slice client-side from the one `useActiveTasks`
  * cache via `lib/derive`; no view-specific query. The scroll sentinel extends the range.
  */
+
 import { viewKey } from '@opentask/core'
 import type { CSSProperties } from 'react'
 import { useEffect, useRef, useState } from 'react'
@@ -26,6 +27,7 @@ import {
   type DragStartEvent,
   useAppSensors,
 } from '@/lib/dnd'
+import { playCue } from '@/lib/sound'
 import { OverdueBlock } from '@/views/today/overdue-block'
 import { DaySection } from './day-section'
 import { useUpcomingDays, useUpcomingStore } from './use-upcoming-days'
@@ -146,12 +148,14 @@ export function UpcomingView() {
       const oldIndex = list.findIndex((t) => t.id === draggedId)
       const newIndex = overIsDay ? list.length - 1 : list.findIndex((t) => t.id === overId)
       if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) return
+      playCue('droplet')
       const reordered = arrayMove(list, oldIndex, newIndex)
       reordered.forEach((t, i) => {
         if (t.day_order !== i) update.mutate({ id: t.id, patch: { day_order: i }, silent: true })
       })
     } else {
       // Cross-day → reschedule to the drop date, preserving time/recurrence.
+      playCue('droplet')
       update.mutate({
         id: draggedId,
         patch: { due: { ...sourceDue, date: targetDate, string: targetDate } },

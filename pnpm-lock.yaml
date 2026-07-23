@@ -144,6 +144,9 @@ catalogs:
     csv-parse:
       specifier: ^5.6.0
       version: 5.6.0
+    cuelume:
+      specifier: ^0.1.2
+      version: 0.1.2
     date-fns:
       specifier: ^4.4.0
       version: 4.4.0
@@ -448,6 +451,9 @@ importers:
       cmdk:
         specifier: 'catalog:'
         version: 1.1.1(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      cuelume:
+        specifier: 'catalog:'
+        version: 0.1.2
       date-fns:
         specifier: 'catalog:'
         version: 4.4.0
@@ -3534,6 +3540,9 @@ packages:
 
   csv-parse@5.6.0:
     resolution: {integrity: sha512-l3nz3euub2QMg5ouu5U09Ew9Wf6/wQ8I++ch1loQ0ljmzhmfZYrH9fflS22i/PQEvsPvxCwxgz5q7UB8K1JO4Q==}
+
+  cuelume@0.1.2:
+    resolution: {integrity: sha512-VxL0k9l1fyKGot3VKM+wm5Xd2K75fVeBHdNTrR1EHiqKRtD6S5Dxy/vY7hwl9gXp3QT/TIywFXUos77n39YZVQ==}
 
   data-view-buffer@1.0.2:
     resolution: {integrity: sha512-EmKO5V3OLXh1rtK2wgXRansaK1/mtVdTUEiEI0W8RkvgT05kfxaH29PliLnpLP73yYO6142Q72QNa8Wx/A5CqQ==}
@@ -8142,6 +8151,8 @@ snapshots:
   csstype@3.2.3: {}
 
   csv-parse@5.6.0: {}
+
+  cuelume@0.1.2: {}
 
   data-view-buffer@1.0.2:
     dependencies:

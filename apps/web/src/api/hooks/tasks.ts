@@ -40,6 +40,7 @@ import { useUndoStore } from '@/features/undo/store'
 import { restoreEntity } from '@/lib/api/phase5'
 import { formatDueChip } from '@/lib/format-date'
 import { useParseCtx } from '@/lib/parse-context'
+import { playCue } from '@/lib/sound'
 import { toast } from '@/stores/toasts'
 import {
   applyClose,
@@ -122,6 +123,7 @@ export function useTaskMutations(): TaskMutations {
   const quickAdd = useMutation<unknown, ApiError, { text: string }>({
     mutationFn: ({ text }) =>
       api(endpoints.quick, { method: 'POST', body: { text }, schema: z.unknown() }),
+    onSuccess: () => playCue('chime'),
     // AS-BUILT: /tasks/quick auto-creates referenced projects/labels.
     onSettled: () => {
       void qc.invalidateQueries({ queryKey: qk.tasks })

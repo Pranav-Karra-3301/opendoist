@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { playCue } from '@/lib/sound'
 
 export interface Toast {
   id: string
@@ -27,5 +28,8 @@ export const useToastStore = create<ToastState>((set, get) => ({
 /** Imperative helpers usable outside React (mutation callbacks, undo store). */
 export const toast = {
   info: (message: string): void => useToastStore.getState().push('info', message),
-  error: (message: string): void => useToastStore.getState().push('error', message),
+  error: (message: string): void => {
+    playCue('error')
+    useToastStore.getState().push('error', message)
+  },
 }
