@@ -1,11 +1,26 @@
 # Changelog
 
 All notable changes to OpenTask.
+## [0.5.0] - 2026-07-23
+
+### Features
+- *(desktop)* "Restart to update" prompt for installed self-updates (v0.2.1)
+- *(desktop)* Configurable centered Quick Add summon (v0.2.2)
+- *(desktop)* Full composer card in the Quick Add popover (v0.2.3)
+- *(desktop)* Popover polish — working drag, native lights, focus, fade-down dismissal (v0.2.3)
+- *(desktop)* Windows + Linux builds — first cross-platform desktop release (v0.3.0)
+- *(web)* Audio cues via cuelume, with a Settings toggle (default on)
+
+### Maintenance
+- Biome-format tauri.conf.json
 ## [0.4.1] - 2026-07-23
 
 ### Features
 - *(desktop)* Seamless macOS window chrome + dedicated updater feed (v0.2.0)
 - *(reminders)* Lead-aware notification copy — "Due in 30 min" / "Due now"
+
+### Maintenance
+- *(release)* V0.4.1
 ## [0.4.0] - 2026-07-23
 
 ### Documentation
