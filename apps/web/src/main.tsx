@@ -2,6 +2,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { DesktopUpdatePrompt } from './desktop/UpdatePrompt'
 import { DesktopGate } from './desktop/useDesktopGate'
 import { initDesktopChrome } from './desktop/window-chrome'
 import { PwaProvider } from './pwa/pwa-provider'
@@ -25,6 +26,9 @@ createRoot(container).render(
       <PwaProvider>
         {/* phase 9 (Task O): slim update-available banner; renders nothing unless an update exists */}
         <UpdateBanner />
+        {/* Desktop self-update: "restart to update" prompt once the Rust loop has installed
+            one (renders nothing on the web). */}
+        <DesktopUpdatePrompt />
         {/* desktop (Task B): in the Tauri shell, gate the app behind pairing until an
             instance + ot_ token are stored. On the web `DesktopGate` is a pass-through,
             so the browser build renders exactly `<RouterProvider>` as before. */}

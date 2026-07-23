@@ -430,6 +430,9 @@ importers:
       '@tauri-apps/plugin-notification':
         specifier: 'catalog:'
         version: 2.3.3
+      '@tauri-apps/plugin-process':
+        specifier: 'catalog:'
+        version: 2.3.1
       '@tauri-apps/plugin-store':
         specifier: 'catalog:'
         version: 2.4.3

@@ -25,8 +25,13 @@
 
 use std::time::Duration;
 
-use tauri::AppHandle;
+use tauri::{AppHandle, Emitter};
+use tauri_plugin_notification::NotificationExt;
 use tauri_plugin_updater::UpdaterExt;
+
+/// Webview event carrying the installed version — `DesktopUpdatePrompt` listens for it
+/// and shows the "Restart to update" banner.
+const UPDATE_INSTALLED_EVENT: &str = "opentask://update-installed";
 
 /// First check shortly after launch — late enough to stay out of startup's (and the
 /// first reminders poll's) way, early enough that a rarely-relaunched tray app still
@@ -94,6 +99,18 @@ pub fn spawn(app: AppHandle) {
                     eprintln!(
                         "[opentask] update {version} installed — it takes effect at the next launch"
                     );
+                    // Surface it: an in-app "Restart to update" banner (webview event) plus a
+                    // native heads-up in case the window is hidden. Both best-effort — the
+                    // update still applies at the next launch even if neither lands.
+                    let _ = app.emit(UPDATE_INSTALLED_EVENT, version.clone());
+                    let _ = app
+                        .notification()
+                        .builder()
+                        .title("OpenTask update ready")
+                        .body(format!(
+                            "Version {version} is installed — restart the app to start using it."
+                        ))
+                        .show();
                 }
                 // Routine when offline or before the first desktop release exists.
                 CheckOutcome::Failed(err) => eprintln!("[opentask] update check skipped: {err}"),
