@@ -13,6 +13,10 @@
   height: 100vh;
   padding: 10px;
   display: flex;
+  /* The card hugs its content height (align-items default is STRETCH, which pinned the
+     footer to the bottom of the whole transparent window); the space below stays empty
+     for the autocomplete + chip pickers. */
+  align-items: flex-start;
   /* Never let the popover body scroll; the autocomplete menu manages its own overflow. */
   overflow: hidden;
 }
@@ -38,6 +42,15 @@
   box-shadow: var(--shadow-popover);
   color: var(--ot-text-primary);
   font-family: var(--font-sans, -apple-system, system-ui, sans-serif);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+/* Dismissal: fade down (opacity + a slight downward drift) before the window hides. */
+.qa-card--closing {
+  opacity: 0;
+  transform: translateY(8px);
 }
 
 .qa-header {
@@ -88,7 +101,6 @@
 
 .qa-footer {
   flex: none;
-  margin-top: auto;
   display: flex;
   gap: 18px;
   padding-top: 6px;

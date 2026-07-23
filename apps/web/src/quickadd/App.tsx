@@ -50,12 +50,19 @@ import { desktopParseContext, submitQuickAdd } from './logic'
 
 export { desktopParseContext, submitQuickAdd } from './logic'
 
-/** Hide the popover window. No-op off-desktop (e.g. the node test env). */
+/**
+ * Dismiss the popover through Rust: hides the window AND — when the summon came from
+ * another app — hides the whole app so focus returns there (Spotlight-style) instead of
+ * macOS promoting the main window. No-op off-desktop (e.g. the node test env).
+ */
 async function hidePopover(): Promise<void> {
   if (!isTauri()) return
-  const { getCurrentWindow } = await import('@tauri-apps/api/window')
-  await getCurrentWindow().hide()
+  const { invoke } = await import('@tauri-apps/api/core')
+  await invoke('dismiss_quickadd')
 }
+
+/** How long the fade-down runs before the window actually hides (ms) — mirrors the CSS. */
+const FADE_MS = 140
 
 /** Reveal + focus the main SPA window, then hide the popover (blur would hide it anyway, but
  *  do it explicitly so the transition is immediate). Used by the unpaired call-to-action. */
@@ -73,6 +80,7 @@ export function App({ initialText = '' }: { initialText?: string } = {}) {
   const [ctx, setCtx] = useState<ParseContext>(desktopParseContext)
   const [error, setError] = useState<string | null>(null)
   const [flash, setFlash] = useState(false)
+  const [closing, setClosing] = useState(false)
   const [busy, setBusy] = useState(false)
   // `null` while the pairing state is still unknown — render the capture UI optimistically and
   // only swap to the call-to-action once we KNOW the instance is unpaired (avoids a splash).
@@ -168,31 +176,53 @@ export function App({ initialText = '' }: { initialText?: string } = {}) {
 
   // Each time the popover is re-summoned it regains focus: refocus the field, refresh the
   // clock-based ParseContext (so "tomorrow" stays correct across days), clear stale status,
-  // and re-check pairing (the user may have just paired in the main window).
+  // and re-check pairing (the user may have just paired in the main window). Two triggers
+  // drive this: the window `Focused` event AND Rust's explicit summon event — the former
+  // races the show on macOS (a summon from another app can drop the caret), the latter is
+  // deterministic. `focusSoon` retries briefly to beat WebKit's key-window transition.
   useEffect(() => {
     if (!isTauri()) return
-    let unlisten: (() => void) | undefined
+    const timers: ReturnType<typeof setTimeout>[] = []
+    const focusSoon = (): void => {
+      inputRef.current?.focus()
+      for (const delay of [50, 150]) {
+        timers.push(
+          setTimeout(() => {
+            inputRef.current?.focus()
+          }, delay),
+        )
+      }
+    }
+    const onSummon = (): void => {
+      setCtx(desktopParseContext())
+      setError(null)
+      setFlash(false)
+      setClosing(false)
+      focusSoon()
+      void refreshPairing().then((paired) => {
+        if (paired) void loadResources()
+      })
+    }
     let disposed = false
+    const unlisteners: Array<() => void> = []
+    const keep = (fn: () => void): void => {
+      if (disposed) fn()
+      else unlisteners.push(fn)
+    }
     void import('@tauri-apps/api/window').then(({ getCurrentWindow }) =>
       getCurrentWindow()
         .onFocusChanged(({ payload: focused }) => {
-          if (!focused) return
-          setCtx(desktopParseContext())
-          setError(null)
-          setFlash(false)
-          inputRef.current?.focus()
-          void refreshPairing().then((paired) => {
-            if (paired) void loadResources()
-          })
+          if (focused) onSummon()
         })
-        .then((fn) => {
-          if (disposed) fn()
-          else unlisten = fn
-        }),
+        .then(keep),
+    )
+    void import('@tauri-apps/api/event').then(({ listen }) =>
+      listen('opentask://summoned', onSummon).then(keep),
     )
     return () => {
       disposed = true
-      unlisten?.()
+      for (const fn of unlisteners) fn()
+      for (const t of timers) clearTimeout(t)
     }
   }, [refreshPairing, loadResources])
 
@@ -219,23 +249,28 @@ export function App({ initialText = '' }: { initialText?: string } = {}) {
       )
       return
     }
-    // Success: clear the draft, flash a confirmation, then hide after a beat.
+    // Success: clear the draft, flash a confirmation, fade the card down, then hide.
     setBusy(false)
     setValue('')
     setFlash(true)
     if (confirmTimer.current) clearTimeout(confirmTimer.current)
     confirmTimer.current = setTimeout(() => {
-      setFlash(false)
-      void hidePopover()
+      setClosing(true)
+      confirmTimer.current = setTimeout(() => {
+        setFlash(false)
+        void hidePopover()
+      }, FADE_MS)
     }, CONFIRM_MS)
   }, [value, busy])
 
-  // Escape is an explicit dismiss: discard the draft and hide. (A blur-driven hide, by
-  // contrast, is handled in Rust and leaves the draft intact for the next summon.)
+  // Escape is an explicit dismiss: discard the draft, fade down, and hide. (A blur-driven
+  // hide, by contrast, is handled in Rust and leaves the draft intact for the next summon.)
   const handleEscape = useCallback((): void => {
     setValue('')
     setError(null)
-    void hidePopover()
+    setClosing(true)
+    if (confirmTimer.current) clearTimeout(confirmTimer.current)
+    confirmTimer.current = setTimeout(() => void hidePopover(), FADE_MS)
   }, [])
 
   if (unpaired === true) {
@@ -256,7 +291,7 @@ export function App({ initialText = '' }: { initialText?: string } = {}) {
 
   return (
     <div className="qa-frame">
-      <div className="qa-card">
+      <div className={`qa-card${closing ? ' qa-card--closing' : ''}`}>
         <div className="qa-input">
           <QuickAddInput
             handleRef={inputRef}

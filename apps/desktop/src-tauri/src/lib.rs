@@ -3,11 +3,46 @@
 //! and plugin registration. The reminders watcher (`src/reminders.rs`, Task D) and the
 //! self-update loop (`src/updater.rs`, Task D/E) are spawned from `setup`.
 
+use std::sync::atomic::{AtomicBool, Ordering};
+
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
+
+/// Whether the LAST summon happened while another app was frontmost. Dismissing the
+/// popover then hides the whole app (returning focus to that app, Spotlight-style)
+/// instead of letting macOS promote our main window to key.
+static SUMMONED_FROM_OUTSIDE: AtomicBool = AtomicBool::new(false);
+
+/// Record, at summon time, whether the user was in another app (the main window not
+/// focused — or not existing at all in tray-only operation).
+fn note_summon_origin(app: &AppHandle) {
+    let outside = app
+        .get_webview_window("main")
+        .map(|m| !m.is_focused().unwrap_or(false))
+        .unwrap_or(true);
+    SUMMONED_FROM_OUTSIDE.store(outside, Ordering::Relaxed);
+}
+
+/// Explicit dismissal (Enter-confirm or Escape from the popover): hide it, and when the
+/// summon came from outside the app, hide the app too so focus returns to the previous
+/// app — never surfacing the main window. Blur-dismissal stays in `on_window_event`
+/// untouched: there the user already clicked their next focus target.
+#[tauri::command]
+fn dismiss_quickadd(app: AppHandle) {
+    if let Some(w) = app.get_webview_window("quickadd") {
+        let _ = w.hide();
+    }
+    if SUMMONED_FROM_OUTSIDE.load(Ordering::Relaxed) {
+        let _ = app.hide();
+    }
+}
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 use tauri_plugin_positioner::{Position, WindowExt};
 use tauri_plugin_store::StoreExt;
+
+/// Emitted to the quickadd webview on every summon so it can grab keyboard focus for the
+/// input — the window `Focused` event alone races the show on macOS and can drop the caret.
+const QUICKADD_SUMMONED_EVENT: &str = "opentask://summoned";
 
 /// Tauri-store key (shared `settings.json` beside the pairing) for the summon accelerator.
 const QUICKADD_SHORTCUT_KEY: &str = "quickadd-shortcut";
@@ -23,6 +58,22 @@ mod reminders;
 /// Spawned in `setup` below.
 mod updater;
 
+/// Nudge a just-positioned window fully inside its monitor's horizontal bounds — a
+/// 660-wide popover tray-centered near the screen edge would otherwise overflow off-screen.
+fn clamp_to_monitor(w: &tauri::WebviewWindow) {
+    let Ok(pos) = w.outer_position() else { return };
+    let Ok(size) = w.outer_size() else { return };
+    let Ok(Some(monitor)) = w.current_monitor() else { return };
+    let m_pos = monitor.position();
+    let m_size = monitor.size();
+    let min_x = m_pos.x;
+    let max_x = (m_pos.x + m_size.width as i32 - size.width as i32).max(min_x);
+    let x = pos.x.clamp(min_x, max_x);
+    if x != pos.x {
+        let _ = w.set_position(tauri::PhysicalPosition::new(x, pos.y));
+    }
+}
+
 /// Show the Quick Add popover anchored under the tray icon, or hide it when visible.
 /// Invoked from the tray left-click and JS; the global shortcut path uses the centered variant.
 #[tauri::command]
@@ -36,15 +87,19 @@ fn toggle_quickadd(app: AppHandle) {
         // TrayCenter only works once the positioner has seen a tray event (it caches the
         // icon rect from `on_tray_event`). Before any tray interaction — e.g. a shortcut
         // summon right after launch — fall back to centring on the current monitor.
+        note_summon_origin(&app);
         if w.as_ref()
             .window()
             .move_window(Position::TrayCenter)
             .is_err()
         {
             let _ = w.center();
+        } else {
+            clamp_to_monitor(&w);
         }
         let _ = w.show();
         let _ = w.set_focus();
+        let _ = w.emit(QUICKADD_SUMMONED_EVENT, ());
     }
 }
 
@@ -85,9 +140,11 @@ fn toggle_quickadd_centered(app: &AppHandle) {
     if w.is_visible().unwrap_or(false) {
         let _ = w.hide();
     } else {
+        note_summon_origin(app);
         let _ = w.center();
         let _ = w.show();
         let _ = w.set_focus();
+        let _ = w.emit(QUICKADD_SUMMONED_EVENT, ());
     }
 }
 
@@ -163,6 +220,7 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
             toggle_quickadd,
+            dismiss_quickadd,
             get_quickadd_shortcut,
             set_quickadd_shortcut
         ])

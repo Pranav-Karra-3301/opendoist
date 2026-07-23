@@ -472,11 +472,14 @@
   --z-tooltip: 1000; /* toast/tooltip values are Todoist's */
 }
 
-/* Tauri macOS shell (stamped pre-paint by initDesktopChrome): a 36px traffic-light band
-   above BOTH columns (lights are conf-positioned at x16/y12 = vertically centered in it);
-   the sidebar and content pad down by it and the band itself is the drag region. */
+/* Tauri macOS shell (stamped pre-paint by initDesktopChrome): the traffic-light band above
+   BOTH columns. 28px matches the NATIVE macOS light position (we deliberately do NOT set a
+   custom trafficLightPosition — Tauri can only apply one at window build, and macOS silently
+   reverts it on hide/show cycles, which kept "misaligning" the bar; the default position is
+   owned by the OS and can never drift). The sidebar and content pad down by the band and the
+   band itself is the drag region. */
 :root[data-desktop-chrome="mac"] {
-  --ot-desktop-drag: 36px;
+  --ot-desktop-drag: 28px;
 }
 
 /* ---------- layout constants ---------- */
