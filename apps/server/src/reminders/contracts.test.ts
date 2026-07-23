@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { CreateReminderBodySchema, formatReminderBody, taskDeepLink } from './contracts'
+import { CreateReminderBodySchema, formatLead, formatReminderBody, taskDeepLink } from './contracts'
 
 describe('taskDeepLink', () => {
   test('falls back to the local base when publicUrl is null', () => {
@@ -106,5 +106,36 @@ describe('CreateReminderBodySchema', () => {
       due: due(),
     })
     expect(r.success).toBe(false)
+  })
+})
+
+describe('formatLead', () => {
+  test('humanizes minute leads into min / hr / day phrases', () => {
+    expect(formatLead(0)).toBe('0 min')
+    expect(formatLead(10)).toBe('10 min')
+    expect(formatLead(45)).toBe('45 min')
+    expect(formatLead(60)).toBe('1 hr')
+    expect(formatLead(90)).toBe('1 hr 30 min')
+    expect(formatLead(120)).toBe('2 hr')
+    expect(formatLead(1440)).toBe('1 day')
+    expect(formatLead(1500)).toBe('1 day 1 hr')
+    expect(formatLead(2880)).toBe('2 days')
+  })
+})
+
+describe('formatReminderBody lead-aware copy', () => {
+  const due = { date: '2026-07-16', time: '17:00' }
+  test('says "Due now" at the due instant and "Due in …" ahead of it', () => {
+    expect(formatReminderBody(due, '2026-07-16', 0)).toBe('Due now')
+    expect(formatReminderBody(due, '2026-07-16', 30)).toBe('Due in 30 min (17:00)')
+    expect(formatReminderBody(due, '2026-07-15', 30)).toBe('Due in 30 min (2026-07-16 17:00)')
+  })
+  test('keeps legacy copy for unknown leads and date-only dues', () => {
+    expect(formatReminderBody(due, '2026-07-16', null)).toBe('Due today at 17:00')
+    expect(formatReminderBody(due, '2026-07-16')).toBe('Due today at 17:00')
+    expect(formatReminderBody({ date: '2026-07-16', time: null }, '2026-07-16', 30)).toBe(
+      'Due today',
+    )
+    expect(formatReminderBody(null, '2026-07-16', 0)).toBe('Reminder')
   })
 })

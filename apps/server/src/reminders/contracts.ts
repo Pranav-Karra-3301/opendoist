@@ -180,11 +180,38 @@ export function taskDeepLink(publicUrl: string | null, taskId: string): string {
   const base = (publicUrl ?? 'http://localhost:7968').replace(/\/+$/, '')
   return `${base}/task/${taskId}`
 }
+/** Humanize a heads-up lead in minutes: 30 → "30 min", 90 → "1 hr 30 min", 2880 → "2 days". */
+export function formatLead(minutes: number): string {
+  const d = Math.floor(minutes / 1440)
+  const h = Math.floor((minutes % 1440) / 60)
+  const m = minutes % 60
+  const parts: string[] = []
+  if (d > 0) parts.push(`${d} day${d === 1 ? '' : 's'}`)
+  if (h > 0) parts.push(`${h} hr`)
+  // Once days are involved, minute precision is noise (Todoist-style rounding).
+  if (m > 0 && d === 0) parts.push(`${m} min`)
+  return parts.length > 0 ? parts.join(' ') : '0 min'
+}
+
+/**
+ * Notification body copy. With a known lead against a TIMED due, the copy is lead-aware:
+ * `Due now` when the reminder fires at the due instant (offset 0, and absolute/recurring
+ * reminders — they fire at their own stated instant), `Due in 30 min (17:00)` for a
+ * heads-up (the parenthetical keeps the actual time as context; the date is included only
+ * when it isn't today). `leadMinutes: null` (unknown — e.g. test fires) and date-only dues
+ * keep the legacy `Due today at 17:00` form.
+ */
 export function formatReminderBody(
   due: { date: string; time: string | null } | null,
   today: string,
+  leadMinutes: number | null = null,
 ): string {
   if (due === null) return 'Reminder'
+  if (leadMinutes !== null && due.time !== null) {
+    if (leadMinutes <= 0) return 'Due now'
+    const when = due.date === today ? due.time : `${due.date} ${due.time}`
+    return `Due in ${formatLead(leadMinutes)} (${when})`
+  }
   const day = due.date === today ? 'today' : due.date
   return due.time === null ? `Due ${day}` : `Due ${day} at ${due.time}`
 }

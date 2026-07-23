@@ -71,6 +71,49 @@ struct Reminder {
     task_id: String,
     #[serde(default)]
     fired_at: Option<String>,
+    /// 'relative' | 'absolute' | 'recurring' — drives the lead phrase in the body.
+    #[serde(rename = "type", default)]
+    kind: Option<String>,
+    /// Relative only: minutes ahead of the due time (0 = at time).
+    #[serde(default)]
+    minute_offset: Option<i64>,
+}
+
+/// Humanize a heads-up lead in minutes — mirrors the server's `formatLead` copy
+/// (30 → "30 min", 90 → "1 hr 30 min", 2880 → "2 days"; minutes are dropped once
+/// days are involved).
+fn format_lead(minutes: i64) -> String {
+    let d = minutes / 1440;
+    let h = (minutes % 1440) / 60;
+    let m = minutes % 60;
+    let mut parts: Vec<String> = Vec::new();
+    if d > 0 {
+        parts.push(format!("{d} day{}", if d == 1 { "" } else { "s" }));
+    }
+    if h > 0 {
+        parts.push(format!("{h} hr"));
+    }
+    if m > 0 && d == 0 {
+        parts.push(format!("{m} min"));
+    }
+    if parts.is_empty() {
+        "0 min".to_string()
+    } else {
+        parts.join(" ")
+    }
+}
+
+/// The lead suffix for one reminder: relative heads-ups say "due in 30 min", at-time
+/// relative fires and absolute/recurring reminders (which fire AT their stated instant)
+/// say "due now". Unknown shapes add nothing.
+fn lead_suffix(reminder: &Reminder) -> String {
+    match (reminder.kind.as_deref(), reminder.minute_offset) {
+        (Some("relative"), Some(m)) if m > 0 => format!(" — due in {}", format_lead(m)),
+        (Some("relative"), Some(_)) | (Some("absolute"), _) | (Some("recurring"), _) => {
+            " — due now".to_string()
+        }
+        _ => String::new(),
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -237,9 +280,10 @@ async fn tick(app: &AppHandle, client: &reqwest::Client, seen: &mut SeenSet) {
         .cloned()
         .collect();
     for reminder in fires {
-        let body = fetch_task_content(client, &session, &reminder.task_id)
-            .await
-            .unwrap_or_else(|| FALLBACK_BODY.to_string());
+        let body = match fetch_task_content(client, &session, &reminder.task_id).await {
+            Some(content) => format!("{content}{}", lead_suffix(&reminder)),
+            None => FALLBACK_BODY.to_string(),
+        };
         if let Err(err) = app
             .notification()
             .builder()
@@ -290,7 +334,33 @@ mod tests {
             id: id.to_string(),
             task_id: task_id.to_string(),
             fired_at: fired_at.map(str::to_string),
+            kind: Some("relative".to_string()),
+            minute_offset: Some(0),
         }
+    }
+
+    #[test]
+    fn format_lead_humanizes_min_hr_day() {
+        assert_eq!(format_lead(0), "0 min");
+        assert_eq!(format_lead(10), "10 min");
+        assert_eq!(format_lead(60), "1 hr");
+        assert_eq!(format_lead(90), "1 hr 30 min");
+        assert_eq!(format_lead(1440), "1 day");
+        assert_eq!(format_lead(1500), "1 day 1 hr");
+        assert_eq!(format_lead(2880), "2 days");
+    }
+
+    #[test]
+    fn lead_suffix_matches_server_copy() {
+        let mut r = reminder("r1", "t1", None);
+        assert_eq!(lead_suffix(&r), " — due now"); // relative, offset 0 = at time
+        r.minute_offset = Some(30);
+        assert_eq!(lead_suffix(&r), " — due in 30 min");
+        r.kind = Some("absolute".to_string());
+        r.minute_offset = None;
+        assert_eq!(lead_suffix(&r), " — due now"); // absolute fires AT its stated instant
+        r.kind = None;
+        assert_eq!(lead_suffix(&r), ""); // unknown shape adds nothing
     }
 
     #[test]

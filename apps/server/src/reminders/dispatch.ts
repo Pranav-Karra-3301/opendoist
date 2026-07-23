@@ -79,13 +79,15 @@ export function buildReminderPayload(input: {
   firedAt: string
   publicUrl: string | null
   timezone: string
+  /** Minutes ahead of the due instant this fire is (0 = at time; null = unknown/test). */
+  leadMinutes: number | null
   test?: boolean
 }): ReminderPayload {
-  const { task, reminderId, firedAt, publicUrl, timezone, test } = input
+  const { task, reminderId, firedAt, publicUrl, timezone, leadMinutes, test } = input
   const due = task.dueDate !== null ? { date: task.dueDate, time: task.dueTime } : null
   return {
     title: task.content,
-    body: formatReminderBody(due, dateInTz(firedAt, timezone)),
+    body: formatReminderBody(due, dateInTz(firedAt, timezone), leadMinutes),
     url: taskDeepLink(publicUrl, task.id),
     tag: `reminder-${reminderId}`,
     task_id: task.id,
@@ -234,6 +236,9 @@ export async function dispatchReminder(db: Db, reminderId: string): Promise<void
     firedAt: nowIso(),
     publicUrl,
     timezone,
+    // Relative reminders fire minuteOffset ahead of the due instant (0 = at time);
+    // absolute/recurring reminders fire AT their own stated due → "now".
+    leadMinutes: reminder.type === 'relative' ? (reminder.minuteOffset ?? 0) : 0,
     test: false,
   })
 

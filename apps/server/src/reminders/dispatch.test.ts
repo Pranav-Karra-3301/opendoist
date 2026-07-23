@@ -95,6 +95,7 @@ describe('buildReminderPayload', () => {
       firedAt: '2026-07-16T20:30:00.000Z', // 16:30 EDT → today = 2026-07-16
       publicUrl: null,
       timezone: 'America/New_York',
+      leadMinutes: null,
       test: false,
     })
     expect(p).toEqual({
@@ -118,6 +119,7 @@ describe('buildReminderPayload', () => {
       firedAt: '2026-07-16T20:30:00.000Z',
       publicUrl: 'https://x.dev/',
       timezone: 'America/New_York',
+      leadMinutes: null,
     })
     expect(p.body).toBe('Due 2026-07-20 at 09:00')
     expect(p.url).toBe('https://x.dev/task/t2')
@@ -131,6 +133,7 @@ describe('buildReminderPayload', () => {
       firedAt: '2026-07-16T20:30:00.000Z',
       publicUrl: null,
       timezone: 'America/New_York',
+      leadMinutes: null,
     })
     expect(allDay.body).toBe('Due today')
     expect(allDay.due).toEqual({ date: '2026-07-16', time: null })
@@ -141,9 +144,48 @@ describe('buildReminderPayload', () => {
       firedAt: '2026-07-16T20:30:00.000Z',
       publicUrl: null,
       timezone: 'America/New_York',
+      leadMinutes: null,
     })
     expect(dateless.body).toBe('Reminder')
     expect(dateless.due).toBeNull()
+  })
+
+  it('lead-aware copy: at-time fires say "Due now", heads-ups say "Due in … (time)"', () => {
+    const base = {
+      task: {
+        id: 't5',
+        content: 'Board meeting',
+        dueDate: '2026-07-16',
+        dueTime: '17:00',
+        priority: 2 as const,
+      },
+      reminderId: 'r5',
+      firedAt: '2026-07-16T20:30:00.000Z', // today = 2026-07-16 in NY
+      publicUrl: null,
+      timezone: 'America/New_York',
+    }
+    expect(buildReminderPayload({ ...base, leadMinutes: 0 }).body).toBe('Due now')
+    expect(buildReminderPayload({ ...base, leadMinutes: 10 }).body).toBe('Due in 10 min (17:00)')
+    expect(buildReminderPayload({ ...base, leadMinutes: 30 }).body).toBe('Due in 30 min (17:00)')
+    expect(buildReminderPayload({ ...base, leadMinutes: 90 }).body).toBe(
+      'Due in 1 hr 30 min (17:00)',
+    )
+    // Other-day heads-up keeps the date as context.
+    expect(
+      buildReminderPayload({
+        ...base,
+        task: { ...base.task, dueDate: '2026-07-20', dueTime: '09:00' },
+        leadMinutes: 720,
+      }).body,
+    ).toBe('Due in 12 hr (2026-07-20 09:00)')
+    // A date-only due cannot be lead-phrased — legacy copy wins even with a lead.
+    expect(
+      buildReminderPayload({
+        ...base,
+        task: { ...base.task, dueTime: null },
+        leadMinutes: 30,
+      }).body,
+    ).toBe('Due today')
   })
 })
 
