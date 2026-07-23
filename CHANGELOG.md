@@ -1,10 +1,21 @@
 # Changelog
 
 All notable changes to OpenTask.
+## [0.4.0] - 2026-07-23
+
+### Documentation
+- Add author backlink in README license line
+
+### Features
+- *(web)* Board layout — kanban renderer over the existing grouped pipeline
+- Rebrand OpenDoist to OpenTask
 ## [0.3.2] - 2026-07-22
 
 ### Features
 - *(web)* Missed tone — same-day timed dues past their time paint warning orange
+
+### Maintenance
+- *(release)* V0.3.2
 ## [0.3.1] - 2026-07-22
 
 ### Bug Fixes
@@ -82,7 +93,7 @@ All notable changes to OpenTask.
 - *(web)* Full app shell — views, Quick Add, keyboard-first UX
 - *(web,server)* View engine, filters UI, full settings, reporting, undo
 - *(server,web)* Reminders — scheduler, channels, Web Push, iCal feed
-- *(cli)* Opentask command-line client
+- *(cli)* Opendoist command-line client
 - *(server,web)* Ramble — voice capture to confirmed tasks
 - *(server,web,core)* Backups, Todoist importer, karma, What's New, export
 - *(web,server,docs)* PWA, a11y pass, performance, seed, docs, release engineering
