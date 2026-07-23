@@ -182,6 +182,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for commit conventions and the design-tok
 
 ## License
 
-[AGPL-3.0](LICENSE) © Pranav Karra.
+[AGPL-3.0](LICENSE) © [Pranav Karra](https://pranavkarra.me).
 
 Brand icon derived from ["List" by Glyphy](https://thenounproject.com/browse/icons/term/list/) (Noun Project), licensed [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) — details in [assets/brand/ATTRIBUTION.md](assets/brand/ATTRIBUTION.md).
